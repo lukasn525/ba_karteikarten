@@ -1,0 +1,247 @@
+{
+  "id": "stapel-3",
+  "titel": "Ergebnisse & Interpretation",
+  "kurz": "Ergebnisse",
+  "karten": [
+    {
+      "id": "3-01",
+      "frage": "Was ist das Kernergebnis im Mengenstrang (Kreuzvalidierung)?",
+      "punkte": [
+        "RMSE: Ridge 30,93 · Poisson-GLM 32,99 · Random Forest 34,96 · XGBoost 37,39.",
+        "Die Mittelwert-Baseline liegt bei 68,09 – die Referenz halbiert den Fehler.",
+        "Keines der drei Verfahren übertrifft das Poisson-GLM signifikant.",
+        "Ridge liegt vorn, sein Vorsprung auf das GLM ist aber nicht gesichert (8 von 10, p = 0,275)."
+      ],
+      "abschnitt": "6.1",
+      "nachfrage": "Wenn Ridge im Mittel besser ist – warum empfehlen Sie dann das GLM?"
+    },
+    {
+      "id": "3-02",
+      "frage": "Welche Vergleiche im Mengenstrang sind signifikant?",
+      "punkte": [
+        "Gegen die Referenz: keiner (Ridge p = 0,275, Random Forest p = 0,922, XGBoost p = 0,275).",
+        "Ridge gegen XGBoost: 10 von 10 gewonnen, Holm-korrigiert p = 0,012.",
+        "Ridge gegen Random Forest: 9 von 10 gewonnen, Holm-korrigiert p = 0,023.",
+        "Random Forest gegen XGBoost: nicht signifikant."
+      ],
+      "abschnitt": "6.1",
+      "nachfrage": "Warum ist 10 von 10 genau p = 0,002?"
+    },
+    {
+      "id": "3-03",
+      "frage": "Was zeigt das Hold-out im Mengenstrang?",
+      "punkte": [
+        "RMSE: XGBoost 25,83 · Random Forest 27,46 · GLM 28,46 · Ridge 30,30.",
+        "R²: XGBoost 0,69 · Random Forest 0,65 · GLM 0,62 · Ridge 0,58.",
+        "Die Rangfolge der Kreuzvalidierung kehrt sich um.",
+        "Es ist eine einmalige Messung auf 6 Stadtteilen, ohne Wiederholungen und ohne Test."
+      ],
+      "abschnitt": "6.1",
+      "nachfrage": "Welches Ergebnis gilt denn nun?"
+    },
+    {
+      "id": "3-04",
+      "frage": "Warum kippt die Rangfolge zwischen Kreuzvalidierung und Hold-out?",
+      "punkte": [
+        "Die Signifikanz gilt für viele Aufteilungen derselben 30 Stadtteile, nicht für ganz andere Stadtteile.",
+        "Das Hold-out ist wie ein einzelner Fold – auch dort gewann XGBoost gegen Ridge in 7 von 50 Folds.",
+        "Andere Zusammensetzung: keine Extremstadtteile, Standardabweichung 46,5 statt 71,4, viele Brandmonate.",
+        "Kernaussage: Welche Stadtteile getestet werden, bewegt das Ergebnis mehr als die Wahl des Verfahrens."
+      ],
+      "abschnitt": "6.1, 6.3",
+      "nachfrage": "Liegt es nur an den Extremstadtteilen wie Tenderloin?"
+    },
+    {
+      "id": "3-05",
+      "frage": "Was zeigt die Rate je 1.000 Einwohner als Robustheitsprüfung?",
+      "punkte": [
+        "Kreuzvalidierung: Ridge 1,63 vor GLM 1,74, nicht signifikant (p = 0,084).",
+        "Hold-out: das GLM liegt mit 0,96 vorn.",
+        "Auch auf der Rate schlägt kein Verfahren die Referenz signifikant.",
+        "Der Befund hängt also nicht an der Wahl der Bewertungsskala."
+      ],
+      "abschnitt": "6.1",
+      "nachfrage": "Warum ist die Rate nicht die Hauptzielgröße?"
+    },
+    {
+      "id": "3-06",
+      "frage": "Was ist das Ergebnis im Strukturstrang (Kreuzvalidierung)?",
+      "punkte": [
+        "Macro-F1: Random Forest 0,318 · Logit 0,301 · XGBoost 0,301 · Mehrheitsklasse 0,221.",
+        "Random Forest schlägt das Logit signifikant: +0,017, 9 von 10, p = 0,004.",
+        "XGBoost liegt gleichauf mit dem Logit.",
+        "Der einzige Fall, in dem ein Verfahren seine Referenz übertrifft."
+      ],
+      "abschnitt": "6.2",
+      "nachfrage": "Ist ein Vorsprung von 0,017 praktisch relevant?"
+    },
+    {
+      "id": "3-07",
+      "frage": "Was zeigt das Hold-out im Strukturstrang?",
+      "punkte": [
+        "Macro-F1: Logit 0,350 · XGBoost 0,291 · Random Forest 0,282.",
+        "Die Referenz wird besser, beide Baumverfahren fallen ab.",
+        "Das Hold-out enthält 37 Brandmonate (4,7 %), die Entwicklung nur 33 über 30 Stadtteile.",
+        "Das Logit mit ausgeglichenen Klassengewichten sagt seltene Klassen öfter vorher (Accuracy nur 0,44)."
+      ],
+      "abschnitt": "6.2",
+      "nachfrage": "Ist das Überanpassung oder liegt es an den Testdaten?"
+    },
+    {
+      "id": "3-08",
+      "frage": "Was ist Decke B, und wie wird sie berechnet?",
+      "punkte": [
+        "Gedankenexperiment: jedem Stadtteil perfekt seine Modalklasse (häufigste Einsatzart) zuweisen.",
+        "27 von 30 Stadtteilen haben Fehlalarm, 2 technische Hilfe, 1 Rettung, keiner Brand.",
+        "F1 je Klasse: Fehlalarm 0,91 · technische Hilfe 0,42 · Rettung 0,33 · Brand 0.",
+        "Durchschnitt = Macro-F1 0,41 – die Obergrenze des Stadtteilwissens."
+      ],
+      "abschnitt": "6.2",
+      "nachfrage": "Warum ist das eine Obergrenze für Ihre Modelle?"
+    },
+    {
+      "id": "3-09",
+      "frage": "Was ist Decke A, und warum liegt sie bei 0,64?",
+      "punkte": [
+        "Annahme: Die beobachteten Anteile sind die wahren Wahrscheinlichkeiten.",
+        "Die Einsätze jedes Stadtteilmonats werden daraus 200-mal neu gezogen (parametrischer Bootstrap).",
+        "Das Label kippt dabei in 13,6 % der Stadtteilmonate, oft bei knappen Abständen.",
+        "Selbst ein perfektes Modell erreicht daher nur 0,64 – das Label selbst ist zufallsbehaftet."
+      ],
+      "abschnitt": "6.2",
+      "nachfrage": "Warum ist Decke B und nicht Decke A die maßgebliche Grenze?"
+    },
+    {
+      "id": "3-10",
+      "frage": "Wie viel des erreichbaren Spielraums schöpfen die Verfahren aus?",
+      "punkte": [
+        "Formel: (Modell − Mehrheitsklasse) / (Decke − Mehrheitsklasse).",
+        "Random Forest: 0,097 / 0,193 = 50 % von Decke B; XGBoost 41 %.",
+        "F1 je Klasse (Random Forest): Fehlalarm 0,86, technische Hilfe 0,37, Rettung 0,04, Brand 0,00.",
+        "Brand sagt Random Forest in 50 Läufen nur zweimal vorher, beide Male falsch."
+      ],
+      "abschnitt": "6.2",
+      "nachfrage": "Warum ziehen Sie die Mehrheitsklasse ab?"
+    },
+    {
+      "id": "3-11",
+      "frage": "Woran erkennt man Überanpassung bei den Baumverfahren?",
+      "punkte": [
+        "Mengenstrang, R² Training gegen Kreuzvalidierung: Random Forest 0,97 / 0,50, XGBoost 0,97 / 0,49.",
+        "Ridge zum Vergleich: 0,84 / 0,66.",
+        "Strukturstrang, Macro-F1 Training gegen Kreuzvalidierung: Random Forest 0,58 / 0,32.",
+        "Die Bäume treffen die Trainingsstadtteile fast perfekt und verlieren auf neuen am meisten."
+      ],
+      "abschnitt": "6.3",
+      "nachfrage": "Hätte stärkere Regularisierung der Bäume das verhindert?"
+    },
+    {
+      "id": "3-12",
+      "frage": "Was zeigt die Spezifikationsgegenprobe?",
+      "punkte": [
+        "Das GLM wird schrittweise flexibler gemacht, statt das Verfahren zu wechseln.",
+        "RMSE: linear 33,0 · mit Quadraten 74,6 · mit Interaktionen 257,0 · beides 4.203.",
+        "Alle 50 Läufe konvergiert – kein Rechenartefakt.",
+        "Spezifikation bewegt den Fehler um bis zu 4.170, die Verfahrenswahl nur um 6,5."
+      ],
+      "abschnitt": "6.3",
+      "nachfrage": "Was beweist das für die Baumverfahren?"
+    },
+    {
+      "id": "3-13",
+      "frage": "Wie stark extrapolieren die Modelle?",
+      "punkte": [
+        "Eine Testzeile extrapoliert, wenn ein Merkmal außerhalb der Trainingsspanne liegt.",
+        "In Wiederholung 0 im Mittel 38,2 % der Testzeilen, je Fold zwischen 0 und 66,7 %.",
+        "Meist ganze Stadtteile: Tenderloin, South of Market, Financial District, Sunset/Parkside u. a.",
+        "Bäume sagen außerhalb des gelernten Bereichs nur den Wert der Randregion vorher."
+      ],
+      "abschnitt": "5.1, 6.3",
+      "nachfrage": "Erklärt die Extrapolation, warum die Bäume schlechter abschneiden?"
+    },
+    {
+      "id": "3-14",
+      "frage": "Erklärt die Extrapolation die Unterschiede zwischen den Verfahren?",
+      "punkte": [
+        "Rangkorrelation Extrapolationsanteil gegen RMSE über 50 Läufe.",
+        "Ridge +0,335, XGBoost +0,353, Random Forest +0,249 (am schwächsten).",
+        "Litten die Bäume stärker darunter, müsste es umgekehrt sein.",
+        "Extrapolation ist der Preis der Forschungsfrage, nicht die Erklärung für die Rangfolge."
+      ],
+      "abschnitt": "5.1",
+      "nachfrage": "Warum ist Extrapolation kein Fehler Ihres Designs?"
+    },
+    {
+      "id": "3-15",
+      "frage": "Wie unterscheiden sich die Verfahren im Aufwand?",
+      "punkte": [
+        "Ridge passt einen Fold in 0,008 Sekunden an.",
+        "XGBoost braucht das 295-Fache, Random Forest das 326-Fache.",
+        "Inferenz ist unkritisch: auch das langsamste Verfahren unter 0,1 Sekunden je Testfold.",
+        "Der einzige Vergleich, in dem sich die Verfahren um Größenordnungen trennen."
+      ],
+      "abschnitt": "6.4",
+      "nachfrage": "Warum ist Ridge so viel schneller?"
+    },
+    {
+      "id": "3-16",
+      "frage": "Was zeigt die Attribution der Faktorgruppen?",
+      "punkte": [
+        "Mengenstrang (GLM, Anteil an der Koeffizientenmasse): sozioökonomisch 41,4 %, baulich 34,0 %, Kriminalität 10,7 %.",
+        "Größenkontrolle 8,9 %, Saison 5,1 %.",
+        "Strukturstrang (Random Forest, SHAP): baulich 29,8 %, sozioökonomisch 28,7 %, Kriminalität 18,5 %.",
+        "Attribution zeigt, worauf das angepasste Modell zurückgreift – nicht, was nützt."
+      ],
+      "abschnitt": "2.6, 6.5",
+      "nachfrage": "Warum gibt es SHAP nur für den Random Forest?"
+    },
+    {
+      "id": "3-17",
+      "frage": "Was zeigt die Ablation der Faktorgruppen?",
+      "punkte": [
+        "Je Gruppe: weglassen, neu anpassen, Änderung der Güte messen.",
+        "GLM ohne Kriminalität: +6,10 RMSE schlechter (10 von 10), ohne Saison +0,28 (10 von 10).",
+        "GLM ohne bauliche Merkmale: 8,04 RMSE besser (0 von 10 schlechter), ohne sozioökonomische 4,95 besser.",
+        "Strukturstrang: sozioökonomische Gruppe trägt (+0,023 Macro-F1, 10 von 10), bauliche schadet."
+      ],
+      "abschnitt": "6.5",
+      "nachfrage": "Warum lassen Sie die baulichen Merkmale dann nicht einfach weg?"
+    },
+    {
+      "id": "3-18",
+      "frage": "Warum widersprechen sich Attribution und Ablation?",
+      "punkte": [
+        "Das Modell wird nur auf Trainingsdaten angepasst und weiß nicht, was sich überträgt.",
+        "Bauliche Merkmale haben einen Wert je Stadtteil und wirken im Training wie ein Erkennungszeichen.",
+        "Korrelierte Merkmale teilen sich die Information, Koeffizienten werden groß und instabil.",
+        "Die Ablation misst den eigenständigen Beitrag für neue Stadtteile – die direktere Antwort auf UF1."
+      ],
+      "abschnitt": "6.5, 7.1",
+      "nachfrage": "Warum stützt sich das Modell nicht stärker auf die Kriminalität?"
+    },
+    {
+      "id": "3-19",
+      "frage": "Warum trägt gerade der Kriminalitätsindex die Prognose der Einsatzhäufigkeit?",
+      "punkte": [
+        "Zeitliche Auflösung: einziges Strukturmerkmal, das sich monatlich bewegt.",
+        "Sammelindikator: korreliert mit Risikogewerbe (0,78), Leerstand (0,66) und Armut (0,61).",
+        "Bei gegebenem Index sind die übrigen Merkmale weitgehend redundant.",
+        "Für die Einsatzart trägt er dagegen fast nichts – welche Gruppe nützt, hängt an der Zielgröße."
+      ],
+      "abschnitt": "6.5, 8",
+      "nachfrage": "Liegt sein Vorrang am Inhalt oder an der zeitlichen Auflösung?"
+    },
+    {
+      "id": "3-20",
+      "frage": "Was ist die Gesamtantwort der Arbeit?",
+      "punkte": [
+        "Die Merkmale tragen: Schon die Referenz halbiert den Fehler der Mittelwert-Baseline.",
+        "Einen Vorsprung der flexiblen Verfahren gegenüber der Referenz gibt es kaum.",
+        "Bei 36 Stadtteilen lässt sich kein Verfahren dauerhaft an die Spitze setzen.",
+        "Implikation: erst prüfen, wie viele unabhängige Einheiten die Daten haben, dann das Verfahren wählen."
+      ],
+      "abschnitt": "8",
+      "nachfrage": "Was ist dann der eigentliche Beitrag Ihrer Arbeit?"
+    }
+  ]
+}

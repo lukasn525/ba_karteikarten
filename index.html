@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kolloquium · Karteikarten</title>
+  <meta name="description" content="Karteikarten zur Vorbereitung auf das Kolloquium der Bachelorarbeit">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#15293f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Kolloquium">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="icon-btn" id="btn-zurueck" aria-label="Zurück" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+    </button>
+    <div class="topbar-titel">
+      <span id="kopf-titel">Kolloquium</span>
+      <span id="kopf-sub"></span>
+    </div>
+    <button class="icon-btn" id="btn-menue" aria-label="Einstellungen">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+    </button>
+  </header>
+
+  <main id="app" tabindex="-1">
+    <p class="laden">Karten werden geladen …</p>
+  </main>
+
+  <dialog id="menue">
+    <form method="dialog" class="menue-inhalt">
+      <h2>Einstellungen</h2>
+      <label class="schalter">
+        <input type="checkbox" id="opt-mischen">
+        <span>Karten in jeder Runde mischen</span>
+      </label>
+      <div class="menue-gruppe">
+        <h3>Lernstand</h3>
+        <p class="klein">Der Lernstand wird nur in diesem Browser gespeichert. Zum Übertragen auf ein anderes Gerät exportieren und dort importieren.</p>
+        <div class="knopfreihe">
+          <button type="button" class="btn" id="btn-export">Exportieren</button>
+          <button type="button" class="btn" id="btn-import">Importieren</button>
+          <input type="file" id="datei-import" accept="application/json" hidden>
+        </div>
+        <button type="button" class="btn btn-gefahr" id="btn-reset">Lernstand zurücksetzen</button>
+      </div>
+      <div class="menue-gruppe">
+        <h3>Tastatur</h3>
+        <p class="klein">Leertaste: umdrehen · ← oder 1: nochmal · → oder 2: gewusst · K: kritisch markieren · Z: letzte Antwort zurücknehmen</p>
+      </div>
+      <p class="klein" id="menue-stand"></p>
+      <button class="btn btn-primaer" value="ok">Schließen</button>
+    </form>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/app.js" defer></script>
+</body>
+</html>

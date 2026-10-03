@@ -1,0 +1,247 @@
+{
+  "id": "stapel-2",
+  "titel": "Methodik, Validierung & Statistik",
+  "kurz": "Methodik & Statistik",
+  "karten": [
+    {
+      "id": "2-01",
+      "frage": "Wie ist die Validierung aufgebaut?",
+      "punkte": [
+        "6 der 36 Stadtteile bilden das Hold-out und bleiben bis zur Schlussbewertung gesperrt.",
+        "Auf den übrigen 30 läuft eine nach Stadtteilen gruppierte Kreuzvalidierung mit 5 Folds zu je 6 Stadtteilen.",
+        "Sie wird 10-mal mit neuer Zuteilung wiederholt: 50 Läufe je Verfahren.",
+        "Zum Schluss wird jedes Verfahren auf allen 30 Stadtteilen angepasst und einmal auf dem Hold-out gemessen."
+      ],
+      "abschnitt": "4.5",
+      "nachfrage": "Warum fünf Folds und nicht zehn?"
+    },
+    {
+      "id": "2-02",
+      "frage": "Warum werden ganze Stadtteile zurückgehalten statt zeitlich zu teilen?",
+      "punkte": [
+        "Die Forschungsfrage zielt auf Stadtteile, die das Modell nicht kennt.",
+        "Bei einem Zeitschnitt stünde jeder Stadtteil in Training und Test, das Modell kennte sein Niveau.",
+        "Weil 92,5 % der Varianz zwischen den Stadtteilen liegen, mäße ein Zeitschnitt im Kern nur zeitliche Stabilität.",
+        "Räumlich geblockte Validierung ist bei Vorhersage an neuen Orten angezeigt (Roberts et al. 2017, S. 925)."
+      ],
+      "abschnitt": "4.5, 7.3",
+      "nachfrage": "Was verlieren Sie durch diese Entscheidung?"
+    },
+    {
+      "id": "2-03",
+      "frage": "Wie werden die Stadtteile auf Folds und Hold-out verteilt?",
+      "punkte": [
+        "Sortierung absteigend nach Zahl brand-dominierter Monate, bei Gleichstand nach Bevölkerung.",
+        "Dann reihum auf sechs Gruppen; Gruppe 0 ist das Hold-out, Gruppen 1 bis 5 sind die Folds.",
+        "Ohne diese Schichtung gäbe es Folds ganz ohne Brand-Testfälle.",
+        "Die Zuteilung steht als Spalte in der Datei – alle Verfahren sehen garantiert dieselben Folds."
+      ],
+      "abschnitt": "4.5",
+      "nachfrage": "Nutzen Sie damit nicht Information aus der Zielgröße – ist das ein Leck?"
+    },
+    {
+      "id": "2-04",
+      "frage": "Was passiert in den zehn Wiederholungen?",
+      "punkte": [
+        "Die 30 Entwicklungsstadtteile bilden sechs Rangblöcke zu je fünf.",
+        "Je Wiederholung werden die fünf Stadtteile eines Blocks neu auf die fünf Folds gemischt (Seed 42 + Nummer).",
+        "Jeder Fold behält einen Stadtteil je Block: Größe 6 und Schichtung bleiben erhalten.",
+        "Das Hold-out bleibt in allen Wiederholungen unverändert; Wiederholung 0 ist die Zuteilung der Datei."
+      ],
+      "abschnitt": "3.3, 4.5",
+      "nachfrage": "Warum nicht einfach die Gruppen rotieren?"
+    },
+    {
+      "id": "2-05",
+      "frage": "Welche Baselines gibt es und woran wird Erfolg gemessen?",
+      "punkte": [
+        "Stufe 1 (trivial): Gesamtmittelwert bzw. Mehrheitsklasse – prüft, ob die Merkmale überhaupt Information tragen.",
+        "Stufe 2 (Referenz): Poisson-GLM mit Offset bzw. multinomiales Logit mit ausgeglichenen Klassengewichten.",
+        "Beide Stufen laufen auf denselben Folds, Merkmalen und Läufen wie die Verfahren.",
+        "Erfolgreich ist ein Verfahren nur, wenn es die Stufe-2-Referenz übertrifft."
+      ],
+      "abschnitt": "4.5",
+      "nachfrage": "Warum reicht es nicht, die Mittelwert-Baseline zu schlagen?"
+    },
+    {
+      "id": "2-06",
+      "frage": "Warum laufen die Referenzmodelle ohne Strafterm und ohne Tuning?",
+      "punkte": [
+        "Ohne Strafterm gibt es keinen Parameter, der gewählt werden müsste.",
+        "Ein Bibliotheks-Vorgabewert wäre keine für diese Daten getroffene Wahl.",
+        "Ein optimierter Wert bräuchte ein eigenes Auswahlverfahren je Fold.",
+        "Die Referenz ist damit in jedem Lauf identisch und von keinem Suchraum abhängig."
+      ],
+      "abschnitt": "4.5",
+      "nachfrage": "Ist es nicht unfair, getunte Verfahren gegen eine ungetunte Referenz antreten zu lassen?"
+    },
+    {
+      "id": "2-07",
+      "frage": "Warum ein Poisson-Modell und keine negative Binomialverteilung?",
+      "punkte": [
+        "Die Daten sind überdispers (Dispersionsindex 79,5), Poisson unterstellt Varianz gleich Mittelwert.",
+        "Der Poisson-Schätzer bleibt als Pseudo-ML-Schätzer konsistent, solange der Erwartungswert stimmt (Gourieroux et al. 1981, S. 8; Winkelmann 2008, S. 89).",
+        "Verzerrt werden nur Standardfehler und p-Werte (Gourieroux et al. 1981, S. 9).",
+        "Die Arbeit braucht nur Punktvorhersagen – die Korrektur der negativen Binomialverteilung wird nicht gebraucht."
+      ],
+      "abschnitt": "2.3",
+      "nachfrage": "Und wenn der Erwartungswert falsch spezifiziert ist?"
+    },
+    {
+      "id": "2-08",
+      "frage": "Was ist der Offset, und wie behandeln Sie die Größe der Stadtteile?",
+      "punkte": [
+        "Aus log(μ / B) = x′β folgt log(μ) = log(B) + x′β, mit B als Bevölkerung.",
+        "log(B) geht mit festem Koeffizienten 1 ein und wird nicht geschätzt (Winkelmann 2008, S. 74–75).",
+        "Die ML-Verfahren lernen die Rate je 1.000 Einwohner; die Vorhersage wird mit der Bevölkerung zurückgerechnet.",
+        "Ohne diese Behandlung: Random Forest 50,9 statt 35,0 RMSE, XGBoost 51,8 statt 37,4."
+      ],
+      "abschnitt": "2.3, 4.5, 5.2",
+      "nachfrage": "Warum dann zusätzlich log(Bevölkerung) als Merkmal?"
+    },
+    {
+      "id": "2-09",
+      "frage": "Wie funktioniert Ridge Regression, und warum Ridge statt einfacher Regression?",
+      "punkte": [
+        "Lineare Regression mit L2-Strafterm auf die quadrierten Koeffizienten; λ steuert die Stärke.",
+        "Sie schrumpft Koeffizienten korrelierter Merkmale, ohne eines zu entfernen.",
+        "Die Merkmale korrelieren stark: Haushaltseinkommen VIF 10,64 (problematisch ab 5 bis 10).",
+        "Ridge nimmt bewusst etwas Verzerrung in Kauf, um die Varianz zu senken (Hoerl & Kennard 1970, S. 55–56)."
+      ],
+      "abschnitt": "2.4, 5.1",
+      "nachfrage": "Warum ist es wichtig, dass kein Merkmal entfernt wird?"
+    },
+    {
+      "id": "2-10",
+      "frage": "Wie funktioniert der Random Forest?",
+      "punkte": [
+        "Viele Entscheidungsbäume auf Bootstrap-Stichproben, deren Vorhersagen gemittelt werden (Bagging).",
+        "Je Split wird nur eine Zufallsauswahl der Merkmale geprüft – das entkoppelt die Bäume.",
+        "Mitteln senkt vor allem die Varianz.",
+        "Im Mengenstrang mit Poisson-Kriterium, passend zur Datenform."
+      ],
+      "abschnitt": "2.4",
+      "nachfrage": "Warum kann ein Random Forest nicht extrapolieren?"
+    },
+    {
+      "id": "2-11",
+      "frage": "Wie funktioniert XGBoost?",
+      "punkte": [
+        "Bäume werden nacheinander gebaut; jeder korrigiert den Fehler der bisherigen (Boosting).",
+        "Ein Regularisierungsterm bestraft komplexe Bäume (Chen & Guestrin 2016, S. 786).",
+        "Boosting senkt vor allem die Verzerrung.",
+        "Im Mengenstrang mit Tweedie-Verlust, dessen Varianzexponent mitgetunt wird."
+      ],
+      "abschnitt": "2.4",
+      "nachfrage": "Was ist der wesentliche Unterschied zwischen Bagging und Boosting?"
+    },
+    {
+      "id": "2-12",
+      "frage": "Warum gibt es Ridge nicht im Strukturstrang?",
+      "punkte": [
+        "Die Einsatzart ist eine nominale Zielgröße.",
+        "Ridge ließe sich nur über eine Indikatorspalte je Klasse übertragen.",
+        "Diese Variante liefert Werte unter 0 oder über 1, also keine Wahrscheinlichkeiten.",
+        "Random Forest und XGBoost übertragen sich ohne Bruch, es wechselt nur die Verlustfunktion."
+      ],
+      "abschnitt": "5.1",
+      "nachfrage": "Wäre eine penalisierte logistische Regression nicht das Ridge-Gegenstück gewesen?"
+    },
+    {
+      "id": "2-13",
+      "frage": "Wie werden die Hyperparameter gesucht?",
+      "punkte": [
+        "Je Verfahren und Fold: innere, nach Stadtteilen gruppierte Kreuzvalidierung mit 4 Folds auf den 24 Trainingsstadtteilen.",
+        "Zufallssuche mit 100 Ziehungen; der äußere Testfold geht nicht ein.",
+        "Gesucht wird nur in Wiederholung 0, die übrigen übernehmen den Satz der gleichen Foldnummer.",
+        "Für das Hold-out zählt der Satz des besten Folds aus Wiederholung 0."
+      ],
+      "abschnitt": "5.3",
+      "nachfrage": "Warum wird nicht in jeder Wiederholung neu gesucht?"
+    },
+    {
+      "id": "2-14",
+      "frage": "Mit welchen Gütemaßen wird der Mengenstrang bewertet?",
+      "punkte": [
+        "Hauptmaß RMSE: Wurzel des mittleren quadrierten Fehlers, in Einsätzen, bestraft große Fehler stärker.",
+        "Ergänzt um MAE (robuster gegen Ausreißer) und R².",
+        "R² wird gegen den Mittelwert der Testdaten gemessen und kann negativ werden.",
+        "Alle Maße werden nach dem Zurückrechnen auf die Anzahl berechnet, für alle Verfahren gleich."
+      ],
+      "abschnitt": "2.5",
+      "nachfrage": "Warum RMSE als Hauptmaß und nicht MAE?"
+    },
+    {
+      "id": "2-15",
+      "frage": "Mit welchen Gütemaßen wird der Strukturstrang bewertet, und warum nicht Accuracy?",
+      "punkte": [
+        "Hauptmaß Macro-F1: F1 je Klasse, ungewichtet gemittelt – jede Klasse zählt gleich.",
+        "Ergänzt um die Macro-AUROC (One-vs-Rest), die die Rangordnung der Wahrscheinlichkeiten misst.",
+        "Accuracy wird nur mitgeführt: Immer „Fehlalarm“ erreicht schon 0,80.",
+        "Die Mehrheitsklasse kommt beim Macro-F1 dagegen nur auf 0,22."
+      ],
+      "abschnitt": "2.5",
+      "nachfrage": "Wie berechnet sich der F1-Wert genau?"
+    },
+    {
+      "id": "2-16",
+      "frage": "Mit welchem Test werden die Verfahren verglichen?",
+      "punkte": [
+        "Gepaarter Wilcoxon-Vorzeichen-Rang-Test auf den 10 Wiederholungsmitteln, α = 0,05.",
+        "Gepaart, weil alle Verfahren dieselben Folds sehen – die Fold-Schwierigkeit kürzt sich heraus.",
+        "Nichtparametrisch, weil sich bei 10 Werten keine Normalverteilung annehmen lässt (Demšar 2006, S. 8).",
+        "Rechnet mit Rängen der Differenzen: große Siege und Niederlagen wiegen mehr als knappe."
+      ],
+      "abschnitt": "2.5, 6.1",
+      "nachfrage": "Warum testen Sie nicht auf den 50 Einzelläufen?"
+    },
+    {
+      "id": "2-17",
+      "frage": "Warum wird auf 10 Wiederholungsmitteln statt auf 50 Läufen getestet?",
+      "punkte": [
+        "Die 50 Läufe sind nicht unabhängig: gleiche 30 Stadtteile, überlappende Trainingsdaten.",
+        "Sie als unabhängig zu behandeln wäre Pseudoreplikation.",
+        "Beispiel: XGBoost gegen GLM ist auf 10 Mitteln nicht signifikant (p = 0,275), auf 50 Läufen scheinbar schon (p = 0,035).",
+        "Auch die 10 Mittel unterschätzen die Unsicherheit noch – das Intervall ist eine Untergrenze."
+      ],
+      "abschnitt": "6.1, 6.3",
+      "nachfrage": "Was ist der kleinste p-Wert, den der Test bei zehn Paaren liefern kann?"
+    },
+    {
+      "id": "2-18",
+      "frage": "Wie gehen Sie mit mehreren Tests um?",
+      "punkte": [
+        "Primärtests: jedes Verfahren gegen seine Referenz – einzeln vorab formuliert, ohne Korrektur.",
+        "Sekundärtests: Verfahren untereinander, nach Holm korrigiert.",
+        "Holm prüft schrittweise: kleinster p-Wert gegen α/k, nächster gegen α/(k−1) usw. (Demšar 2006, S. 12–13).",
+        "Gleiche Absicherung wie Bonferroni, aber mehr Trennschärfe."
+      ],
+      "abschnitt": "2.5, 6.1",
+      "nachfrage": "Warum korrigieren Sie die Primärtests nicht?"
+    },
+    {
+      "id": "2-19",
+      "frage": "Was berichten Sie neben dem p-Wert, und was heißt „nicht signifikant“?",
+      "punkte": [
+        "Mittlere Differenz mit 95-%-Konfidenzintervall (t-Intervall über die 10 Differenzen).",
+        "Wie oft ein Verfahren gewinnt (z. B. 8 von 10) und die Effektstärke.",
+        "Bei 10 Paaren ist die Trennschärfe gering.",
+        "„Nicht signifikant“ heißt fehlender Nachweis, nicht Gleichheit (Altman & Bland 1995, S. 485)."
+      ],
+      "abschnitt": "6.1, 6.3",
+      "nachfrage": "Ridge gewinnt 8 von 10 gegen das GLM – warum ist das nicht signifikant?"
+    },
+    {
+      "id": "2-20",
+      "frage": "Wie schützen Sie die Auswertung vor Leckage?",
+      "punkte": [
+        "Ganze Stadtteile zurückhalten; der Selbsttest prüft, dass kein Stadtteil in Training und Test steht.",
+        "Hold-out im Code gesperrt, Auswertung nur mit ausdrücklichem Aufrufargument.",
+        "Standardisierung und Klassengewichte je Fold nur auf dem Trainingsteil angepasst.",
+        "Kein Merkmal nutzt Information aus der Zukunft (Kaufman et al. 2011, S. 559–560)."
+      ],
+      "abschnitt": "4.3, 4.5, 5.2",
+      "nachfrage": "Wo sehen Sie trotzdem noch ein Restrisiko?"
+    }
+  ]
+}

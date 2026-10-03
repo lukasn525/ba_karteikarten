@@ -1,0 +1,247 @@
+{
+  "id": "stapel-4",
+  "titel": "Kritik, Limitationen & Prüfer-Angriffe",
+  "kurz": "Kritik & Angriffe",
+  "karten": [
+    {
+      "id": "4-01",
+      "frage": "Warum sind Sie bei Validierung und Referenzmodell vom ursprünglichen Plan abgewichen?",
+      "punkte": [
+        "Geplant waren ein Zeitschnitt und die negative Binomialverteilung.",
+        "Ein Zeitschnitt prüft die Forschungsfrage nicht: Jeder Stadtteil stünde in Training und Test.",
+        "Bei 92,5 % Zwischenvarianz hätte er im Kern nur die zeitliche Stabilität gemessen.",
+        "Die negative Binomialverteilung korrigiert Standardfehler, gebraucht werden nur Punktvorhersagen."
+      ],
+      "abschnitt": "7.3, 2.3",
+      "nachfrage": "Was kostet Sie der Verzicht auf den Zeitschnitt?"
+    },
+    {
+      "id": "4-02",
+      "frage": "Warum genau Ridge, Random Forest und XGBoost?",
+      "punkte": [
+        "Die Arbeit fragt, ob Flexibilität auf diesen Daten etwas bringt.",
+        "Baumensembles finden Krümmung und Wechselwirkungen selbst – durch Mitteln (Random Forest) oder Nachkorrigieren (XGBoost).",
+        "Ridge ist linear, durchläuft aber dieselbe Suche: Erst der Abstand zu ihm trennt Flexibilität von Tuning.",
+        "Je ein Vertreter je Bauprinzip; weitere wären nur Varianten derselben Prinzipien."
+      ],
+      "abschnitt": "5.1",
+      "nachfrage": "Hätte ein anderes flexibles Verfahren nicht besser abschneiden können?"
+    },
+    {
+      "id": "4-03",
+      "frage": "Warum nicht Lasso, Elastic Net, LightGBM oder ein neuronales Netz?",
+      "punkte": [
+        "Lasso und Elastic Net setzen Koeffizienten auf null – das brächte Merkmalsauswahl als zweiten Unterschied in den Vergleich.",
+        "LightGBM und CatBoost sind dasselbe Boosting-Prinzip und beantworten keine neue Frage.",
+        "Für neuronale Netze sind 36 Analyseeinheiten zu wenig.",
+        "Die Spezifikationsgegenprobe zeigt: Mehr Flexibilität schadet hier – ein weiteres flexibles Verfahren ändert den Befund kaum."
+      ],
+      "abschnitt": "5.1, 6.3",
+      "nachfrage": "Und Support Vector Machines?"
+    },
+    {
+      "id": "4-04",
+      "frage": "Warum kein Mehrebenenmodell mit eigenem Niveau je Stadtteil?",
+      "punkte": [
+        "Ein Mehrebenenmodell schätzt für jeden bekannten Stadtteil einen Zufallseffekt.",
+        "Für einen Stadtteil ohne Trainingsdaten geht dieser Effekt mit dem Erwartungswert null ein.",
+        "Übrig bleibt der feste Teil – dieselbe Form wie die Referenz.",
+        "Bei der Vorhersage für unbekannte Stadtteile bringt es deshalb keinen Vorteil."
+      ],
+      "abschnitt": "5.1",
+      "nachfrage": "Hätte es die Unsicherheit nicht besser abgebildet?"
+    },
+    {
+      "id": "4-05",
+      "frage": "Die Linearität ist verletzt – warum verwenden Sie Ridge trotzdem?",
+      "punkte": [
+        "Verletzt ist sie in den Anpassungsdaten (RESET F = 360,4), das wird offen ausgewiesen.",
+        "Gerade deshalb ist Ridge im Vergleich: Es prüft, ob sich die Nichtlinearität auf neuen Stadtteilen auszahlt.",
+        "Sie tut es nicht: Ridge ist in der Kreuzvalidierung bestes Verfahren, signifikant vor beiden Bäumen.",
+        "Die verletzten Annahmen sichern Unverzerrtheit und Standardfehler – darauf verzichtet Ridge als Vorhersagemodell bewusst."
+      ],
+      "abschnitt": "5.1",
+      "nachfrage": "Wie kann ein lineares Modell bei nichtlinearen Daten am besten sein?"
+    },
+    {
+      "id": "4-06",
+      "frage": "Wie kann ein lineares Modell bei nachgewiesener Nichtlinearität am besten abschneiden?",
+      "punkte": [
+        "Die Krümmung ist in den Trainingsdaten sichtbar, lässt sich aus 24 Stadtteilen aber nicht verlässlich lernen.",
+        "Flexible Modelle passen sich an die Trainingsstadtteile an (Varianz), Ridge hat die geringste Varianz.",
+        "Die Tests behandeln 3.168 Zeilen als unabhängig, bei Designeffekt 122 – ihr p-Wert gilt nur nominell.",
+        "Belegt ist nur, dass eine Gerade diese Stadtteile schlechter beschreibt, nicht dass Flexibilität sie besser vorhersagt."
+      ],
+      "abschnitt": "5.1, 6.3",
+      "nachfrage": "Warum haben Sie die Annahmen dann überhaupt geprüft?"
+    },
+    {
+      "id": "4-07",
+      "frage": "Homoskedastizität und Normalverteilung sind auch verletzt – ist das ein Problem?",
+      "punkte": [
+        "Breusch-Pagan LM = 525,1: ungleiche Streuung, bei Zähldaten erwartbar (Varianz wächst mit dem Niveau).",
+        "Jarque-Bera JB = 150,0: Abweichung in den Rändern, Schiefe 0,02, Wölbung 4,07.",
+        "Beides betrifft Standardfehler und Inferenz, nicht die Punktvorhersage.",
+        "Berichtet werden keine Koeffizienten-Tests – die Verletzungen sind für die Fragestellung folgenlos."
+      ],
+      "abschnitt": "5.1",
+      "nachfrage": "Warum dann keine gewichtete Schätzung?"
+    },
+    {
+      "id": "4-08",
+      "frage": "Ist es unfair, getunte Verfahren gegen eine ungetunte Referenz antreten zu lassen?",
+      "punkte": [
+        "Das Poisson-GLM hat ohne Strafterm keinen Parameter, der getunt werden könnte.",
+        "Ridge trennt den Effekt: linear wie die Referenz, getunt wie die Bäume.",
+        "Das Suchbudget ist ausgeschöpft: 50 weitere Ziehungen bringen kaum etwas.",
+        "Bei den Bäumen ist ein fremder Parametersatz sogar meist besser als der eigene (Random Forest 17 von 20)."
+      ],
+      "abschnitt": "4.5, 5.3",
+      "nachfrage": "Beim Logit hätte ein Strafterm aber helfen können?"
+    },
+    {
+      "id": "4-09",
+      "frage": "Warum die dominante Einsatzart und nicht die Anteile der Einsatzarten?",
+      "punkte": [
+        "Die Forschungsfrage fragt nach der Art; für die Planung zählt, welche Art überwiegt.",
+        "Je Einsatz bliebe nur 1,7 Prozentpunkte Spielraum, ein geteilter Anteil verliert Trennschärfe.",
+        "Die Schwäche der Zielgröße ist gemessen: Selbst perfektes Stadtteilwissen erreicht nur 0,41.",
+        "Die Anteile direkt zu modellieren wäre eine sinnvolle Erweiterung – ein Ausblick."
+      ],
+      "abschnitt": "4.4, 6.2",
+      "nachfrage": "Ist die Aufgabe bei 27 von 30 gleichen Modalklassen nicht trivial?"
+    },
+    {
+      "id": "4-10",
+      "frage": "Benachbarte Stadtteile ähneln sich – ist die Validierung dadurch zu optimistisch?",
+      "punkte": [
+        "Die Blöcke folgen der Verwaltungsgrenze; Nachbarn eines Teststadtteils können im Training stehen.",
+        "Räumliche Ähnlichkeit kann so Information in den Test tragen.",
+        "Ein Puffer um die Teststadtteile ließe im Mittel nur 8,6 statt 24 Trainingsstadtteile übrig.",
+        "Folge: Der berichtete Fehler fällt eher zu klein als zu groß aus – als Limitation benannt."
+      ],
+      "abschnitt": "7.3",
+      "nachfrage": "Warum haben Sie keinen räumlichen Puffer verwendet?"
+    },
+    {
+      "id": "4-11",
+      "frage": "Warum ist der Anteil der Rettungseinsätze so klein?",
+      "punkte": [
+        "Ausgewertet ist der Datensatz Fire Incidents, nicht die Calls for Service.",
+        "Er erfasst im Wesentlichen nicht medizinische Einsätze – vor dem Termin an der Datensatzbeschreibung prüfen.",
+        "Deshalb liegt Rettung nur bei rund 4 % der Stadtteilmonate.",
+        "Fehlalarm umfasst nach NFIRS auch Fehlfunktionen von Meldeanlagen, nicht nur böswillige Alarme."
+      ],
+      "abschnitt": "4.1, 4.2",
+      "nachfrage": "Wie würden sich die Ergebnisse mit Rettungsdiensteinsätzen ändern?"
+    },
+    {
+      "id": "4-12",
+      "frage": "Warum Stadtteile und nicht die feineren Census Tracts?",
+      "punkte": [
+        "Die 41 Analysis Neighborhoods sind die Berichtsgliederung der Stadt.",
+        "Mit 242 Tracts stiege die Zahl der Einheiten, kaum aber die unabhängige Information – Nachbarn ähneln sich.",
+        "Die neuere Kriminalitätsquelle liefert nur Monatssummen je Stadtteil.",
+        "Dass ein anderer Zuschnitt andere Ergebnisse liefern kann (MAUP), ist eine Limitation."
+      ],
+      "abschnitt": "4.1, 7.3",
+      "nachfrage": "Wäre eine Tract-Analyse nicht der naheliegende nächste Schritt?"
+    },
+    {
+      "id": "4-13",
+      "frage": "Wie aussagekräftig sind Ergebnisse auf Basis von nur 36 Stadtteilen?",
+      "punkte": [
+        "Die Zahl unabhängiger Einheiten lässt sich auf Stadtteilebene nicht erhöhen.",
+        "Ein zusätzliches Jahr brächte 432 Zeilen, aber keinen weiteren Stadtteil.",
+        "Die berichtete Streuung misst die Abhängigkeit von der Fold-Zuteilung und ist eher zu schmal.",
+        "Für einen einzelnen Stadtteil ist der mittlere Fehler keine Zusage."
+      ],
+      "abschnitt": "7.3",
+      "nachfrage": "Welche Ihrer Aussagen halten Sie trotzdem für robust?"
+    },
+    {
+      "id": "4-14",
+      "frage": "Ist das Hold-out durch seine Zusammensetzung verzerrt?",
+      "punkte": [
+        "Die Sortierregel legt Bayview Hunters Point (35 Brandmonate) zwangsläufig ins Hold-out.",
+        "Dort liegen 37 der 70 Brandmonate, aber keine Extremstadtteile wie Tenderloin.",
+        "Das Hold-out ist damit eine Plausibilitätsprüfung, nicht die tragende Bewertung.",
+        "Tragend ist die Kreuzvalidierung mit 50 Läufen, Streuung und Tests."
+      ],
+      "abschnitt": "4.2, 4.5",
+      "nachfrage": "Warum haben Sie das Hold-out nicht zufällig gezogen?"
+    },
+    {
+      "id": "4-15",
+      "frage": "Ist das Tuning nur in Wiederholung 0 nicht ein Leck?",
+      "punkte": [
+        "Ja, ein schwaches: Teststadtteile späterer Wiederholungen können in der früheren Suche gesteckt haben.",
+        "Ein Leck müsste die Wiederholungen 1 bis 9 begünstigen.",
+        "Beobachtet wird das Gegenteil: Vorsprung von Ridge auf das GLM in W0 6,57, in W1–9 nur 1,56.",
+        "Sauber je Wiederholung zu suchen kostete die zehnfache Zeit; als Anschlussschritt in 7.3 benannt."
+      ],
+      "abschnitt": "6.3, 7.3",
+      "nachfrage": "Warum haben Sie es nicht trotzdem gemacht?"
+    },
+    {
+      "id": "4-16",
+      "frage": "Ist das Modell zeitlich stabil – Stichwort Pandemie?",
+      "punkte": [
+        "Geprüft wird die Übertragung auf neue Stadtteile, nicht die Fortschreibung in die Zukunft.",
+        "Das Modell enthält kein Trendmerkmal, nur die Saison.",
+        "Bauliche Merkmale stammen aus einem einzigen Jahrgang, ACS-Werte sind 5-Jahres-Schätzungen.",
+        "Die Pandemie wird in der Arbeit nicht gesondert behandelt – zeitliche Stabilität ist eine benannte Grenze."
+      ],
+      "abschnitt": "7.3",
+      "nachfrage": "Wie würden Sie die zeitliche Stabilität prüfen?"
+    },
+    {
+      "id": "4-17",
+      "frage": "Ist die Wohnbevölkerung die richtige Bezugsgröße?",
+      "punkte": [
+        "Sie ist nur eine Annäherung an die tatsächliche Exposition.",
+        "Financial District (Rate 10,4), South of Market (10,1) und Tenderloin (9,4) haben extrem hohe Raten.",
+        "Pendler und Besucher stehen nicht in der Einwohnerzahl, verursachen aber Einsätze.",
+        "In der Limitationstabelle benannt: Die Rate überzeichnet Innenstadtlagen."
+      ],
+      "abschnitt": "7.3",
+      "nachfrage": "Wie würde sich eine bessere Bezugsgröße auf die Ergebnisse auswirken?"
+    },
+    {
+      "id": "4-18",
+      "frage": "Was hat eine Feuerwehr praktisch von Ihren Ergebnissen?",
+      "punkte": [
+        "Die Prognose verfehlt einen Stadtteilmonat im Mittel um rund 20 Einsätze (MAE).",
+        "Sie trennt Stadtteile nach ihrer Last, aber nicht einzelne Monate eines Stadtteils.",
+        "Nutzbar als Eingangsgröße für Standortfragen, nicht für die Bemessung nach Monatszahlen.",
+        "Für die Modellwahl: Das Poisson-GLM reicht; aufwendigere Verfahren wären nicht falsch, nur unwirtschaftlich."
+      ],
+      "abschnitt": "7.2",
+      "nachfrage": "Würden Sie das Modell einer Feuerwehr zur Ressourcenverteilung empfehlen?"
+    },
+    {
+      "id": "4-19",
+      "frage": "Lassen sich die Ergebnisse auf andere Städte übertragen?",
+      "punkte": [
+        "Geprüft wird das nicht; schon die Brandforschung findet von Stadt zu Stadt andere Einflussgrößen.",
+        "Vermutlich nötig: ein monatlich fortgeschriebenes Merkmal wie der Kriminalitätsindex.",
+        "Außerdem eine vergleichbare Meldepraxis, weil ein Polizeiindikator auch die Kontrollintensität misst.",
+        "Übertragbar ist eher der methodische Schluss: erst unabhängige Einheiten zählen, dann Verfahren wählen."
+      ],
+      "abschnitt": "7.2",
+      "nachfrage": "Was müsste eine deutsche Stadt liefern, damit das funktioniert?"
+    },
+    {
+      "id": "4-20",
+      "frage": "Ethik, Kausalität und KI: Wie stehen Sie dazu?",
+      "punkte": [
+        "Sozioökonomische Merkmale können als Stellvertreter geschützter Eigenschaften wirken (Barocas & Selbst 2016, S. 691–692).",
+        "Aussagen gelten für Stadtteile, nicht für Menschen; kein kausaler Anspruch, die Prognose begründet keine Zuteilung.",
+        "KI hat den Großteil des Codes geschrieben – offen im KI-Verzeichnis; die Designentscheidungen sind eigene.",
+        "Geprüft über Selbsttests, Zahlenabgleich Code–Arbeit und reproduzierbaren Lauf mit Seed 42."
+      ],
+      "abschnitt": "4.1, 3.3",
+      "nachfrage": "Welche Entscheidung in der Arbeit war ganz Ihre eigene?"
+    }
+  ]
+}
