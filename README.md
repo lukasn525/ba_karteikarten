@@ -123,6 +123,9 @@ allen Geräten abgeglichen, auf denen die Seite geöffnet wird – ohne Anmeldun
 
 - Jede Änderung wird nach etwa 1,5 Sekunden hochgeladen, spätestens beim Verlassen der Seite.
 - Beim Öffnen und beim Zurückkehren zur Seite werden Änderungen der anderen Geräte geholt.
+- Solange die Seite sichtbar ist, prüft sie alle 10 Sekunden, ob ein anderes Gerät etwas gespeichert
+  hat, und zieht dann nach – sind Rechner und Handy gleichzeitig offen, gleichen sie sich von selbst an
+  (`LIVE_INTERVALL` in `assets/app.js`).
 - Je Karte gewinnt die zuletzt geänderte Fassung; „Lernstand zurücksetzen“ und „Importieren“ gelten
   für alle Geräte.
 - Zusätzlich liegt eine Kopie im Browser (localStorage). Ohne Netz läuft alles weiter und wird
@@ -134,7 +137,7 @@ allen Geräten abgeglichen, auf denen die Seite geöffnet wird – ohne Anmeldun
 
 **Technik:** Supabase-Projekt `ba-karteikarten` (Free, Frankfurt), Tabelle `public.lernstand` mit
 einer Zeile `gemeinsam` (`daten` jsonb, `version`). Die Tabelle ist für Browser gesperrt; gelesen und
-geschrieben wird nur über die Funktionen `lernstand_laden()` und
+geschrieben wird nur über die Funktionen `lernstand_laden()`, `lernstand_version()` und
 `lernstand_speichern(neu_daten, basis_version)`. Geschrieben wird nur, wenn die Version noch stimmt,
 sonst führt das Gerät zuerst zusammen. Die Regeln dafür stehen in `assets/abgleich.js`,
 Adresse und öffentlicher Schlüssel oben im Abschnitt „Geräteübergreifender Abgleich“ in `assets/app.js`.
