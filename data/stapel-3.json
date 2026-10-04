@@ -13,7 +13,8 @@
         "Ridge liegt vorn, sein Vorsprung auf das GLM ist aber nicht gesichert (8 von 10, p = 0,275)."
       ],
       "abschnitt": "6.1",
-      "nachfrage": "Wenn Ridge im Mittel besser ist – warum empfehlen Sie dann das GLM?"
+      "nachfrage": "Wenn Ridge im Mittel besser ist – warum empfehlen Sie dann das GLM?",
+      "nachfrage_antwort": "Weil der Vorsprung von Ridge nicht gesichert ist: Das Konfidenzintervall schließt die Null ein, und auf dem Hold-out liegt Ridge zuletzt. Das GLM braucht keine Suche und liefert in jedem Lauf dasselbe – ohne Nachweis eines Vorteils gibt es keinen Grund, darüber hinauszugehen."
     },
     {
       "id": "3-02",
@@ -25,7 +26,8 @@
         "Random Forest gegen XGBoost: nicht signifikant."
       ],
       "abschnitt": "6.1",
-      "nachfrage": "Warum ist 10 von 10 genau p = 0,002?"
+      "nachfrage": "Warum ist 10 von 10 genau p = 0,002?",
+      "nachfrage_antwort": "Zehn gleiche Vorzeichen sind unter der Nullhypothese die extremste von 1.024 gleich wahrscheinlichen Vorzeichenkombinationen; zweiseitig zählen zwei davon: 2/1.024 ≈ 0,002. Die berichteten 0,012 sind dieser Wert nach Holm-Korrektur in der Familie aus sechs Tests."
     },
     {
       "id": "3-03",
@@ -37,7 +39,8 @@
         "Es ist eine einmalige Messung auf 6 Stadtteilen, ohne Wiederholungen und ohne Test."
       ],
       "abschnitt": "6.1",
-      "nachfrage": "Welches Ergebnis gilt denn nun?"
+      "nachfrage": "Welches Ergebnis gilt denn nun?",
+      "nachfrage_antwort": "Tragend ist die Kreuzvalidierung mit 50 Läufen, Streuung und gepaartem Test; das Hold-out ist eine einmalige Probe auf sechs anders zusammengesetzten Stadtteilen. Gemeinsam ist beiden: Kein Verfahren setzt sich verlässlich vor die Referenz."
     },
     {
       "id": "3-04",
@@ -49,7 +52,8 @@
         "Kernaussage: Welche Stadtteile getestet werden, bewegt das Ergebnis mehr als die Wahl des Verfahrens."
       ],
       "abschnitt": "6.1, 6.3",
-      "nachfrage": "Liegt es nur an den Extremstadtteilen wie Tenderloin?"
+      "nachfrage": "Liegt es nur an den Extremstadtteilen wie Tenderloin?",
+      "nachfrage_antwort": "Nicht allein: In den 20 der 50 Folds ganz ohne Tenderloin, Mission, South of Market und Financial District liegt Ridge in 17 vor XGBoost, im Mittel um 3,6 RMSE. Das ist eine eigene Nachrechnung und steht nicht in der Arbeit."
     },
     {
       "id": "3-05",
@@ -61,7 +65,8 @@
         "Der Befund hängt also nicht an der Wahl der Bewertungsskala."
       ],
       "abschnitt": "6.1",
-      "nachfrage": "Warum ist die Rate nicht die Hauptzielgröße?"
+      "nachfrage": "Warum ist die Rate nicht die Hauptzielgröße?",
+      "nachfrage_antwort": "Für die Vorhaltung zählt die absolute Zahl der Einsätze. Die Rate prüft, ob das Gefälle nur ein Größeneffekt ist, und überzeichnet Innenstadtlagen, weil im Nenner nur die Wohnbevölkerung steht."
     },
     {
       "id": "3-06",
@@ -73,7 +78,8 @@
         "Der einzige Fall, in dem ein Verfahren seine Referenz übertrifft."
       ],
       "abschnitt": "6.2",
-      "nachfrage": "Ist ein Vorsprung von 0,017 praktisch relevant?"
+      "nachfrage": "Ist ein Vorsprung von 0,017 praktisch relevant?",
+      "nachfrage_antwort": "Praktisch klein: Der Random Forest schließt 50 % des Spielraums bis Decke B, das Logit 41 %. Brand erkennt er gar nicht (F1 = 0), und seine Accuracy liegt mit 0,76 unter der der Mehrheitsklasse."
     },
     {
       "id": "3-07",
@@ -85,7 +91,8 @@
         "Das Logit mit ausgeglichenen Klassengewichten sagt seltene Klassen öfter vorher (Accuracy nur 0,44)."
       ],
       "abschnitt": "6.2",
-      "nachfrage": "Ist das Überanpassung oder liegt es an den Testdaten?"
+      "nachfrage": "Ist das Überanpassung oder liegt es an den Testdaten?",
+      "nachfrage_antwort": "Das Design kann beides nicht trennen. Für Überanpassung spricht, dass die Bäume mit 30 statt 24 Trainingsstadtteilen schlechter werden; für die Testdaten, dass das Hold-out 4,7 statt 0,8 % brand-dominierte Monate enthält."
     },
     {
       "id": "3-08",
@@ -97,7 +104,8 @@
         "Durchschnitt = Macro-F1 0,41 – die Obergrenze des Stadtteilwissens."
       ],
       "abschnitt": "6.2",
-      "nachfrage": "Warum ist das eine Obergrenze für Ihre Modelle?"
+      "nachfrage": "Warum ist das eine Obergrenze für Ihre Modelle?",
+      "nachfrage_antwort": "Weil die Merkmale bis auf Kriminalitätsindex und Saison innerhalb eines Stadtteils nahezu konstant sind: Ein Modell kann im Kern nur Stadtteile unterscheiden, und das Beste dabei ist, jedem seine häufigste Klasse zuzuweisen. Streng ist die Grenze nicht, sie ist eine Näherung von unten."
     },
     {
       "id": "3-09",
@@ -109,7 +117,8 @@
         "Selbst ein perfektes Modell erreicht daher nur 0,64 – das Label selbst ist zufallsbehaftet."
       ],
       "abschnitt": "6.2",
-      "nachfrage": "Warum ist Decke B und nicht Decke A die maßgebliche Grenze?"
+      "nachfrage": "Warum ist Decke B und nicht Decke A die maßgebliche Grenze?",
+      "nachfrage_antwort": "Decke A unterstellt, dass ein Modell die wahren Anteile jedes einzelnen Stadtteilmonats kennt – das können stadtteilgebundene Merkmale nicht liefern. Decke B liegt mit 0,41 tiefer und bindet deshalb enger."
     },
     {
       "id": "3-10",
@@ -121,7 +130,8 @@
         "Brand sagt Random Forest in 50 Läufen nur zweimal vorher, beide Male falsch."
       ],
       "abschnitt": "6.2",
-      "nachfrage": "Warum ziehen Sie die Mehrheitsklasse ab?"
+      "nachfrage": "Warum ziehen Sie die Mehrheitsklasse ab?",
+      "nachfrage_antwort": "Weil 0,22 Macro-F1 ohne jedes Lernen erreichbar sind. Erst der Abstand zwischen diesem Nullpunkt und der Decke zeigt, welchen Teil des tatsächlich erreichbaren Gewinns ein Verfahren schließt."
     },
     {
       "id": "3-11",
@@ -133,7 +143,8 @@
         "Die Bäume treffen die Trainingsstadtteile fast perfekt und verlieren auf neuen am meisten."
       ],
       "abschnitt": "6.3",
-      "nachfrage": "Hätte stärkere Regularisierung der Bäume das verhindert?"
+      "nachfrage": "Hätte stärkere Regularisierung der Bäume das verhindert?",
+      "nachfrage_antwort": "Kaum: Die Suche deckte Baumtiefe, Blattgröße und Strafterm bereits ab, und die zweite Hälfte der Ziehungen brachte höchstens 0,020. Fremde Parametersätze waren oft sogar besser als die eigenen – bei 24 Trainingsstadtteilen wählt die Suche zu einem Teil Rauschen."
     },
     {
       "id": "3-12",
@@ -145,7 +156,8 @@
         "Spezifikation bewegt den Fehler um bis zu 4.170, die Verfahrenswahl nur um 6,5."
       ],
       "abschnitt": "6.3",
-      "nachfrage": "Was beweist das für die Baumverfahren?"
+      "nachfrage": "Was beweist das für die Baumverfahren?",
+      "nachfrage_antwort": "Direkt nichts, geprüft ist die Referenz. Sie zeigt aber unabhängig von den Bäumen, dass zusätzliche Flexibilität auf neuen Stadtteilen schadet – belegt für unpenalisierte Erweiterungen."
     },
     {
       "id": "3-13",
@@ -157,7 +169,8 @@
         "Bäume sagen außerhalb des gelernten Bereichs nur den Wert der Randregion vorher."
       ],
       "abschnitt": "5.1, 6.3",
-      "nachfrage": "Erklärt die Extrapolation, warum die Bäume schlechter abschneiden?"
+      "nachfrage": "Erklärt die Extrapolation, warum die Bäume schlechter abschneiden?",
+      "nachfrage_antwort": "Nein. Der RMSE hängt bei Ridge und XGBoost ähnlich eng mit dem Extrapolationsanteil zusammen (+0,335 und +0,353), beim Random Forest am schwächsten (+0,249); litten die Bäume stärker darunter, müsste es umgekehrt sein."
     },
     {
       "id": "3-14",
@@ -169,7 +182,8 @@
         "Extrapolation ist der Preis der Forschungsfrage, nicht die Erklärung für die Rangfolge."
       ],
       "abschnitt": "5.1",
-      "nachfrage": "Warum ist Extrapolation kein Fehler Ihres Designs?"
+      "nachfrage": "Warum ist Extrapolation kein Fehler Ihres Designs?",
+      "nachfrage_antwort": "Weil die Forschungsfrage sie verlangt: Wer für unbekannte Stadtteile vorhersagt, trifft zwangsläufig auf Werte außerhalb der Trainingsspanne. Ein Zufallssplit vermiede sie nur, indem er die Stadtteile schon im Training zeigt; berichtet wird sie als Preis des Stadtteil-Splits."
     },
     {
       "id": "3-15",
@@ -181,7 +195,8 @@
         "Der einzige Vergleich, in dem sich die Verfahren um Größenordnungen trennen."
       ],
       "abschnitt": "6.4",
-      "nachfrage": "Warum ist Ridge so viel schneller?"
+      "nachfrage": "Warum ist Ridge so viel schneller?",
+      "nachfrage_antwort": "Ridge löst ein einziges lineares Gleichungssystem in zwölf Merkmalen. Die Ensembles bauen je Fold mehrere hundert Bäume, und jeder davon sortiert die Beobachtungen je Merkmal."
     },
     {
       "id": "3-16",
@@ -193,7 +208,8 @@
         "Attribution zeigt, worauf das angepasste Modell zurückgreift – nicht, was nützt."
       ],
       "abschnitt": "2.6, 6.5",
-      "nachfrage": "Warum gibt es SHAP nur für den Random Forest?"
+      "nachfrage": "Warum gibt es SHAP nur für den Random Forest?",
+      "nachfrage_antwort": "Attribuiert wird nur dort, wo ein Verfahren die Referenz schlägt, und im Strukturstrang ist das allein der Random Forest. Im Mengenstrang schlägt keines die Referenz, dort zeigen deren standardisierte Koeffizienten die Gewichte."
     },
     {
       "id": "3-17",
@@ -205,7 +221,8 @@
         "Strukturstrang: sozioökonomische Gruppe trägt (+0,023 Macro-F1, 10 von 10), bauliche schadet."
       ],
       "abschnitt": "6.5",
-      "nachfrage": "Warum lassen Sie die baulichen Merkmale dann nicht einfach weg?"
+      "nachfrage": "Warum lassen Sie die baulichen Merkmale dann nicht einfach weg?",
+      "nachfrage_antwort": "Weil der Merkmalssatz vor Kenntnis der Ergebnisse festgelegt wurde und für alle Verfahren gleich ist; ihn nachträglich am Ergebnis auszurichten wäre eine ergebnisgetriebene Spezifikation. Als Lehre steht ein sparsamer, vorab festgelegter Merkmalssatz in den Implikationen."
     },
     {
       "id": "3-18",
@@ -217,7 +234,8 @@
         "Die Ablation misst den eigenständigen Beitrag für neue Stadtteile – die direktere Antwort auf UF1."
       ],
       "abschnitt": "6.5, 7.1",
-      "nachfrage": "Warum stützt sich das Modell nicht stärker auf die Kriminalität?"
+      "nachfrage": "Warum stützt sich das Modell nicht stärker auf die Kriminalität?",
+      "nachfrage_antwort": "Das Modell sieht nur die Trainingsdaten, und dort erklären die stadtteilkonstanten baulichen und sozioökonomischen Merkmale das Niveau der bekannten Stadtteile gut. Zudem teilt sich der Index die Information mit korrelierten Merkmalen, etwa dem Risikogewerbeanteil (0,78)."
     },
     {
       "id": "3-19",
@@ -229,7 +247,8 @@
         "Für die Einsatzart trägt er dagegen fast nichts – welche Gruppe nützt, hängt an der Zielgröße."
       ],
       "abschnitt": "6.5, 8",
-      "nachfrage": "Liegt sein Vorrang am Inhalt oder an der zeitlichen Auflösung?"
+      "nachfrage": "Liegt sein Vorrang am Inhalt oder an der zeitlichen Auflösung?",
+      "nachfrage_antwort": "Das trennt dieses Design nicht; naheliegend ist die zeitliche Auflösung, weil der Index das einzige Strukturmerkmal ist, das sich monatlich bewegt. Klären ließe es ein Merkmalssatz, der durchgehend monatlich fortgeschrieben wird."
     },
     {
       "id": "3-20",
@@ -241,7 +260,8 @@
         "Implikation: erst prüfen, wie viele unabhängige Einheiten die Daten haben, dann das Verfahren wählen."
       ],
       "abschnitt": "8",
-      "nachfrage": "Was ist dann der eigentliche Beitrag Ihrer Arbeit?"
+      "nachfrage": "Was ist dann der eigentliche Beitrag Ihrer Arbeit?",
+      "nachfrage_antwort": "Weniger eine Rangfolge der Verfahren als der Befund, dass sich eine solche Rangfolge bei der Vorhersage für unbekannte Stadtteile hier nicht halten ließ. Daraus folgt die übertragbare Regel: erst die unabhängigen Einheiten zählen, dann das Verfahren wählen."
     }
   ]
 }

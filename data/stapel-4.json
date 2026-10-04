@@ -13,7 +13,8 @@
         "Die negative Binomialverteilung korrigiert Standardfehler, gebraucht werden nur Punktvorhersagen."
       ],
       "abschnitt": "7.3, 2.3",
-      "nachfrage": "Was kostet Sie der Verzicht auf den Zeitschnitt?"
+      "nachfrage": "Was kostet Sie der Verzicht auf den Zeitschnitt?",
+      "nachfrage_antwort": "Die Fortschreibung bekannter Stadtteile: Ob die geschätzten Zusammenhänge in einigen Jahren noch gelten, prüft die Arbeit nicht. Die Forschungsfrage hätte der Zeitschnitt aber gar nicht berührt."
     },
     {
       "id": "4-02",
@@ -25,7 +26,8 @@
         "Je ein Vertreter je Bauprinzip; weitere wären nur Varianten derselben Prinzipien."
       ],
       "abschnitt": "5.1",
-      "nachfrage": "Hätte ein anderes flexibles Verfahren nicht besser abschneiden können?"
+      "nachfrage": "Hätte ein anderes flexibles Verfahren nicht besser abschneiden können?",
+      "nachfrage_antwort": "Ausschließen lässt sich das nicht. Der Engpass sind aber rund 39 unabhängige Einheiten, nicht das Verfahren: Schon die flexibler spezifizierte Referenz wird schlechter, und weitere Vertreter derselben Bauprinzipien ändern daran wenig."
     },
     {
       "id": "4-03",
@@ -37,7 +39,8 @@
         "Die Spezifikationsgegenprobe zeigt: Mehr Flexibilität schadet hier – ein weiteres flexibles Verfahren ändert den Befund kaum."
       ],
       "abschnitt": "5.1, 6.3",
-      "nachfrage": "Und Support Vector Machines?"
+      "nachfrage": "Und Support Vector Machines?",
+      "nachfrage_antwort": "Sie liegen in Vergleichsstudien gleichauf mit dem Random Forest, reagieren aber empfindlicher auf ihre Hyperparameter, vor allem auf die Kernfunktion und deren Parameter. Bei 24 Trainingsstadtteilen je Fold wöge dieses Tuning-Rauschen schwerer."
     },
     {
       "id": "4-04",
@@ -49,7 +52,8 @@
         "Bei der Vorhersage für unbekannte Stadtteile bringt es deshalb keinen Vorteil."
       ],
       "abschnitt": "5.1",
-      "nachfrage": "Hätte es die Unsicherheit nicht besser abgebildet?"
+      "nachfrage": "Hätte es die Unsicherheit nicht besser abgebildet?",
+      "nachfrage_antwort": "Für Standardfehler und Intervalle ja, es berücksichtigte die Klumpung der Monate. Bewertet werden hier aber Punktvorhersagen für unbekannte Stadtteile, und dafür bleibt nur der feste Teil, der dieselbe Form hat wie die Referenz."
     },
     {
       "id": "4-05",
@@ -61,7 +65,8 @@
         "Die verletzten Annahmen sichern Unverzerrtheit und Standardfehler – darauf verzichtet Ridge als Vorhersagemodell bewusst."
       ],
       "abschnitt": "5.1",
-      "nachfrage": "Wie kann ein lineares Modell bei nichtlinearen Daten am besten sein?"
+      "nachfrage": "Wie kann ein lineares Modell bei nichtlinearen Daten am besten sein?",
+      "nachfrage_antwort": "Vorhersagegüte setzt kein richtig spezifiziertes Modell voraus (Shmueli 2010, S. 293). Die Krümmung ist in den Anpassungsdaten zu sehen, lässt sich aus 24 Stadtteilen aber nicht verlässlich lernen – die geringe Varianz von Ridge wiegt mehr als seine Verzerrung."
     },
     {
       "id": "4-06",
@@ -73,7 +78,8 @@
         "Belegt ist nur, dass eine Gerade diese Stadtteile schlechter beschreibt, nicht dass Flexibilität sie besser vorhersagt."
       ],
       "abschnitt": "5.1, 6.3",
-      "nachfrage": "Warum haben Sie die Annahmen dann überhaupt geprüft?"
+      "nachfrage": "Warum haben Sie die Annahmen dann überhaupt geprüft?",
+      "nachfrage_antwort": "Um begründet zu entscheiden, welche Verfahren antreten, und jeder Verletzung offen eine Folge zuzuordnen: nur Inferenz, über die Verlustfunktion aufgefangen, Argument für Flexibilität oder Frage des Validierungsrahmens. Der RESET-Befund begründet gerade, warum die flexiblen Verfahren im Vergleich stehen."
     },
     {
       "id": "4-07",
@@ -85,7 +91,8 @@
         "Berichtet werden keine Koeffizienten-Tests – die Verletzungen sind für die Fragestellung folgenlos."
       ],
       "abschnitt": "5.1",
-      "nachfrage": "Warum dann keine gewichtete Schätzung?"
+      "nachfrage": "Warum dann keine gewichtete Schätzung?",
+      "nachfrage_antwort": "Ungleiche Streuung trifft vor allem Standardfehler und Effizienz, und Koeffiziententests werden nicht berichtet. Die Baumverfahren tragen der Streuungsform ohnehin über die Poisson- bzw. Tweedie-Devianz Rechnung."
     },
     {
       "id": "4-08",
@@ -97,7 +104,8 @@
         "Bei den Bäumen ist ein fremder Parametersatz sogar meist besser als der eigene (Random Forest 17 von 20)."
       ],
       "abschnitt": "4.5, 5.3",
-      "nachfrage": "Beim Logit hätte ein Strafterm aber helfen können?"
+      "nachfrage": "Beim Logit hätte ein Strafterm aber helfen können?",
+      "nachfrage_antwort": "Möglich, und genau das ist als Limitation benannt: Im Strukturstrang tritt kein getuntes lineares Verfahren an. Daher bleibt offen, ob der Vorsprung des Random Forest aus seiner Flexibilität oder aus der Suche stammt."
     },
     {
       "id": "4-09",
@@ -109,7 +117,8 @@
         "Die Anteile direkt zu modellieren wäre eine sinnvolle Erweiterung – ein Ausblick."
       ],
       "abschnitt": "4.4, 6.2",
-      "nachfrage": "Ist die Aufgabe bei 27 von 30 gleichen Modalklassen nicht trivial?"
+      "nachfrage": "Ist die Aufgabe bei 27 von 30 gleichen Modalklassen nicht trivial?",
+      "nachfrage_antwort": "Für die Accuracy ja, die Mehrheitsklasse erreicht 0,80. Beim Macro-F1 zählen aber alle vier Klassen gleich, die Mehrheitsklasse kommt nur auf 0,22 – schwer ist gerade, die seltenen Monate zu treffen."
     },
     {
       "id": "4-10",
@@ -121,7 +130,8 @@
         "Folge: Der berichtete Fehler fällt eher zu klein als zu groß aus – als Limitation benannt."
       ],
       "abschnitt": "7.3",
-      "nachfrage": "Warum haben Sie keinen räumlichen Puffer verwendet?"
+      "nachfrage": "Warum haben Sie keinen räumlichen Puffer verwendet?",
+      "nachfrage_antwort": "Er ließe im Mittel nur 8,6 statt 24 Trainingsstadtteile übrig, zu wenig für eine sinnvolle Anpassung. Deshalb ist der Blockzuschnitt als Limitation benannt: Der berichtete Fehler fällt eher zu klein aus."
     },
     {
       "id": "4-11",
@@ -133,7 +143,8 @@
         "Fehlalarm umfasst nach NFIRS auch Fehlfunktionen von Meldeanlagen, nicht nur böswillige Alarme."
       ],
       "abschnitt": "4.1, 4.2",
-      "nachfrage": "Wie würden sich die Ergebnisse mit Rettungsdiensteinsätzen ändern?"
+      "nachfrage": "Wie würden sich die Ergebnisse mit Rettungsdiensteinsätzen ändern?",
+      "nachfrage_antwort": "Geprüft ist das nicht. Vermutlich stiegen die Einsatzzahlen deutlich und die Klassenverteilung verschöbe sich zur Rettung; ob die Merkmale dann mehr oder weniger tragen, wäre eine eigene Untersuchung."
     },
     {
       "id": "4-12",
@@ -145,7 +156,8 @@
         "Dass ein anderer Zuschnitt andere Ergebnisse liefern kann (MAUP), ist eine Limitation."
       ],
       "abschnitt": "4.1, 7.3",
-      "nachfrage": "Wäre eine Tract-Analyse nicht der naheliegende nächste Schritt?"
+      "nachfrage": "Wäre eine Tract-Analyse nicht der naheliegende nächste Schritt?",
+      "nachfrage_antwort": "Naheliegend ja, aber mit Preis: Die Zahl der Einheiten stiege, die unabhängige Information kaum, weil benachbarte Tracts einander ähneln. Zudem liefert die neuere Kriminalitätsquelle nur Stadtteilsummen, und Analyse- und Berichtsebene fielen auseinander."
     },
     {
       "id": "4-13",
@@ -157,7 +169,8 @@
         "Für einen einzelnen Stadtteil ist der mittlere Fehler keine Zusage."
       ],
       "abschnitt": "7.3",
-      "nachfrage": "Welche Ihrer Aussagen halten Sie trotzdem für robust?"
+      "nachfrage": "Welche Ihrer Aussagen halten Sie trotzdem für robust?",
+      "nachfrage_antwort": "Dass die Merkmale tragen (die Referenz halbiert den Fehler), dass kein Verfahren die Referenz im Mengenstrang nachweisbar übertrifft und dass der Aufwand die Verfahren um Größenordnungen trennt. Nicht robust ist die Rangfolge der Punktwerte."
     },
     {
       "id": "4-14",
@@ -169,7 +182,8 @@
         "Tragend ist die Kreuzvalidierung mit 50 Läufen, Streuung und Tests."
       ],
       "abschnitt": "4.2, 4.5",
-      "nachfrage": "Warum haben Sie das Hold-out nicht zufällig gezogen?"
+      "nachfrage": "Warum haben Sie das Hold-out nicht zufällig gezogen?",
+      "nachfrage_antwort": "Die Zuteilung sollte geschichtet und ohne Zufall reproduzierbar sein; Hold-out und Folds entstehen in einem Schritt. Dass der brandreichste Stadtteil dadurch ins Hold-out fällt, ist die bekannte Folge und wird offen berichtet."
     },
     {
       "id": "4-15",
@@ -181,7 +195,8 @@
         "Sauber je Wiederholung zu suchen kostete die zehnfache Zeit; als Anschlussschritt in 7.3 benannt."
       ],
       "abschnitt": "6.3, 7.3",
-      "nachfrage": "Warum haben Sie es nicht trotzdem gemacht?"
+      "nachfrage": "Warum haben Sie es nicht trotzdem gemacht?",
+      "nachfrage_antwort": "Weil die Messung keinen Vorteil für die späteren Wiederholungen zeigt und eine Suche je Wiederholung die Suchzeit von rund 137 Minuten verzehnfacht hätte. Die saubere Variante ist als Anschlussschritt benannt."
     },
     {
       "id": "4-16",
@@ -193,7 +208,8 @@
         "Die Pandemie wird in der Arbeit nicht gesondert behandelt – zeitliche Stabilität ist eine benannte Grenze."
       ],
       "abschnitt": "7.3",
-      "nachfrage": "Wie würden Sie die zeitliche Stabilität prüfen?"
+      "nachfrage": "Wie würden Sie die zeitliche Stabilität prüfen?",
+      "nachfrage_antwort": "Mit einem zusätzlichen Zeitschnitt: auf den frühen Jahren anpassen und die letzten zwölf Monate derselben Stadtteile vorhersagen, wie ursprünglich geplant. Als Ergänzung zum Stadtteil-Split, nicht als Ersatz."
     },
     {
       "id": "4-17",
@@ -205,7 +221,8 @@
         "In der Limitationstabelle benannt: Die Rate überzeichnet Innenstadtlagen."
       ],
       "abschnitt": "7.3",
-      "nachfrage": "Wie würde sich eine bessere Bezugsgröße auf die Ergebnisse auswirken?"
+      "nachfrage": "Wie würde sich eine bessere Bezugsgröße auf die Ergebnisse auswirken?",
+      "nachfrage_antwort": "Die Raten der Innenstadtlagen fielen niedriger aus, und die Rate hinge weniger an wenigen Extremstadtteilen. Wie sich die Rangfolge der Verfahren verschöbe, lässt sich ohne Neuberechnung nicht sagen."
     },
     {
       "id": "4-18",
@@ -217,7 +234,8 @@
         "Für die Modellwahl: Das Poisson-GLM reicht; aufwendigere Verfahren wären nicht falsch, nur unwirtschaftlich."
       ],
       "abschnitt": "7.2",
-      "nachfrage": "Würden Sie das Modell einer Feuerwehr zur Ressourcenverteilung empfehlen?"
+      "nachfrage": "Würden Sie das Modell einer Feuerwehr zur Ressourcenverteilung empfehlen?",
+      "nachfrage_antwort": "Nicht zur Verteilung von Einsatzmitteln: Die Prognose beschreibt erwartete Last und begründet keine Zuteilung, zumal sozioökonomische Merkmale als Stellvertreter geschützter Eigenschaften wirken können. Als eine Eingangsgröße für Standortfragen, neben den Fahrzeiten, ja."
     },
     {
       "id": "4-19",
@@ -229,7 +247,8 @@
         "Übertragbar ist eher der methodische Schluss: erst unabhängige Einheiten zählen, dann Verfahren wählen."
       ],
       "abschnitt": "7.2",
-      "nachfrage": "Was müsste eine deutsche Stadt liefern, damit das funktioniert?"
+      "nachfrage": "Was müsste eine deutsche Stadt liefern, damit das funktioniert?",
+      "nachfrage_antwort": "Einsatzdaten mit Einsatzart je Stadtteil und Monat, Einwohnerzahlen je Stadtteil, mindestens ein monatlich fortgeschriebenes Gebietsmerkmal und eine vergleichbare Meldepraxis. Fehlt das monatliche Merkmal, bleibt nur eine Querschnittsbetrachtung, die Stadtteile nach Struktur sortiert."
     },
     {
       "id": "4-20",
@@ -241,7 +260,8 @@
         "Geprüft über Selbsttests, Zahlenabgleich Code–Arbeit und reproduzierbaren Lauf mit Seed 42."
       ],
       "abschnitt": "4.1, 3.3",
-      "nachfrage": "Welche Entscheidung in der Arbeit war ganz Ihre eigene?"
+      "nachfrage": "Welche Entscheidung in der Arbeit war ganz Ihre eigene?",
+      "nachfrage_antwort": "Persönlich beantworten – mit einer Entscheidung, die sich selbst herleiten lässt, etwa dem Wechsel vom Zeitschnitt zum Stadtteil-Split nach dem Befund der 92,5 % Zwischenvarianz."
     }
   ]
 }

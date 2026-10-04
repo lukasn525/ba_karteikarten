@@ -13,7 +13,8 @@
         "Zum Schluss wird jedes Verfahren auf allen 30 Stadtteilen angepasst und einmal auf dem Hold-out gemessen."
       ],
       "abschnitt": "4.5",
-      "nachfrage": "Warum fünf Folds und nicht zehn?"
+      "nachfrage": "Warum fünf Folds und nicht zehn?",
+      "nachfrage_antwort": "Bei zehn Folds stünden nur drei Stadtteile im Test, das Ergebnis hinge noch stärker an einzelnen Einheiten, und die seltene Klasse Brand fehlte in mehr Testfolds. Fünf Folds halten 24 Stadtteile im Training und sechs im Test."
     },
     {
       "id": "2-02",
@@ -25,7 +26,8 @@
         "Räumlich geblockte Validierung ist bei Vorhersage an neuen Orten angezeigt (Roberts et al. 2017, S. 925)."
       ],
       "abschnitt": "4.5, 7.3",
-      "nachfrage": "Was verlieren Sie durch diese Entscheidung?"
+      "nachfrage": "Was verlieren Sie durch diese Entscheidung?",
+      "nachfrage_antwort": "Die Fortschreibung: Ob die geschätzten Zusammenhänge in einigen Jahren noch gelten, prüft die Arbeit nicht. Außerdem stehen je Fold nur 24 Stadtteile im Training."
     },
     {
       "id": "2-03",
@@ -37,7 +39,8 @@
         "Die Zuteilung steht als Spalte in der Datei – alle Verfahren sehen garantiert dieselben Folds."
       ],
       "abschnitt": "4.5",
-      "nachfrage": "Nutzen Sie damit nicht Information aus der Zielgröße – ist das ein Leck?"
+      "nachfrage": "Nutzen Sie damit nicht Information aus der Zielgröße – ist das ein Leck?",
+      "nachfrage_antwort": "Nein. Die Zielgröße bestimmt nur, welche Stadtteile gemeinsam getestet werden; sie geht in kein Merkmal und kein Modell ein – dieselbe Logik wie bei einer stratifizierten Gruppen-Kreuzvalidierung."
     },
     {
       "id": "2-04",
@@ -49,7 +52,8 @@
         "Das Hold-out bleibt in allen Wiederholungen unverändert; Wiederholung 0 ist die Zuteilung der Datei."
       ],
       "abschnitt": "3.3, 4.5",
-      "nachfrage": "Warum nicht einfach die Gruppen rotieren?"
+      "nachfrage": "Warum nicht einfach die Gruppen rotieren?",
+      "nachfrage_antwort": "Rotieren tauscht nur die Nummern der Gruppen, nicht ihre Zusammensetzung: Bei festem Hold-out entstünden zehn identische Kopien desselben Laufs mit einer Streuung von exakt null. Das Mischen innerhalb der Rangblöcke ändert die Zusammensetzung und hält Größe und Schichtung."
     },
     {
       "id": "2-05",
@@ -61,7 +65,8 @@
         "Erfolgreich ist ein Verfahren nur, wenn es die Stufe-2-Referenz übertrifft."
       ],
       "abschnitt": "4.5",
-      "nachfrage": "Warum reicht es nicht, die Mittelwert-Baseline zu schlagen?"
+      "nachfrage": "Warum reicht es nicht, die Mittelwert-Baseline zu schlagen?",
+      "nachfrage_antwort": "Wer nur den Mittelwert schlägt, zeigt lediglich, dass die Merkmale Information tragen. Gefragt ist, ob ein aufwendiges Verfahren mehr leistet als ein einfaches Modell mit denselben Merkmalen – dafür steht Stufe 2."
     },
     {
       "id": "2-06",
@@ -73,7 +78,8 @@
         "Die Referenz ist damit in jedem Lauf identisch und von keinem Suchraum abhängig."
       ],
       "abschnitt": "4.5",
-      "nachfrage": "Ist es nicht unfair, getunte Verfahren gegen eine ungetunte Referenz antreten zu lassen?"
+      "nachfrage": "Ist es nicht unfair, getunte Verfahren gegen eine ungetunte Referenz antreten zu lassen?",
+      "nachfrage_antwort": "Nein: Ohne Strafterm hat die Referenz nichts, was sich tunen ließe. Was Tuning bei linearer Form bringt, zeigt Ridge – und auch Ridge übertrifft die Referenz nicht signifikant."
     },
     {
       "id": "2-07",
@@ -85,7 +91,8 @@
         "Die Arbeit braucht nur Punktvorhersagen – die Korrektur der negativen Binomialverteilung wird nicht gebraucht."
       ],
       "abschnitt": "2.3",
-      "nachfrage": "Und wenn der Erwartungswert falsch spezifiziert ist?"
+      "nachfrage": "Und wenn der Erwartungswert falsch spezifiziert ist?",
+      "nachfrage_antwort": "Dann wäre auch die negative Binomialregression nicht besser, denn sie teilt dieselbe Erwartungswertstruktur. Ob die lineare Form im Log-Link reicht, prüfen der Vergleich mit den flexiblen Verfahren und die Spezifikationsgegenprobe."
     },
     {
       "id": "2-08",
@@ -97,7 +104,8 @@
         "Ohne diese Behandlung: Random Forest 50,9 statt 35,0 RMSE, XGBoost 51,8 statt 37,4."
       ],
       "abschnitt": "2.3, 4.5, 5.2",
-      "nachfrage": "Warum dann zusätzlich log(Bevölkerung) als Merkmal?"
+      "nachfrage": "Warum dann zusätzlich log(Bevölkerung) als Merkmal?",
+      "nachfrage_antwort": "Der Offset setzt Proportionalität fest; als Merkmal darf die Rate zusätzlich mit der Größe steigen oder fallen, und für die drei Verfahren, die die Rate lernen, ist es die einzige Größeninformation. Im GLM erweist es sich in der Ablation allerdings als redundant."
     },
     {
       "id": "2-09",
@@ -109,7 +117,8 @@
         "Ridge nimmt bewusst etwas Verzerrung in Kauf, um die Varianz zu senken (Hoerl & Kennard 1970, S. 55–56)."
       ],
       "abschnitt": "2.4, 5.1",
-      "nachfrage": "Warum ist es wichtig, dass kein Merkmal entfernt wird?"
+      "nachfrage": "Warum ist es wichtig, dass kein Merkmal entfernt wird?",
+      "nachfrage_antwort": "Weil der Vergleich allein das Verfahren wechseln soll. Ein Verfahren, das Merkmale entfernt, brächte eine Merkmalsauswahl als zweiten Unterschied hinein, und ein Abstand ließe sich nicht mehr dem Verfahren zuschreiben."
     },
     {
       "id": "2-10",
@@ -121,7 +130,8 @@
         "Im Mengenstrang mit Poisson-Kriterium, passend zur Datenform."
       ],
       "abschnitt": "2.4",
-      "nachfrage": "Warum kann ein Random Forest nicht extrapolieren?"
+      "nachfrage": "Warum kann ein Random Forest nicht extrapolieren?",
+      "nachfrage_antwort": "Jedes Blatt sagt den Mittelwert seiner Trainingsbeobachtungen vorher. Ein Punkt außerhalb des gelernten Bereichs fällt in eine Randregion und erhält deren Wert – über die Spanne der Trainingswerte kommt der Wald nicht hinaus."
     },
     {
       "id": "2-11",
@@ -133,7 +143,8 @@
         "Im Mengenstrang mit Tweedie-Verlust, dessen Varianzexponent mitgetunt wird."
       ],
       "abschnitt": "2.4",
-      "nachfrage": "Was ist der wesentliche Unterschied zwischen Bagging und Boosting?"
+      "nachfrage": "Was ist der wesentliche Unterschied zwischen Bagging und Boosting?",
+      "nachfrage_antwort": "Bagging lässt viele Bäume unabhängig auf Bootstrap-Stichproben wachsen und mittelt sie, das senkt die Varianz. Boosting baut Bäume nacheinander, jeder korrigiert den Restfehler der bisherigen, das senkt die Verzerrung."
     },
     {
       "id": "2-12",
@@ -145,7 +156,8 @@
         "Random Forest und XGBoost übertragen sich ohne Bruch, es wechselt nur die Verlustfunktion."
       ],
       "abschnitt": "5.1",
-      "nachfrage": "Wäre eine penalisierte logistische Regression nicht das Ridge-Gegenstück gewesen?"
+      "nachfrage": "Wäre eine penalisierte logistische Regression nicht das Ridge-Gegenstück gewesen?",
+      "nachfrage_antwort": "Ja, das wäre das Gegenstück, seine ungestrafte Form ist aber schon die Referenz. Als Limitation bleibt, dass im Strukturstrang kein getuntes lineares Verfahren antritt und offen ist, ob der Vorsprung des Random Forest aus Flexibilität oder Suche stammt."
     },
     {
       "id": "2-13",
@@ -157,7 +169,8 @@
         "Für das Hold-out zählt der Satz des besten Folds aus Wiederholung 0."
       ],
       "abschnitt": "5.3",
-      "nachfrage": "Warum wird nicht in jeder Wiederholung neu gesucht?"
+      "nachfrage": "Warum wird nicht in jeder Wiederholung neu gesucht?",
+      "nachfrage_antwort": "Es hätte die Suchzeit von rund 137 Minuten verzehnfacht. Geprüft ist, dass die übertragenen Parameter keinen Vorteil verschaffen; eine Suche je Wiederholung ist als Anschlussschritt benannt."
     },
     {
       "id": "2-14",
@@ -169,7 +182,8 @@
         "Alle Maße werden nach dem Zurückrechnen auf die Anzahl berechnet, für alle Verfahren gleich."
       ],
       "abschnitt": "2.5",
-      "nachfrage": "Warum RMSE als Hauptmaß und nicht MAE?"
+      "nachfrage": "Warum RMSE als Hauptmaß und nicht MAE?",
+      "nachfrage_antwort": "Der RMSE steht in der Einheit der Zielgröße und bestraft große Fehlgriffe stärker – gerade die zählen bei der Vorhaltung. Der MAE wird mitberichtet und führt in der Kreuzvalidierung zur selben Reihenfolge."
     },
     {
       "id": "2-15",
@@ -181,7 +195,8 @@
         "Die Mehrheitsklasse kommt beim Macro-F1 dagegen nur auf 0,22."
       ],
       "abschnitt": "2.5",
-      "nachfrage": "Wie berechnet sich der F1-Wert genau?"
+      "nachfrage": "Wie berechnet sich der F1-Wert genau?",
+      "nachfrage_antwort": "F1 je Klasse ist das harmonische Mittel aus Präzision und Trefferquote: 2·P·R / (P + R). Macro-F1 mittelt die vier Klassenwerte ungewichtet; sagt ein Modell eine Klasse nie vorher, geht sie mit F1 = 0 ein."
     },
     {
       "id": "2-16",
@@ -193,7 +208,8 @@
         "Rechnet mit Rängen der Differenzen: große Siege und Niederlagen wiegen mehr als knappe."
       ],
       "abschnitt": "2.5, 6.1",
-      "nachfrage": "Warum testen Sie nicht auf den 50 Einzelläufen?"
+      "nachfrage": "Warum testen Sie nicht auf den 50 Einzelläufen?",
+      "nachfrage_antwort": "Die 50 Läufe sind dieselben 30 Stadtteile mit überlappenden Trainingsmengen; sie als unabhängig zu testen wäre Pseudoreplikation und macht p-Werte zu klein. XGBoost gegen GLM wäre auf 50 Läufen scheinbar signifikant (p = 0,035), auf 10 Mitteln nicht (p = 0,275)."
     },
     {
       "id": "2-17",
@@ -205,7 +221,8 @@
         "Auch die 10 Mittel unterschätzen die Unsicherheit noch – das Intervall ist eine Untergrenze."
       ],
       "abschnitt": "6.1, 6.3",
-      "nachfrage": "Was ist der kleinste p-Wert, den der Test bei zehn Paaren liefern kann?"
+      "nachfrage": "Was ist der kleinste p-Wert, den der Test bei zehn Paaren liefern kann?",
+      "nachfrage_antwort": "Rund 0,002: Haben alle zehn Differenzen dasselbe Vorzeichen, ist das die extremste von 2¹⁰ = 1.024 Vorzeichenkombinationen, und zweiseitig zählen zwei davon (2/1.024). Nach Holm in der Familie aus sechs Tests wird daraus 0,012."
     },
     {
       "id": "2-18",
@@ -217,7 +234,8 @@
         "Gleiche Absicherung wie Bonferroni, aber mehr Trennschärfe."
       ],
       "abschnitt": "2.5, 6.1",
-      "nachfrage": "Warum korrigieren Sie die Primärtests nicht?"
+      "nachfrage": "Warum korrigieren Sie die Primärtests nicht?",
+      "nachfrage_antwort": "Jeder Primärtest beantwortet eine eigene, vorab festgelegte Frage: Schlägt dieses Verfahren seine Referenz? Selbst korrigiert bliebe der einzige signifikante Primärbefund, Random Forest im Strukturstrang mit p = 0,004, unter 0,05."
     },
     {
       "id": "2-19",
@@ -229,7 +247,8 @@
         "„Nicht signifikant“ heißt fehlender Nachweis, nicht Gleichheit (Altman & Bland 1995, S. 485)."
       ],
       "abschnitt": "6.1, 6.3",
-      "nachfrage": "Ridge gewinnt 8 von 10 gegen das GLM – warum ist das nicht signifikant?"
+      "nachfrage": "Ridge gewinnt 8 von 10 gegen das GLM – warum ist das nicht signifikant?",
+      "nachfrage_antwort": "Der Test zählt nicht nur Siege, sondern gewichtet sie nach ihrer Größe, und die zwei Niederlagen von Ridge gehören zu den größeren Differenzen. Selbst ein reiner Vorzeichentest käme bei 8 von 10 nur auf p ≈ 0,11."
     },
     {
       "id": "2-20",
@@ -241,7 +260,8 @@
         "Kein Merkmal nutzt Information aus der Zukunft (Kaufman et al. 2011, S. 559–560)."
       ],
       "abschnitt": "4.3, 4.5, 5.2",
-      "nachfrage": "Wo sehen Sie trotzdem noch ein Restrisiko?"
+      "nachfrage": "Wo sehen Sie trotzdem noch ein Restrisiko?",
+      "nachfrage_antwort": "An drei Stellen: Nachbarn eines Teststadtteils können im Training stehen, die Suche lief nur in Wiederholung 0, und die baulichen Merkmale von 2020 lagen für die frühen Jahre noch nicht vor. Die Suche ist nachgemessen, die beiden anderen sind als Grenzen benannt."
     }
   ]
 }

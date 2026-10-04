@@ -12,7 +12,8 @@
         "Vorhergesagt wird für Stadtteile, die das Modell nicht kennt, also Gebiete ohne belastbare Einsatzhistorie."
       ],
       "abschnitt": "1.2",
-      "nachfrage": "Was meinen Sie mit „beschreiben und vorhersagen“ – erheben Sie einen kausalen Anspruch?"
+      "nachfrage": "Was meinen Sie mit „beschreiben und vorhersagen“ – erheben Sie einen kausalen Anspruch?",
+      "nachfrage_antwort": "Nein. Geprüft wird, ob die Merkmale einen prädiktiven Beitrag leisten, nicht, ob sie Einsätze verursachen; „beschreiben“ meint die statistischen Zusammenhänge, die Attribution und Ablation zeigen."
     },
     {
       "id": "1-02",
@@ -24,7 +25,8 @@
         "UF4: Was folgt daraus für die Modellwahl bei vergleichbaren tabellarischen Prognoseaufgaben?"
       ],
       "abschnitt": "1.2",
-      "nachfrage": "Welche Unterfrage halten Sie für am klarsten beantwortet, welche für am schwächsten?"
+      "nachfrage": "Welche Unterfrage halten Sie für am klarsten beantwortet, welche für am schwächsten?",
+      "nachfrage_antwort": "Am klarsten UF3: Im Aufwand trennen sich die Verfahren um Größenordnungen. Am schwächsten UF1: Formal getestet ist dort nur die Klassentrennung im Kruskal-Wallis-Test mit nominellen p-Werten, die Ablation bleibt beschreibend."
     },
     {
       "id": "1-03",
@@ -36,7 +38,8 @@
         "Der Nutzen liegt vor allem dort, wo eine eigene Einsatzstatistik fehlt oder zu kurz ist."
       ],
       "abschnitt": "4.1",
-      "nachfrage": "San Francisco hat doch eine Einsatzhistorie – wofür braucht die Stadt Ihr Modell?"
+      "nachfrage": "San Francisco hat doch eine Einsatzhistorie – wofür braucht die Stadt Ihr Modell?",
+      "nachfrage_antwort": "San Francisco ist das Prüffeld: Weil die Historie vorliegt, lässt sich messen, wie gut die Prognose für zurückgehaltene Stadtteile trifft. Der Nutzen liegt in Gebieten ohne eigene Statistik, etwa in wachsenden Städten, die eine neue Wache planen."
     },
     {
       "id": "1-04",
@@ -48,7 +51,8 @@
         "Die Wahl folgt aus der Datenlage, nicht aus einem inhaltlichen Sonderinteresse an der Stadt."
       ],
       "abschnitt": "4.1",
-      "nachfrage": "Lassen sich Ihre Ergebnisse auf eine deutsche Stadt übertragen?"
+      "nachfrage": "Lassen sich Ihre Ergebnisse auf eine deutsche Stadt übertragen?",
+      "nachfrage_antwort": "Geprüft ist das nicht, und schon die Brandforschung findet von Stadt zu Stadt andere Einflussgrößen. Übertragbar ist vor allem der methodische Schluss; für das Modell bräuchte es ein monatlich fortgeschriebenes Merkmal und eine vergleichbare Meldepraxis."
     },
     {
       "id": "1-05",
@@ -60,7 +64,8 @@
         "Aggregiert wird schon ab Januar 2014, weil Merkmale mit zwölf Monaten Vorlauf gebildet werden."
       ],
       "abschnitt": "4.1, 4.2",
-      "nachfrage": "Warum nicht Wochen oder Tage – dann hätten Sie viel mehr Beobachtungen?"
+      "nachfrage": "Warum nicht Wochen oder Tage – dann hätten Sie viel mehr Beobachtungen?",
+      "nachfrage_antwort": "Mehr Zeilen, aber kaum mehr Information: Die Merkmale ändern sich höchstens monatlich, und die Zahl unabhängiger Einheiten bleibt bei 36 Stadtteilen. Tageswerte wären vor allem Zufall, geplant wird ohnehin für Gebiete und Zeiträume."
     },
     {
       "id": "1-06",
@@ -72,7 +77,8 @@
         "Es ist eine Entscheidung über die Analyseeinheit, keine Ausreißerbereinigung nach der Zielgröße."
       ],
       "abschnitt": "4.2, 4.3",
-      "nachfrage": "Verzerrt der Ausschluss nicht Ihre Ergebnisse?"
+      "nachfrage": "Verzerrt der Ausschluss nicht Ihre Ergebnisse?",
+      "nachfrage_antwort": "Er grenzt den Geltungsbereich ein: Die Aussagen gelten für bewohnte Stadtteile mit Baudaten. Entschieden wurde vor dem ersten Modell über die Analyseeinheit, nicht nach der Zielgröße – Parks ohne Einwohner hätten beliebig große Raten erzeugt."
     },
     {
       "id": "1-07",
@@ -85,7 +91,8 @@
         "Stadtteilgeometrie und Zuordnung Census Tract → Stadtteil vom Planning Department."
       ],
       "abschnitt": "4.2, 4.3",
-      "nachfrage": "Die Quellen haben verschiedene Raum- und Zeitraster – wie haben Sie sie zusammengeführt?"
+      "nachfrage": "Die Quellen haben verschiedene Raum- und Zeitraster – wie haben Sie sie zusammengeführt?",
+      "nachfrage_antwort": "Auf der Ebene des einzelnen Einsatzes: Jeder trägt seinen Zeitpunkt und erhält den damals verfügbaren Stand der Merkmale. Räumlich laufen die Quellen über den Crosswalk (ACS), einen räumlichen Verbund (Altquelle der Polizei) und den Flächenmittelpunkt (Parzellen)."
     },
     {
       "id": "1-08",
@@ -97,7 +104,8 @@
         "Zuschnitt und Bevölkerung werden nach der Aufbereitung geprüft; eine Abweichung bricht den Lauf ab."
       ],
       "abschnitt": "4.3, 3.3",
-      "nachfrage": "Wie stellen Sie sicher, dass bei der Aufbereitung keine Stadtteile stillschweigend verloren gehen?"
+      "nachfrage": "Wie stellen Sie sicher, dass bei der Aufbereitung keine Stadtteile stillschweigend verloren gehen?",
+      "nachfrage_antwort": "Nach der Aufbereitung prüft eine Bedingung, dass genau 36 Stadtteile vorhanden sind, und nennt sonst die fehlenden. Eine zweite hält die stadtweite Bevölkerung gegen eine Plausibilitätsspanne; bei Abweichung bricht der Lauf ab."
     },
     {
       "id": "1-09",
@@ -110,7 +118,8 @@
         "Beide Stränge nutzen dieselbe Einheit, dieselben Merkmale und dieselben Folds."
       ],
       "abschnitt": "4.1",
-      "nachfrage": "Warum berichten Sie die Anzahl und nicht die Rate als Hauptzielgröße?"
+      "nachfrage": "Warum berichten Sie die Anzahl und nicht die Rate als Hauptzielgröße?",
+      "nachfrage_antwort": "Für die Vorhaltung zählt, wie viele Einsätze anfallen, nicht die Last je Einwohner. Die Rate überzeichnet zudem Innenstadtlagen, weil Pendler und Besucher nicht in der Wohnbevölkerung stehen; sie dient deshalb als Robustheitsprüfung."
     },
     {
       "id": "1-10",
@@ -122,7 +131,8 @@
         "Die Vierergruppierung ist eine eigene Setzung, nicht aus der Quelle übernommen."
       ],
       "abschnitt": "4.1, 4.4",
-      "nachfrage": "Ist die Gleichstandsregel nicht willkürlich?"
+      "nachfrage": "Ist die Gleichstandsregel nicht willkürlich?",
+      "nachfrage_antwort": "Jede Gleichstandsregel ist eine Setzung; entscheidend ist, dass sie vor dem ersten Lauf feststand und nicht am Ergebnis ausgerichtet wurde. Sie betrifft 147 von 4.751 Zeilen und verhindert, dass seltene Klassen bei Gleichstand systematisch verloren gehen."
     },
     {
       "id": "1-11",
@@ -134,7 +144,8 @@
         "Ein am Schwellwert geteilter Anteil wäre die Alternative, kostet aber Trennschärfe (Median-Split ≈ ein Drittel weniger Stichprobe)."
       ],
       "abschnitt": "4.4",
-      "nachfrage": "Warum haben Sie dann nicht die Anteile der Einsatzarten direkt modelliert?"
+      "nachfrage": "Warum haben Sie dann nicht die Anteile der Einsatzarten direkt modelliert?",
+      "nachfrage_antwort": "Weil die Forschungsfrage nach der Art fragt und für die Planung zählt, welche Art überwiegt. Die Anteile direkt zu modellieren wäre eine sinnvolle Erweiterung, wurde hier aber nicht gerechnet."
     },
     {
       "id": "1-12",
@@ -146,7 +157,8 @@
         "Die Schieflage bestimmt die Wahl des Gütemaßes (Macro-F1 statt Accuracy)."
       ],
       "abschnitt": "4.2",
-      "nachfrage": "Warum ist der Rettungsanteil so klein, wo Feuerwehren doch viel Rettungsdienst fahren?"
+      "nachfrage": "Warum ist der Rettungsanteil so klein, wo Feuerwehren doch viel Rettungsdienst fahren?",
+      "nachfrage_antwort": "Laut Datensatzbeschreibung fasst Fire Incidents nur nicht medizinische Einsätze zusammen („non-medical“), der klassische Rettungsdienst fehlt also weitgehend. Zudem zählt nur die überwiegende Art je Stadtteilmonat, und dort dominieren Fehlalarme."
     },
     {
       "id": "1-13",
@@ -159,7 +171,8 @@
         "Größenkontrolle (1): log. Bevölkerung · Saison (2): Sinus und Kosinus des Monats."
       ],
       "abschnitt": "4.4",
-      "nachfrage": "Warum fehlen Merkmale wie die Entfernung zur nächsten Wache?"
+      "nachfrage": "Warum fehlen Merkmale wie die Entfernung zur nächsten Wache?",
+      "nachfrage_antwort": "Vorhergesagt wird, wie viele Einsätze anfallen, nicht wie schnell die Feuerwehr eintrifft. Die Entfernung zur Wache bestimmt die Hilfsfrist, nicht die Nachfrage – und für die Standortplanung ist sie selbst die Entscheidungsgröße."
     },
     {
       "id": "1-14",
@@ -171,7 +184,8 @@
         "Er ist das einzige Strukturmerkmal, das sich von Monat zu Monat bewegt."
       ],
       "abschnitt": "4.4",
-      "nachfrage": "Misst der Index Kriminalität oder eher die Kontrollintensität der Polizei?"
+      "nachfrage": "Misst der Index Kriminalität oder eher die Kontrollintensität der Polizei?",
+      "nachfrage_antwort": "Beides: Der Index entsteht aus polizeilichen Meldungen und hängt damit auch an Anzeigebereitschaft und Kontrollintensität. Belegt ist deshalb nur, dass die registrierte Kriminalitätsbelastung die Prognose trägt, nicht dass Kriminalität Einsätze verursacht."
     },
     {
       "id": "1-15",
@@ -183,7 +197,8 @@
         "Eine Plausibilitätsprüfung der stadtweiten Bevölkerung bricht den Lauf bei Abweichung ab."
       ],
       "abschnitt": "4.3",
-      "nachfrage": "Wie haben Sie bemerkt, dass bei der Zuordnung Einwohner fehlten?"
+      "nachfrage": "Wie haben Sie bemerkt, dass bei der Zuordnung Einwohner fehlten?",
+      "nachfrage_antwort": "Bei einer Datenprüfung: Für die Jahrgänge 2014 und 2019 lag die stadtweite Bevölkerung rund ein Viertel unter der tatsächlichen, und zwischen 2019 und 2021 sprang die Einwohnerzahl einzelner Stadtteile um ein Vielfaches. Seitdem bricht die Aufbereitung ab, wenn weniger als 95 % der Bevölkerung zugeordnet sind."
     },
     {
       "id": "1-16",
@@ -195,7 +210,8 @@
         "Lag-Werte der Einsatzzahl liegen in der Datei, sind aber bewusst keine Merkmale."
       ],
       "abschnitt": "4.3",
-      "nachfrage": "Warum keine Lags – die würden die Prognose doch deutlich verbessern?"
+      "nachfrage": "Warum keine Lags – die würden die Prognose doch deutlich verbessern?",
+      "nachfrage_antwort": "Für einen unbekannten Stadtteil gibt es keine Einsatzhistorie, aus der Lags entstehen könnten – genau diese Gebiete sind das Ziel. Mit Lags würde das Modell das bekannte Niveau fortschreiben und eine andere Frage beantworten."
     },
     {
       "id": "1-17",
@@ -207,7 +223,8 @@
         "Daraus folgt der Validierungsrahmen: Ganze Stadtteile müssen zurückgehalten werden."
       ],
       "abschnitt": "4.2",
-      "nachfrage": "Was hätte ein Zeitschnitt bei 92,5 % Zwischenvarianz eigentlich gemessen?"
+      "nachfrage": "Was hätte ein Zeitschnitt bei 92,5 % Zwischenvarianz eigentlich gemessen?",
+      "nachfrage_antwort": "Im Kern die zeitliche Stabilität bekannter Stadtteile: Das Modell kennte das Niveau jedes Stadtteils aus dem Training, schon der Stadtteilmittelwert erreicht R² = 0,925. Ob die Strukturmerkmale unbekannte Stadtteile vorhersagen, bliebe ungeprüft."
     },
     {
       "id": "1-18",
@@ -219,7 +236,8 @@
         "Bauliche Merkmale haben genau 36 effektive Werte – einen je Stadtteil."
       ],
       "abschnitt": "4.5, 6.3",
-      "nachfrage": "Was folgt daraus für Ihre Tests?"
+      "nachfrage": "Was folgt daraus für Ihre Tests?",
+      "nachfrage_antwort": "Die Zeilen dürfen nicht als unabhängige Beobachtungen in einen Test gehen; Tests auf allen Zeilen wie der RESET gelten nur nominell. Verglichen wird deshalb auf den zehn Wiederholungsmitteln, und „nicht signifikant“ heißt bei dieser Auflösung nicht Gleichheit."
     },
     {
       "id": "1-19",
@@ -231,7 +249,8 @@
         "Folds, Prüfkatalog und Baselinewerte gehören zur Data Preparation – der Rahmen steht vor dem ersten Modell."
       ],
       "abschnitt": "3.1",
-      "nachfrage": "Warum CRISP-DM und nicht ein anderes Vorgehensmodell?"
+      "nachfrage": "Warum CRISP-DM und nicht ein anderes Vorgehensmodell?",
+      "nachfrage_antwort": "Es ist für Data-Mining-Projekte gebaut, sieht Rücksprünge vor und darf ausdrücklich auf den Fall zugeschnitten werden. So ließ sich Deployment streichen und die Fold-Aufteilung in die Data Preparation vorziehen, damit der Vergleichsrahmen vor dem ersten Modell steht."
     },
     {
       "id": "1-20",
@@ -243,7 +262,8 @@
         "Keine Prognosearbeit misst sich an einem Zähldatenmodell oder berichtet Rechenzeiten."
       ],
       "abschnitt": "2.7",
-      "nachfrage": "Welche Studie kommt Ihrer Arbeit am nächsten, und was machen Sie anders?"
+      "nachfrage": "Welche Studie kommt Ihrer Arbeit am nächsten, und was machen Sie anders?",
+      "nachfrage_antwort": "Dey et al. (2023) mit einer merkmalbasierten Lastprognose für die Standortplanung einer Feuerwehr. Dort wird je Standort ein Einsatz ja oder nein über Trefferquoten bewertet; hier geht es um die monatliche Last unbekannter Stadtteile, gemessen an einem Zähldatenmodell, mit Stadtteil-Blöcken und Rechenzeit."
     }
   ]
 }

@@ -57,7 +57,8 @@ data/
     "Dritter Stichpunkt."
   ],
   "abschnitt": "5.2",
-  "nachfrage": "Typische Nachfrage des Prüfers?"
+  "nachfrage": "Typische Nachfrage des Prüfers?",
+  "nachfrage_antwort": "Antwort darauf in ein bis zwei Sätzen."
 }
 ```
 
@@ -68,8 +69,9 @@ data/
 | `punkte` | ja | Rückseite, **3–5 Stichpunkte**. Lieber eine Karte mehr als eine zu lange. |
 | `abschnitt` | nein | Abschnitt der Arbeit, z. B. `"4.5"` oder `"7.3, 2.3"`. |
 | `nachfrage` | nein | Typische Nachfrage, erscheint im orangen Kasten. |
+| `nachfrage_antwort` | nein | Antwort auf die Nachfrage, 1–2 Sätze, erscheint im selben Kasten darunter. |
 
-In `frage`, `punkte` und `nachfrage` wird `**so**` fett dargestellt.
+In `frage`, `punkte`, `nachfrage` und `nachfrage_antwort` wird `**so**` fett dargestellt.
 
 ### Typische Änderungen
 
@@ -95,16 +97,24 @@ Häufigster Fehler: ein fehlendes oder überzähliges Komma.
 ## Lernmodus
 
 - Eine Runde umfasst einen Stapel, alle Stapel oder eine Auswahl (kritische, unsichere, Suchergebnis).
-- **Gewusst** nimmt die Karte aus der Runde, **Nochmal** schiebt sie drei Karten nach hinten.
+- **Gewusst** nimmt die Karte aus der Runde, **Nochmal** behält sie in der Wiederholung:
+  - Zwischen zwei Auftritten derselben Karte liegen **mindestens 3 und höchstens 6 andere Karten**.
+  - Nach **zwei Wiederholungen in Folge** kommt eine neue Karte dazu – aber nur, solange dadurch keine
+    Wiederholung länger als 6 Karten warten müsste. Gleichzeitig sind deshalb höchstens 7 Karten in der
+    Wiederholung; die Zahl wächst nicht weiter, sondern es wird reihum wiederholt, bis eine Karte gewusst ist.
+  - Beispiel, wenn man immer „Nochmal“ wählt: 1 2 3 4 1 2 5 3 4 6 1 2 7 5 3 4 6 1 2 7 …
+  - Sind nur noch wenige Karten offen, kommen sie einfach reihum. Es werden keine fremden Karten eingestreut.
+  - Einstellbar über `MIN_ABSTAND`, `MAX_ABSTAND` und `WDH_VOR_NEU` oben in `assets/app.js`.
 - Die Runde endet erst, wenn jede Karte einmal gewusst wurde.
+- Die Rückseite lässt sich wieder umdrehen (Karte antippen, „Nur die Frage zeigen“ oder Leertaste).
 - Jede neue Runde enthält wieder **alle** Karten der Auswahl, auch die gut gekonnten. Es gibt keine Intervallwiederholung.
 - Status je Karte: *sicher* (zuletzt auf Anhieb gewusst), *unsicher* (zuletzt mindestens einmal „Nochmal“), *neu*.
 - **★** markiert eine Karte als kritisch. Kritische Karten lassen sich gesammelt lernen.
 - Nach der Runde: „Neue Runde“ oder „Nur die schwierigen“.
 
-**Bedienung:** Tippen/Klicken dreht die Karte um. Auf dem Smartphone: nach rechts wischen = gewusst,
-nach links = nochmal. Tastatur: Leertaste umdrehen · ← oder 1 nochmal · → oder 2 gewusst ·
-K kritisch · Z letzte Antwort zurücknehmen.
+**Bedienung:** Tippen/Klicken dreht die Karte um und wieder zurück. Auf dem Smartphone: nach rechts
+wischen = gewusst, nach links = nochmal. Tastatur: Leertaste umdrehen und zurückdrehen · ← oder 1 nochmal ·
+→ oder 2 gewusst · K kritisch · Z letzte Antwort zurücknehmen.
 
 ### Lernstand
 

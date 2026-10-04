@@ -4,7 +4,8 @@ Aufruf im Projektordner:
     python scripts/pruefe_karten.py
 
 Geprüft wird: gültiges JSON (mit Zeilenangabe), Pflichtfelder, doppelte ids,
-3–5 Stichpunkte je Karte, leere Texte. Exit-Code 1 bei Fehlern, sonst 0.
+3–5 Stichpunkte je Karte, leere Texte (auch eine fehlende Antwort auf die
+Nachfrage). Exit-Code 1 bei Fehlern, sonst 0.
 Nur Python-Standardbibliothek, keine Installation nötig.
 """
 
@@ -99,13 +100,14 @@ def pruefe() -> tuple[list[str], list[str], int]:
                 if not MIN_PUNKTE <= n <= MAX_PUNKTE:
                     hinweise.append(f"{ort}: {n} Stichpunkte (vorgesehen sind {MIN_PUNKTE}–{MAX_PUNKTE}).")
 
-            for feld in ("abschnitt", "nachfrage"):
+            for feld in ("abschnitt", "nachfrage", "nachfrage_antwort"):
                 if feld in karte and not isinstance(karte[feld], str):
                     fehler.append(f"{ort}: „{feld}“ muss Text sein.")
                 elif not karte.get(feld):
-                    hinweise.append(f"{ort}: „{feld}“ ist leer.")
+                    if feld != "nachfrage_antwort" or karte.get("nachfrage"):
+                        hinweise.append(f"{ort}: „{feld}“ ist leer.")
 
-            unbekannt = set(karte) - {"id", "frage", "punkte", "abschnitt", "nachfrage"}
+            unbekannt = set(karte) - {"id", "frage", "punkte", "abschnitt", "nachfrage", "nachfrage_antwort"}
             if unbekannt:
                 hinweise.append(f"{ort}: unbekannte Felder {sorted(unbekannt)} werden ignoriert.")
             anzahl += 1

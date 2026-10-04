@@ -8,7 +8,12 @@
 
   const SPEICHER_SCHLUESSEL = 'ba-karten-v1';
   const DATENORDNER = 'data/';
-  const ABSTAND_NOCHMAL = 3;   // „Nochmal“-Karten kommen nach so vielen anderen Karten wieder
+  // Wiederholung in einer Runde: Zwischen zwei Auftritten derselben „Nochmal“-Karte
+  // liegen mindestens MIN_ABSTAND und höchstens MAX_ABSTAND andere Karten.
+  const MIN_ABSTAND = 3;
+  const MAX_ABSTAND = 6;
+  // Nach so vielen Wiederholungen in Folge kommt eine neue Karte dazu, solange Platz ist
+  const WDH_VOR_NEU = 2;
   const WISCH_SCHWELLE = 90;   // Pixel, ab denen ein Wisch als Antwort zählt
 
   const app = document.getElementById('app');
@@ -178,6 +183,7 @@
         punkte,
         abschnitt: k.abschnitt ? String(k.abschnitt) : '',
         nachfrage: k.nachfrage ? String(k.nachfrage) : '',
+        nachfrageAntwort: k.nachfrage_antwort ? String(k.nachfrage_antwort) : '',
         stapel: id
       });
       st.ids.push(kid);
@@ -221,11 +227,35 @@
     if (!r) return;
     const gibt = id => daten.karten.has(id);
     r.ids = (r.ids || []).filter(gibt);
-    r.offen = (r.offen || []).filter(gibt);
     r.erledigt = (r.erledigt || []).filter(gibt);
     r.fehler = r.fehler || {};
-    if (!r.ids.length || (!r.fertig && !r.offen.length)) zustand.runde = null;
+    if (!Array.isArray(r.neu)) {
+      // Runde aus der älteren Fassung (eine einzige Warteschlange) übernehmen
+      const alt = (r.offen || []).filter(id => gibt(id) && r.ids.includes(id) && !r.erledigt.includes(id));
+      const zug = r.versuche || 0;
+      r.neu = alt.filter(id => !r.fehler[id]);
+      r.lernen = {};
+      alt.filter(id => r.fehler[id]).forEach((id, i) => { r.lernen[id] = zug - MAX_ABSTAND - 1 + i; });
+      r.aktuell = alt[0] || null;
+      r.zug = zug;
+      r.wdhInFolge = 0;
+    }
+    delete r.offen;
+    delete r.zwischen;
+    delete r.zuletzt;
+    r.neu = r.neu.filter(gibt);
+    r.lernen = r.lernen || {};
+    for (const id of Object.keys(r.lernen)) if (!gibt(id)) delete r.lernen[id];
+    if (r.aktuell && !r.neu.includes(r.aktuell) && !(r.aktuell in r.lernen)) r.aktuell = null;
+    r.zug = r.zug || 0;
+    r.wdhInFolge = r.wdhInFolge || 0;
+    if (!r.ids.length || (!r.fertig && !offenAnzahl(r))) zustand.runde = null;
     speichere();
+  }
+
+  // Noch nicht gewusste Karten der Runde: neue plus „Nochmal“-Karten
+  function offenAnzahl(r) {
+    return (r.neu ? r.neu.length : 0) + Object.keys(r.lernen || {}).length;
   }
 
   // ------------------------------------------------------------- Navigation
@@ -261,7 +291,7 @@
   function renderStart() {
     setzeKopf(daten.meta.titel || 'Kolloquium', `${daten.reihenfolge.length} Karten · ${daten.stapel.length} Stapel`, false);
     const r = zustand.runde;
-    const laeuft = r && !r.fertig && r.offen.length;
+    const laeuft = r && !r.fertig && offenAnzahl(r);
     const alle = statistik(daten.reihenfolge);
 
     let h = `<section class="intro">
@@ -271,7 +301,7 @@
 
     if (laeuft) {
       h += `<button class="weiter" data-aktion="fortsetzen">
-        <div><strong>Runde fortsetzen</strong><span>${esc(r.titel)} · noch ${r.offen.length} von ${r.ids.length} Karten offen</span></div>
+        <div><strong>Runde fortsetzen</strong><span>${esc(r.titel)} · noch ${offenAnzahl(r)} von ${r.ids.length} Karten offen</span></div>
         <span class="pfeil" aria-hidden="true">→</span>
       </button>`;
     }
@@ -345,7 +375,11 @@
     zustand.runde = {
       titel,
       ids: ids.slice(),
-      offen: reihe,
+      neu: reihe,            // noch nicht gezeigte Karten, in Reihenfolge
+      lernen: {},            // „Nochmal“-Karten: id -> Zug, in dem sie zuletzt dran war
+      aktuell: null,         // gerade gezeigte Karte
+      zug: 0,                // Zahl der bisherigen Antworten
+      wdhInFolge: 0,         // Wiederholungen seit der letzten neuen Karte
       erledigt: [],
       fehler: {},
       versuche: 0,
@@ -366,29 +400,78 @@
     renderLernen();
   }
 
+  // Rückseite wieder zuklappen: nur die Frage zeigen
+  function zurueckdrehen() {
+    const r = zustand.runde;
+    if (!r || r.fertig || !r.umgedreht || sperre) return;
+    r.umgedreht = false;
+    speichere();
+    renderLernen();
+    window.scrollTo(0, 0);
+  }
+
+  // Wählt die nächste Karte.
+  // „Nochmal“-Karten kommen nach MIN_ABSTAND bis MAX_ABSTAND anderen Karten wieder.
+  // Neue Karten kommen hinzu, wenn gerade keine Wiederholung fällig ist oder
+  // WDH_VOR_NEU Wiederholungen in Folge kamen – aber nur, solange dadurch keine
+  // „Nochmal“-Karte über MAX_ABSTAND hinaus warten müsste. Damit sind höchstens
+  // MAX_ABSTAND + 1 Karten gleichzeitig in der Wiederholung.
+  // Sind zu wenige Karten offen, kommen die übrigen einfach reihum.
+  function waehleNaechste(r) {
+    const t = r.zug;
+    const lern = Object.entries(r.lernen).map(([id, zuletzt]) => ({
+      id,
+      luecke: t - zuletzt - 1,            // so viele andere Karten seit dem letzten Auftritt
+      frist: zuletzt + MAX_ABSTAND + 1    // spätester Zug, damit MAX_ABSTAND hält
+    })).sort((a, b) => a.frist - b.frist);
+    // Lassen sich alle „Nochmal“-Karten ab Zug `ab` noch fristgerecht zeigen?
+    const fristgerecht = ab => lern.every((c, i) => c.frist >= ab + i);
+    const faellig = lern.filter(c => c.luecke >= MIN_ABSTAND);
+    const platz = lern.length < MAX_ABSTAND + 1;
+    const neuGeht = r.neu.length > 0 && platz && fristgerecht(t + 1);
+    if (neuGeht && (!faellig.length || r.wdhInFolge >= WDH_VOR_NEU)) return r.neu[0];
+    if (faellig.length) return faellig[0].id;
+    if (r.neu.length && platz) return r.neu[0];
+    return lern.length ? lern[0].id : null;   // zu wenige Karten: einfach reihum
+  }
+
+  // Gerade gezeigte Karte (wird bei Bedarf gewählt und gespeichert)
+  function aktuelleKarte(r) {
+    if (!r.aktuell) {
+      r.aktuell = waehleNaechste(r);
+      speichere();
+    }
+    return r.aktuell;
+  }
+
   function antworten(gewusst) {
     const r = zustand.runde;
-    if (!r || r.fertig || !r.umgedreht || sperre || !r.offen.length) return;
-    const id = r.offen[0];
+    if (!r || r.fertig || !r.umgedreht || sperre || !r.aktuell) return;
+    const id = r.aktuell;
     verlauf.push(JSON.stringify({ runde: r, karte: zustand.karten[id] || null, id }));
     if (verlauf.length > 30) verlauf.shift();
 
     const k = kzSchreiben(id);
-    r.versuche++;
-    r.offen.shift();
+    const warNeu = r.neu.includes(id);
+    r.neu = r.neu.filter(x => x !== id);
+    r.wdhInFolge = warNeu ? 0 : r.wdhInFolge + 1;
     if (gewusst) {
       k.gewusst = (k.gewusst || 0) + 1;
       k.status = r.fehler[id] ? 'unsicher' : 'sicher';
+      delete r.lernen[id];
       r.erledigt.push(id);
     } else {
       k.nochmal = (k.nochmal || 0) + 1;
       k.status = 'unsicher';
       r.fehler[id] = (r.fehler[id] || 0) + 1;
-      r.offen.splice(Math.min(r.offen.length, ABSTAND_NOCHMAL), 0, id);
+      r.lernen[id] = r.zug;
     }
+    r.zug++;
+    r.versuche++;
+    r.aktuell = null;
     k.zuletzt = Date.now();
     r.umgedreht = false;
-    if (!r.offen.length) { r.fertig = true; r.ende = Date.now(); }
+    if (!offenAnzahl(r)) { r.fertig = true; r.ende = Date.now(); }
     speichere();
 
     // kurze Ausblend-Animation, dann nächste Karte
@@ -452,15 +535,20 @@
       : '<p class="klein">Für diese Karte sind noch keine Stichpunkte hinterlegt.</p>';
     let zusatz = '';
     if (k.abschnitt) zusatz += `<div class="abschnitt">Abschnitt der Arbeit: <b>${esc(k.abschnitt)}</b></div>`;
-    if (k.nachfrage) zusatz += `<div class="nachfrage"><span class="t">Typische Nachfrage</span>${fmt(k.nachfrage)}</div>`;
+    if (k.nachfrage) {
+      const antwort = k.nachfrageAntwort
+        ? `<div class="nf-antwort"><span class="t2">Antwort</span>${fmt(k.nachfrageAntwort)}</div>`
+        : '';
+      zusatz += `<div class="nachfrage"><span class="t">Typische Nachfrage</span><div class="nf-frage">${fmt(k.nachfrage)}</div>${antwort}</div>`;
+    }
     return `<div class="antwort">${punkte}</div>${zusatz ? `<div class="zusatz">${zusatz}</div>` : ''}`;
   }
 
   function renderLernen() {
     const r = zustand.runde;
     if (!r) { navigiere('', true); return; }
-    if (r.fertig || !r.offen.length) { navigiere('ergebnis', true); return; }
-    const id = r.offen[0];
+    if (r.fertig || !offenAnzahl(r)) { navigiere('ergebnis', true); return; }
+    const id = aktuelleKarte(r);
     const k = daten.karten.get(id);
     const st = daten.stapelById.get(k.stapel);
     const mehrereStapel = new Set(r.ids.map(i => daten.karten.get(i).stapel)).size > 1;
@@ -478,7 +566,7 @@
     const fortschritt = `<div class="fortschritt">
       <div class="fortschritt-text">
         <span>${r.erledigt.length} von ${r.ids.length} gewusst</span>
-        <span>${verlauf.length ? '<button class="link" data-aktion="rueckgaengig">↶ Rückgängig</button> · ' : ''}noch ${r.offen.length} offen</span>
+        <span>${verlauf.length ? '<button class="link" data-aktion="rueckgaengig">↶ Rückgängig</button> · ' : ''}noch ${offenAnzahl(r)} offen</span>
       </div>
       <div class="balken"><div class="gut" style="width:${anteil}%"></div></div>
     </div>`;
@@ -494,12 +582,14 @@
         <button class="btn btn-gross btn-primaer" data-aktion="umdrehen">Antwort zeigen${hatTastatur ? ' <small>Leertaste</small>' : ''}</button>
       </div></div>`;
     } else {
-      karte = `<article class="karte hinten" id="karte">
+      karte = `<article class="karte hinten" id="karte" aria-label="Antwort – zum Zurückdrehen tippen">
         ${meta}${sternHtml(id)}
         <h2 class="frage">${fmt(k.frage)}</h2>
         ${antwortHtml(k)}
       </article>
-      ${istTouch ? '<p class="tipp">Wischen: nach links = nochmal · nach rechts = gewusst</p>' : ''}`;
+      <p class="tipp"><button class="link" data-aktion="zurueckdrehen">↺ Nur die Frage zeigen</button>${istTouch
+        ? ' · oder Karte antippen<br>Wischen: nach links = nochmal · nach rechts = gewusst'
+        : ' · oder Klick auf die Karte bzw. Leertaste'}</p>`;
       aktionen = `<div class="aktionen"><div class="aktionen-innen">
         <button class="btn btn-gross btn-nochmal" data-aktion="nochmal">Nochmal${hatTastatur ? ' <small>←</small>' : ''}</button>
         <button class="btn btn-gross btn-gewusst" data-aktion="gewusst">Gewusst${hatTastatur ? ' <small>→</small>' : ''}</button>
@@ -623,7 +713,7 @@
     if (woerter.length) {
       ids = ids.filter(id => {
         const k = daten.karten.get(id);
-        const text = normal([k.id, k.frage, k.abschnitt, k.nachfrage, ...k.punkte].join(' '));
+        const text = normal([k.id, k.frage, k.abschnitt, k.nachfrage, k.nachfrageAntwort, ...k.punkte].join(' '));
         return woerter.every(w => text.includes(w));
       });
     }
@@ -689,8 +779,11 @@
   app.addEventListener('click', e => {
     const btn = e.target.closest('[data-aktion]');
     if (!btn) {
-      const karte = e.target.closest('#karte.vorne');
-      if (karte && Date.now() - gezogenBis > 300) umdrehen();
+      const karte = e.target.closest('#karte');
+      if (karte && Date.now() - gezogenBis > 300) {
+        if (karte.classList.contains('vorne')) umdrehen();
+        else zurueckdrehen();
+      }
       return;
     }
     const a = btn.dataset.aktion;
@@ -708,6 +801,7 @@
       case 'fortsetzen': navigiere('lernen'); break;
       case 'uebersicht': navigiere('uebersicht/' + encodeURIComponent(btn.dataset.ziel)); break;
       case 'umdrehen': umdrehen(); break;
+      case 'zurueckdrehen': zurueckdrehen(); break;
       case 'nochmal': antworten(false); break;
       case 'gewusst': antworten(true); break;
       case 'rueckgaengig': rueckgaengig(); break;
@@ -765,11 +859,12 @@
       if ((taste === ' ' || taste === 'Enter') && !aufKnopf) {
         e.preventDefault();
         if (!r.umgedreht) umdrehen();
+        else zurueckdrehen();
         return;
       }
       if (r.umgedreht && (taste === 'ArrowLeft' || taste === '1')) { e.preventDefault(); antworten(false); return; }
       if (r.umgedreht && (taste === 'ArrowRight' || taste === '2')) { e.preventDefault(); antworten(true); return; }
-      if (taste === 'k' || taste === 'K') { toggleKritisch(r.offen[0]); return; }
+      if ((taste === 'k' || taste === 'K') && r.aktuell) { toggleKritisch(r.aktuell); return; }
     }
     if ((taste === 'z' || taste === 'Z') && verlauf.length && (seite === 'lernen' || seite === 'ergebnis')) {
       rueckgaengig();
