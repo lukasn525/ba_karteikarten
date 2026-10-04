@@ -42,7 +42,8 @@
       </label>
       <div class="menue-gruppe">
         <h3>Lernstand</h3>
-        <p class="klein">Der Lernstand wird nur in diesem Browser gespeichert. Zum Übertragen auf ein anderes Gerät exportieren und dort importieren.</p>
+        <p class="klein">Der Lernstand – Status, Sterne und laufende Runde – wird online gespeichert und auf allen Geräten abgeglichen, auf denen du die Seite öffnest. Export und Import dienen als Sicherung.</p>
+        <p class="klein sync-zeile" data-sync></p>
         <div class="knopfreihe">
           <button type="button" class="btn" id="btn-export">Exportieren</button>
           <button type="button" class="btn" id="btn-import">Importieren</button>
@@ -60,6 +61,7 @@
   </dialog>
 
   <div id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/abgleich.js" defer></script>
   <script src="assets/app.js" defer></script>
 </body>
 </html>

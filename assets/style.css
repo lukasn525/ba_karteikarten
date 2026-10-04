@@ -274,6 +274,11 @@ dialog::backdrop { background: rgba(10, 18, 28, .55); }
 .fehler h2 { margin: 0 0 8px; font-size: 18px; }
 .fehler p { margin: 0 0 8px; }
 .btn-gefahr.bestaetigen { background: var(--nochmal-bg); border-color: transparent; }
+.sync-zeile::before { content: "●"; margin-right: 6px; color: var(--text-3); }
+.sync-zeile[data-zustand="ok"]::before { color: var(--gruen); }
+.sync-zeile[data-zustand="offline"]::before,
+.sync-zeile[data-zustand="fehler"]::before { color: var(--kritisch); }
+.fuss.sync-zeile { margin-top: 6px; }
 
 @media (min-width: 640px) {
   main { padding-top: 26px; }

@@ -69,8 +69,16 @@
 
   // ------------------------------------------------------------- Lernstand
 
+  // Zeitstempel (ms) steuern den Abgleich zwischen Geräten, siehe assets/abgleich.js
   function leererZustand() {
-    return { version: 1, karten: {}, runde: null, einstellungen: { mischen: true } };
+    return {
+      version: 2,
+      karten: {},
+      runde: null,
+      rundeGeaendert: 0,
+      einstellungen: { mischen: true, geaendert: 0 },
+      zurueckgesetzt: 0
+    };
   }
 
   function ladeZustand() {
@@ -79,20 +87,31 @@
       if (!roh) return leererZustand();
       const z = JSON.parse(roh);
       const basis = leererZustand();
+      const karten = (z && typeof z.karten === 'object' && z.karten) || {};
+      const runde = (z && z.runde) || null;
+      if (!z.version || z.version < 2) {
+        // Lernstand aus der Fassung ohne Abgleich: Zeitstempel nachtragen
+        for (const k of Object.values(karten)) if (k && !k.geaendert) k.geaendert = Number(k.zuletzt) || 0;
+      }
       return {
-        version: 1,
-        karten: (z && typeof z.karten === 'object' && z.karten) || {},
-        runde: (z && z.runde) || null,
-        einstellungen: Object.assign(basis.einstellungen, (z && z.einstellungen) || {})
+        version: 2,
+        karten,
+        runde,
+        rundeGeaendert: Number(z.rundeGeaendert) || (runde ? Number(runde.ende || runde.start) || 0 : 0),
+        einstellungen: Object.assign(basis.einstellungen, (z && z.einstellungen) || {}),
+        zurueckgesetzt: Number(z.zurueckgesetzt) || 0
       };
     } catch (e) {
       return leererZustand();
     }
   }
 
-  function speichere() {
+  // Speichert lokal und stößt den Abgleich an. `rundeAuch`: die Runde hat sich geändert.
+  function speichere(rundeAuch) {
+    if (rundeAuch) zustand.rundeGeaendert = Date.now();
     try { localStorage.setItem(SPEICHER_SCHLUESSEL, JSON.stringify(zustand)); }
     catch (e) { /* privater Modus o. Ä. – App läuft ohne Speichern weiter */ }
+    syncPlanen();
   }
 
   // Zustand einer Karte (lesend)
@@ -100,11 +119,163 @@
     return zustand.karten[id] || { status: 'neu', kritisch: false };
   }
 
-  // Zustand einer Karte (schreibend, legt bei Bedarf an)
+  // Zustand einer Karte (schreibend, legt bei Bedarf an, markiert als geändert)
   function kzSchreiben(id) {
     if (!zustand.karten[id]) zustand.karten[id] = { status: 'neu', kritisch: false, gewusst: 0, nochmal: 0 };
+    zustand.karten[id].geaendert = Date.now();
     return zustand.karten[id];
   }
+
+  // ------------------------------------------------- Geräteübergreifender Abgleich
+  // Der Lernstand liegt zusätzlich online in Supabase (Tabelle „lernstand“, eine Zeile).
+  // Gelesen und geschrieben wird über zwei Datenbankfunktionen. Geschrieben wird nur,
+  // wenn sich die Version seit dem letzten Lesen nicht geändert hat; sonst wird zuerst
+  // zusammengeführt (assets/abgleich.js) und erneut gesendet.
+  // Ohne Netz arbeitet die App mit der lokalen Kopie weiter und gleicht später ab.
+
+  const SUPABASE_URL = 'https://fzrimyvxrwnctmjjypdl.supabase.co';
+  // Öffentlicher Schlüssel für Browser; erlaubt nur die beiden Funktionen, nicht die Tabelle
+  const SUPABASE_KEY = 'sb_publishable_X-r9vledqvwj0LJsehvhQQ_4Rf4OyqJ';
+
+  const sync = {
+    version: null,         // Version des zuletzt gelesenen oder geschriebenen Stands
+    status: 'start',       // start | laeuft | ok | offline | fehler
+    zuletzt: 0,
+    timer: null,
+    laeuft: false,
+    nochmal: false
+  };
+
+  async function rpc(name, body, keepalive) {
+    const antwort = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {}),
+      cache: 'no-store',
+      keepalive: !!keepalive
+    });
+    if (!antwort.ok) {
+      const fehler = new Error(`HTTP ${antwort.status}`);
+      fehler.http = antwort.status;
+      throw fehler;
+    }
+    return antwort.json();
+  }
+
+  function syncText() {
+    const uhr = sync.zuletzt ? new Date(sync.zuletzt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : '';
+    switch (sync.status) {
+      case 'ok': return `Online gespeichert, auf allen Geräten gleich · ${uhr}`;
+      case 'laeuft': return 'Abgleich läuft …';
+      case 'offline': return 'Offline – wird abgeglichen, sobald wieder Netz da ist';
+      case 'fehler': return 'Online-Speicher nicht erreichbar – vorerst nur auf diesem Gerät gespeichert';
+      default: return 'Verbinde mit dem Online-Speicher …';
+    }
+  }
+
+  function syncAnzeigen(status) {
+    if (status) sync.status = status;
+    document.querySelectorAll('[data-sync]').forEach(el => {
+      el.textContent = syncText();
+      el.dataset.zustand = sync.status;
+    });
+  }
+
+  function syncFehler(e) {
+    syncAnzeigen(e && e.http ? 'fehler' : (navigator.onLine === false ? 'offline' : 'fehler'));
+  }
+
+  function syncPlanen() {
+    clearTimeout(sync.timer);
+    sync.timer = setTimeout(() => syncSenden(false), 1500);
+  }
+
+  // Vergleich unabhängig von der Reihenfolge der Schlüssel
+  const kanon = x => JSON.stringify(x, (k, v) => (v && typeof v === 'object' && !Array.isArray(v)
+    ? Object.keys(v).sort().reduce((o, s) => { o[s] = v[s]; return o; }, {}) : v));
+
+  // Neu zeichnen, sobald keine Animation läuft und das Menü zu ist
+  function neuZeichnen() {
+    if (sperre || menue.open) { setTimeout(neuZeichnen, 300); return; }
+    render();
+  }
+
+  // Führt einen Lernstand vom Server mit dem lokalen zusammen.
+  // Rückgabe: true, wenn sich lokal etwas geändert hat.
+  function syncUebernehmen(server) {
+    if (!server || !window.Abgleich) return false;
+    const vorher = kanon(zustand);
+    const rundeVorher = kanon(zustand.runde);
+    const neu = window.Abgleich.zusammenfuehren(zustand, server);
+    if (kanon(neu) === vorher) return false;
+    zustand = neu;
+    if (kanon(zustand.runde) !== rundeVorher) verlauf = [];
+    try { localStorage.setItem(SPEICHER_SCHLUESSEL, JSON.stringify(zustand)); } catch (e) { /* egal */ }
+    if (daten.reihenfolge.length) bereinigeRunde();
+    neuZeichnen();
+    return true;
+  }
+
+  async function syncHolen() {
+    if (!window.Abgleich) return;
+    if (sync.status !== 'ok') syncAnzeigen('laeuft');
+    try {
+      const { daten: server, version } = await rpc('lernstand_laden');
+      sync.version = version;
+      syncUebernehmen(server);
+      // Hat dieses Gerät etwas, das online noch fehlt? Dann hochladen.
+      const gemischt = window.Abgleich.zusammenfuehren(server, zustand);
+      if (kanon(gemischt) !== kanon(server)) syncSenden(false);
+      else { sync.zuletzt = Date.now(); syncAnzeigen('ok'); }
+    } catch (e) {
+      syncFehler(e);
+    }
+  }
+
+  async function syncSenden(beimVerlassen) {
+    if (!window.Abgleich) return;
+    clearTimeout(sync.timer);
+    sync.timer = null;
+    if (sync.laeuft && !beimVerlassen) { sync.nochmal = true; return; }
+    sync.laeuft = true;
+    try {
+      if (sync.version === null) {
+        // Noch nie gelesen: erst den Online-Stand holen und zusammenführen
+        const { daten: server, version } = await rpc('lernstand_laden');
+        sync.version = version;
+        syncUebernehmen(server);
+      }
+      for (let versuch = 0; versuch < 4; versuch++) {
+        const erg = await rpc('lernstand_speichern', { neu_daten: zustand, basis_version: sync.version }, beimVerlassen);
+        if (erg.ok) {
+          sync.version = erg.version;
+          sync.zuletzt = Date.now();
+          syncAnzeigen('ok');
+          return;
+        }
+        // Ein anderes Gerät war schneller: dessen Stand übernehmen und erneut senden
+        sync.version = erg.version;
+        syncUebernehmen(erg.daten);
+        if (beimVerlassen) return;
+      }
+      syncAnzeigen('fehler');
+    } catch (e) {
+      syncFehler(e);
+    } finally {
+      sync.laeuft = false;
+      if (sync.nochmal) { sync.nochmal = false; syncSenden(false); }
+    }
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      if (sync.timer) syncSenden(true);    // Ausstehendes sofort hochladen
+    } else {
+      syncHolen();                         // Änderungen anderer Geräte holen
+    }
+  });
+  window.addEventListener('pagehide', () => { if (sync.timer) syncSenden(true); });
+  window.addEventListener('online', () => syncHolen());
 
   function statistik(ids) {
     const s = { gesamt: ids.length, sicher: 0, unsicher: 0, neu: 0, kritisch: 0 };
@@ -327,6 +498,7 @@
 
     const fuss = [daten.meta.stand ? `Kartenstand ${daten.meta.stand}` : '', daten.meta.hinweis || ''].filter(Boolean).join(' · ');
     if (fuss) h += `<p class="fuss">${esc(fuss)}</p>`;
+    h += `<p class="fuss sync-zeile" data-sync data-zustand="${sync.status}">${esc(syncText())}</p>`;
 
     app.innerHTML = h;
   }
@@ -388,7 +560,7 @@
       start: Date.now()
     };
     verlauf = [];
-    speichere();
+    speichere(true);
     navigiere('lernen');
   }
 
@@ -396,7 +568,7 @@
     const r = zustand.runde;
     if (!r || r.fertig || r.umgedreht || sperre) return;
     r.umgedreht = true;
-    speichere();
+    speichere(true);
     renderLernen();
   }
 
@@ -405,7 +577,7 @@
     const r = zustand.runde;
     if (!r || r.fertig || !r.umgedreht || sperre) return;
     r.umgedreht = false;
-    speichere();
+    speichere(true);
     renderLernen();
     window.scrollTo(0, 0);
   }
@@ -439,7 +611,7 @@
   function aktuelleKarte(r) {
     if (!r.aktuell) {
       r.aktuell = waehleNaechste(r);
-      speichere();
+      speichere(true);
     }
     return r.aktuell;
   }
@@ -472,7 +644,7 @@
     k.zuletzt = Date.now();
     r.umgedreht = false;
     if (!offenAnzahl(r)) { r.fertig = true; r.ende = Date.now(); }
-    speichere();
+    speichere(true);
 
     // kurze Ausblend-Animation, dann nächste Karte
     const el = document.getElementById('karte');
@@ -498,12 +670,13 @@
     const s = JSON.parse(roh);
     const kritischJetzt = kz(s.id).kritisch;
     zustand.runde = s.runde;
-    if (s.karte) zustand.karten[s.id] = Object.assign(s.karte, { kritisch: kritischJetzt });
-    else if (kritischJetzt) zustand.karten[s.id] = { status: 'neu', kritisch: true, gewusst: 0, nochmal: 0 };
-    else delete zustand.karten[s.id];
+    // Als neue Änderung markieren, damit der Abgleich die zurückgenommene Antwort nicht zurückholt
+    zustand.karten[s.id] = s.karte
+      ? Object.assign(s.karte, { kritisch: kritischJetzt, geaendert: Date.now() })
+      : { status: 'neu', kritisch: kritischJetzt, gewusst: 0, nochmal: 0, geaendert: Date.now() };
     zustand.runde.umgedreht = true;
     zustand.runde.fertig = false;
-    speichere();
+    speichere(true);
     toast('Letzte Antwort zurückgenommen');
     if (aktuelleSeite().seite === 'lernen') renderLernen();
     else navigiere('lernen', true);
@@ -883,6 +1056,7 @@
     const stand = daten.meta.stand ? `Kartenstand ${daten.meta.stand} · ` : '';
     document.getElementById('menue-stand').textContent = `${stand}${daten.reihenfolge.length} Karten in ${daten.stapel.length} Stapeln`;
     btnReset.textContent = 'Lernstand zurücksetzen';
+    syncAnzeigen();
     if (typeof menue.showModal === 'function') menue.showModal();
     else menue.setAttribute('open', '');
   });
@@ -891,6 +1065,7 @@
 
   optMischen.addEventListener('change', () => {
     zustand.einstellungen.mischen = optMischen.checked;
+    zustand.einstellungen.geaendert = Date.now();
     speichere();
   });
 
@@ -922,6 +1097,8 @@
     try {
       const obj = JSON.parse(await datei.text());
       if (!obj || typeof obj.karten !== 'object' || Array.isArray(obj.karten)) throw new Error('Kein Lernstand');
+      // Import ersetzt den Lernstand – auch auf den anderen Geräten
+      const jetzt = Date.now();
       const karten = {};
       for (const [id, k] of Object.entries(obj.karten)) {
         if (!k || typeof k !== 'object') continue;
@@ -930,16 +1107,19 @@
           kritisch: !!k.kritisch,
           gewusst: Number(k.gewusst) || 0,
           nochmal: Number(k.nochmal) || 0,
-          zuletzt: Number(k.zuletzt) || undefined
+          zuletzt: Number(k.zuletzt) || undefined,
+          geaendert: jetzt
         };
       }
       zustand.karten = karten;
+      zustand.zurueckgesetzt = jetzt;
       if (obj.einstellungen && typeof obj.einstellungen === 'object') {
         zustand.einstellungen.mischen = obj.einstellungen.mischen !== false;
+        zustand.einstellungen.geaendert = jetzt;
       }
       zustand.runde = null;
       verlauf = [];
-      speichere();
+      speichere(true);
       menue.close();
       toast('Lernstand importiert');
       navigiere('', true);
@@ -961,11 +1141,13 @@
     }
     clearTimeout(resetTimer);
     btnReset.classList.remove('bestaetigen');
-    const mischenAn = zustand.einstellungen.mischen;
+    // Zurücksetzen gilt für alle Geräte; die Einstellungen bleiben
+    const einstellungen = zustand.einstellungen;
     zustand = leererZustand();
-    zustand.einstellungen.mischen = mischenAn;
+    zustand.einstellungen = einstellungen;
+    zustand.zurueckgesetzt = Date.now();
     verlauf = [];
-    speichere();
+    speichere(true);
     menue.close();
     toast('Lernstand zurückgesetzt');
     navigiere('', true);
@@ -983,6 +1165,7 @@
     bereinigeRunde();
     render();
     window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
+    syncHolen();
   }
 
   // Offline-Nutzung nur auf der veröffentlichten Seite (https), nicht lokal

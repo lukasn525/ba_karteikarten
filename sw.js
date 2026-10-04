@@ -3,11 +3,12 @@
  * Strategie „Netz zuerst“: Online kommt immer der aktuelle Stand,
  * nur ohne Verbindung wird die zuletzt geladene Fassung verwendet.
  */
-const CACHE = 'ba-karten-cache-v1';
+const CACHE = 'ba-karten-cache-v2';
 const KERN = [
   './',
   'index.html',
   'assets/style.css',
+  'assets/abgleich.js',
   'assets/app.js',
   'assets/icon.svg',
   'manifest.webmanifest',
@@ -38,6 +39,7 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const anfrage = event.request;
+  // Nur eigene Dateien; der Lernstand (Supabase, andere Adresse) läuft nie über den Zwischenspeicher
   if (anfrage.method !== 'GET' || new URL(anfrage.url).origin !== self.location.origin) return;
   event.respondWith((async () => {
     try {

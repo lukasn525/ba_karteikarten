@@ -116,10 +116,32 @@ Häufigster Fehler: ein fehlendes oder überzähliges Komma.
 wischen = gewusst, nach links = nochmal. Tastatur: Leertaste umdrehen und zurückdrehen · ← oder 1 nochmal ·
 → oder 2 gewusst · K kritisch · Z letzte Antwort zurücknehmen.
 
-### Lernstand
+### Lernstand – geräteübergreifend
 
-Der Lernstand liegt im Browser (localStorage), getrennt je Gerät und Browser.
-Übertragen: Menü (⋮) → *Exportieren* auf Gerät A, *Importieren* auf Gerät B.
+Status, Sterne, Einstellungen und die laufende Runde werden online in Supabase gespeichert und auf
+allen Geräten abgeglichen, auf denen die Seite geöffnet wird – ohne Anmeldung.
+
+- Jede Änderung wird nach etwa 1,5 Sekunden hochgeladen, spätestens beim Verlassen der Seite.
+- Beim Öffnen und beim Zurückkehren zur Seite werden Änderungen der anderen Geräte geholt.
+- Je Karte gewinnt die zuletzt geänderte Fassung; „Lernstand zurücksetzen“ und „Importieren“ gelten
+  für alle Geräte.
+- Zusätzlich liegt eine Kopie im Browser (localStorage). Ohne Netz läuft alles weiter und wird
+  später abgeglichen.
+- Die Zeile unten auf der Startseite und im Menü zeigt den Stand des Abgleichs.
+- Auch die lokale Vorschau (`start-lokal.bat`) gleicht mit dem Online-Speicher ab.
+- Wer den Link kennt, teilt sich denselben Lernstand.
+- *Exportieren* / *Importieren* im Menü dienen als Sicherung.
+
+**Technik:** Supabase-Projekt `ba-karteikarten` (Free, Frankfurt), Tabelle `public.lernstand` mit
+einer Zeile `gemeinsam` (`daten` jsonb, `version`). Die Tabelle ist für Browser gesperrt; gelesen und
+geschrieben wird nur über die Funktionen `lernstand_laden()` und
+`lernstand_speichern(neu_daten, basis_version)`. Geschrieben wird nur, wenn die Version noch stimmt,
+sonst führt das Gerät zuerst zusammen. Die Regeln dafür stehen in `assets/abgleich.js`,
+Adresse und öffentlicher Schlüssel oben im Abschnitt „Geräteübergreifender Abgleich“ in `assets/app.js`.
+
+Kostenlose Supabase-Projekte werden nach einer Woche ohne Nutzung pausiert. Die Daten bleiben
+erhalten; die Seite speichert dann nur lokal, bis das Projekt im Supabase-Dashboard wieder
+gestartet wird (*Restore project*).
 
 ---
 
@@ -145,7 +167,8 @@ Die Seite ist für Suchmaschinen gesperrt (`robots.txt`, `noindex`), aber für j
 
 ```
 index.html             Seitengerüst
-assets/app.js          Logik (Laden, Lernmodus, Übersicht, Speichern)
+assets/app.js          Logik (Laden, Lernmodus, Übersicht, Speichern, Abgleich)
+assets/abgleich.js     Regeln für das Zusammenführen des Lernstands mehrerer Geräte
 assets/style.css       Gestaltung inkl. Dunkelmodus
 assets/icon*.{svg,png} App-Symbol
 manifest.webmanifest   Installierbarkeit als App
