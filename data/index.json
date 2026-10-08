@@ -9,5 +9,22 @@
     "stapel-5.json",
     "stapel-3.json",
     "stapel-4.json"
+  ],
+  "unterlagen": [
+    {
+      "gruppe": "Die Arbeit verständlich erklärt",
+      "dateien": [
+        { "titel": "Band 1 · Kann man ausrechnen, wo die Feuerwehr gebraucht wird?", "datei": "unterlagen/Bachelorarbeit_fuer_Laien_erklaert_2026-10-05.pdf", "info": "24 Seiten · Stand 05.10.2026" },
+        { "titel": "Band 2 · Warum die Arbeit ihren eigenen Zahlen so wenig traut", "datei": "unterlagen/Bachelorarbeit_fuer_Laien_Band2_2026-10-05.pdf", "info": "20 Seiten · Stand 05.10.2026" }
+      ]
+    },
+    {
+      "gruppe": "Der Code verständlich erklärt",
+      "dateien": [
+        { "titel": "Heft 1 · Wie aus Rohdaten zwei Tabellen werden (prep/, tests/)", "datei": "unterlagen/Code_fuer_Laien_Heft1_prep_tests.pdf", "info": "16 Seiten · Stand 02.10.2026" },
+        { "titel": "Heft 2 · Die Messlatte, bevor das Rennen beginnt (vorpruefung/)", "datei": "unterlagen/Code_fuer_Laien_Heft2_vorpruefung.pdf", "info": "13 Seiten · Stand 02.10.2026" },
+        { "titel": "Heft 3 · Wer schlägt die Messlatte? (modelle/)", "datei": "unterlagen/Code_fuer_Laien_Heft3_modelle.pdf", "info": "14 Seiten · Stand 02.10.2026" }
+      ]
+    }
   ]
 }

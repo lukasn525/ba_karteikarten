@@ -83,6 +83,7 @@ In `frage`, `punkte`, `nachfrage` und `nachfrage_antwort` wird `**so**` fett dar
 - **Reihenfolge ändern:** Blöcke verschieben. Ohne Mischen erscheinen die Karten in Dateireihenfolge.
 - **Neuer Stapel:** Datei `data/stapel-6.json` nach dem Muster der anderen anlegen und in `data/index.json` unter `"stapel"` eintragen.
 - **`id` ändern** setzt den Lernstand dieser Karte zurück, deshalb nur bei Bedarf.
+- **Download hinzufügen:** Datei nach `unterlagen/` legen und in `data/index.json` unter `"unterlagen"` eintragen (`titel`, `datei`, `info`). Die Startseite zeigt die Liste unter „Unterlagen zum Herunterladen“.
 
 ### Prüfen
 

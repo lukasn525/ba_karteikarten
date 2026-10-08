@@ -496,6 +496,8 @@
       </div>
     </section>`;
 
+    if (Array.isArray(daten.meta.unterlagen)) h += unterlagenHtml(daten.meta.unterlagen);
+
     const fuss = [daten.meta.stand ? `Kartenstand ${daten.meta.stand}` : '', daten.meta.hinweis || ''].filter(Boolean).join(' · ');
     if (fuss) h += `<p class="fuss">${esc(fuss)}</p>`;
     h += `<p class="fuss sync-zeile" data-sync data-zustand="${sync.status}">${esc(syncText())}</p>`;
@@ -526,6 +528,21 @@
         ${s.kritisch ? `<button class="btn" data-aktion="lernen" data-art="kritisch" data-stapel="${esc(st.id)}">★ Kritische (${s.kritisch})</button>` : ''}
       </div>
     </article>`;
+  }
+
+  // Unterlagen zum Herunterladen, Liste in data/index.json unter „unterlagen“
+  function unterlagenHtml(gruppen) {
+    const teile = gruppen.map(g => {
+      const dateien = (g && Array.isArray(g.dateien) ? g.dateien : []).filter(d => d && d.datei).map(d => {
+        const art = String(d.datei).split('.').pop().toUpperCase();
+        return `<a class="datei" href="${esc(d.datei)}" download>
+          <span class="datei-titel">${esc(d.titel || d.datei)}</span>
+          <span class="datei-info">${esc(art)}${d.info ? ` · ${esc(d.info)}` : ''}</span>
+        </a>`;
+      }).join('');
+      return dateien ? `${g.gruppe ? `<h3>${esc(g.gruppe)}</h3>` : ''}<div class="dateien">${dateien}</div>` : '';
+    }).join('');
+    return teile ? `<section class="alle-karten unterlagen"><h2>Unterlagen zum Herunterladen</h2>${teile}</section>` : '';
   }
 
   // ----------------------------------------------------------------- Runden
