@@ -1,11 +1,12 @@
 {
   "titel": "Kolloquium · Bachelorarbeit",
   "untertitel": "Einsatzlast der Feuerwehr San Francisco – Karteikarten zur Vorbereitung",
-  "stand": "03.10.2026",
-  "hinweis": "Abschnittsnummern nach der Fassung der Arbeit vom 01.10.2026",
+  "stand": "08.10.2026",
+  "hinweis": "Abschnittsnummern nach der Fassung der Arbeit vom 07.10.2026",
   "stapel": [
     "stapel-1.json",
     "stapel-2.json",
+    "stapel-5.json",
     "stapel-3.json",
     "stapel-4.json"
   ]

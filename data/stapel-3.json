@@ -8,7 +8,7 @@
       "frage": "Was ist das Kernergebnis im Mengenstrang (Kreuzvalidierung)?",
       "punkte": [
         "RMSE: Ridge 30,93 · Poisson-GLM 32,99 · Random Forest 34,96 · XGBoost 37,39.",
-        "Die Mittelwert-Baseline liegt bei 68,09 – die Referenz halbiert den Fehler.",
+        "Die Mittelwert-Baseline liegt bei 68,08 – die Referenz halbiert den Fehler.",
         "Keines der drei Verfahren übertrifft das Poisson-GLM signifikant.",
         "Ridge liegt vorn, sein Vorsprung auf das GLM ist aber nicht gesichert (8 von 10, p = 0,275)."
       ],
@@ -173,19 +173,6 @@
       "nachfrage_antwort": "Nein. Der RMSE hängt bei Ridge und XGBoost ähnlich eng mit dem Extrapolationsanteil zusammen (+0,335 und +0,353), beim Random Forest am schwächsten (+0,249); litten die Bäume stärker darunter, müsste es umgekehrt sein."
     },
     {
-      "id": "3-14",
-      "frage": "Erklärt die Extrapolation die Unterschiede zwischen den Verfahren?",
-      "punkte": [
-        "Rangkorrelation Extrapolationsanteil gegen RMSE über 50 Läufe.",
-        "Ridge +0,335, XGBoost +0,353, Random Forest +0,249 (am schwächsten).",
-        "Litten die Bäume stärker darunter, müsste es umgekehrt sein.",
-        "Extrapolation ist der Preis der Forschungsfrage, nicht die Erklärung für die Rangfolge."
-      ],
-      "abschnitt": "5.1",
-      "nachfrage": "Warum ist Extrapolation kein Fehler Ihres Designs?",
-      "nachfrage_antwort": "Weil die Forschungsfrage sie verlangt: Wer für unbekannte Stadtteile vorhersagt, trifft zwangsläufig auf Werte außerhalb der Trainingsspanne. Ein Zufallssplit vermiede sie nur, indem er die Stadtteile schon im Training zeigt; berichtet wird sie als Preis des Stadtteil-Splits."
-    },
-    {
       "id": "3-15",
       "frage": "Wie unterscheiden sich die Verfahren im Aufwand?",
       "punkte": [
@@ -242,7 +229,7 @@
       "frage": "Warum trägt gerade der Kriminalitätsindex die Prognose der Einsatzhäufigkeit?",
       "punkte": [
         "Zeitliche Auflösung: einziges Strukturmerkmal, das sich monatlich bewegt.",
-        "Sammelindikator: korreliert mit Risikogewerbe (0,78), Leerstand (0,66) und Armut (0,61).",
+        "Sammelindikator: korreliert mit Risikogewerbe (0,78), Leerstand (0,63) und Armut (0,57).",
         "Bei gegebenem Index sind die übrigen Merkmale weitgehend redundant.",
         "Für die Einsatzart trägt er dagegen fast nichts – welche Gruppe nützt, hängt an der Zielgröße."
       ],
@@ -262,6 +249,97 @@
       "abschnitt": "8",
       "nachfrage": "Was ist dann der eigentliche Beitrag Ihrer Arbeit?",
       "nachfrage_antwort": "Weniger eine Rangfolge der Verfahren als der Befund, dass sich eine solche Rangfolge bei der Vorhersage für unbekannte Stadtteile hier nicht halten ließ. Daraus folgt die übertragbare Regel: erst die unabhängigen Einheiten zählen, dann das Verfahren wählen."
+    },
+    {
+      "id": "3-21",
+      "frage": "Was zeigt die Macro-AUROC, und warum widerspricht sie dem Macro-F1?",
+      "punkte": [
+        "Kreuzvalidierung: Logit 0,725, Random Forest 0,705, XGBoost 0,665 – hier spricht die AUROC für die Referenz.",
+        "Hold-out: XGBoost 0,818 vor Logit 0,797 und Random Forest 0,762, während im Macro-F1 dort das Logit vorn liegt.",
+        "Die AUROC misst die Rangordnung der Wahrscheinlichkeiten, das Macro-F1 die tatsächliche Zuweisung (Hand & Till 2001, S. 174).",
+        "Ein Modell kann die Klassen also gut trennen und sie dennoch schlecht zuordnen."
+      ],
+      "abschnitt": "2.5, 6.2",
+      "nachfrage": "Wie entsteht die Macro-AUROC bei vier Klassen?",
+      "nachfrage_antwort": "Je Klasse wird über alle Entscheidungsschwellen eine ROC-Kurve gegen alle übrigen Klassen gebildet. Die Macro-AUROC mittelt die vier Flächen mit gleichem Gewicht."
+    },
+    {
+      "id": "3-22",
+      "frage": "Wie gut erkennen die Baumverfahren die seltene Klasse Brand?",
+      "punkte": [
+        "Random Forest: in 49 von 50 Läufen kein einziges Mal vorhergesagt, F1 = 0.",
+        "XGBoost: 2.178-mal in 39.590 Testzeilen vorhergesagt, nur elfmal richtig (F1 0,005).",
+        "In der Entwicklung stehen nur 33 brand-dominierte Monate, je Testfold im Mittel 6,6 (2 bis 13).",
+        "Ein Viertel des Macro-F1 ruht damit auf einer Klasse, die keines der beiden Baumverfahren erkennt."
+      ],
+      "abschnitt": "6.2, 7.3",
+      "nachfrage": "Was bedeutet das für die Streuung der Ergebnisse?",
+      "nachfrage_antwort": "Über die Folds streut das Macro-F1 mit 0,057 (Random Forest) und 0,077 (XGBoost), über die Wiederholungsmittel nur mit 0,014 und 0,015. Der Mittelwert über 50 Läufe verdeckt diese Instabilität."
+    },
+    {
+      "id": "3-23",
+      "frage": "Wie schneiden Random Forest und XGBoost im Strukturstrang gegeneinander ab?",
+      "punkte": [
+        "Random Forest vor XGBoost: +0,018 Macro-F1, acht von zehn Wiederholungen, p = 0,010, d = 1,16.",
+        "Der Strukturstrang bildet eine eigene Testfamilie mit diesem einen Vergleich.",
+        "Zusammengelegt mit den sechs Tests des Mengenstrangs bliebe jede Entscheidung gleich; der Strukturvergleich ergäbe korrigiert p = 0,039.",
+        "Im Aufwand liegen beide gleichauf (2,47 und 2,46 Sekunden je Fold), die Wahl entscheidet allein die Güte."
+      ],
+      "abschnitt": "6.2, 6.3, 6.4",
+      "nachfrage": "Warum zwei getrennte Testfamilien?",
+      "nachfrage_antwort": "Weil die beiden Stränge verschiedene Teilfragen beantworten: die Menge der Einsatzlast und ihre Zusammensetzung."
+    },
+    {
+      "id": "3-25",
+      "frage": "Wie funktioniert SHAP, und wie wurde die Attribution berechnet?",
+      "punkte": [
+        "SHAP teilt eine Vorhersage auf die Merkmale auf: Jedes erhält seinen Beitrag, gemittelt über alle Reihenfolgen, in denen die Merkmale hinzukommen (Lundberg & Lee 2017, S. 4–5).",
+        "Die Beiträge ergeben zusammen genau den Abstand der Vorhersage zur durchschnittlichen Vorhersage.",
+        "Berechnet mit TreeSHAP für den Random Forest auf Fold 5 der ersten Wiederholung, dem einzigen ohne Testwert außerhalb des gelernten Bereichs.",
+        "Verdichtet auf die fünf Faktorgruppen, weil Wichtigkeitsmaße von Random Forests korrelierte Merkmale bevorzugen (Strobl et al. 2008, S. 1) und TreeSHAP Abhängigkeiten nur teilweise abbildet (Aas et al. 2021, S. 2)."
+      ],
+      "abschnitt": "2.6, 6.5",
+      "nachfrage": "Wie verlässlich ist eine solche Erklärung?",
+      "nachfrage_antwort": "Sie ist ein zweites Modell über dem ersten und bildet dessen Rechenweg nicht vollständig ab (Rudin 2019, S. 1, 3–4). Deshalb trägt die Ablation die Aussage, nicht die Attribution."
+    },
+    {
+      "id": "3-26",
+      "frage": "Wie wurde die Ablation durchgeführt, und wo liegen ihre Grenzen?",
+      "punkte": [
+        "Je Faktorgruppe weglassen, das Modell neu anpassen und die Güteänderung messen.",
+        "Im Mengenstrang für die Referenz, im Strukturstrang für alle drei Modelle.",
+        "Nicht getestet, weil nur die vorab festgelegten Vergleiche geprüft werden – sie bleibt beschreibend.",
+        "Bei den Bäumen stammen die Hyperparameter aus dem vollen Merkmalssatz, die Verschlechterung enthält also auch eine nicht mehr passende Einstellung; die Referenzen sind davon frei."
+      ],
+      "abschnitt": "3.2, 6.5",
+      "nachfrage": "Warum nicht einfach die Merkmalswerte vertauschen (Permutation)?",
+      "nachfrage_antwort": "Vertauschte Werte führen das Modell in datenleere Regionen, korrelierte Merkmale erscheinen dadurch zu wichtig. Verlässlicher ist, das Merkmal zu entfernen und neu anzupassen (Hooker et al. 2021, S. 4)."
+    },
+    {
+      "id": "3-27",
+      "frage": "Wie ordnen sich Ihre Befunde in den Forschungsstand ein?",
+      "punkte": [
+        "Jennings (1999): Richtung bestätigt, Rang nicht – bei der Einsatzhäufigkeit ist allein die registrierte Kriminalitätsbelastung unverzichtbar.",
+        "Grinsztajn et al. (2022): Bäume vorn – hier gegenläufig, kein Verfahren übertrifft die Referenz, in der Kreuzvalidierung liegt Ridge vorn.",
+        "Fernández-Delgado et al. (2014): Random Forest an der Spitze – teils bestätigt, nur im Strukturstrang und nur in der Kreuzvalidierung.",
+        "Rudin (2019) und Shmueli (2010): bestätigt – die lineare Form wird verworfen, und doch trennt sich kein Verfahren von der Referenz."
+      ],
+      "abschnitt": "7.1",
+      "nachfrage": "Widerlegen Sie damit Grinsztajn et al.?",
+      "nachfrage_antwort": "Nein, die Abweichung entsteht unter anderen Bedingungen: Grinsztajn et al. nehmen nur Datensätze mit unabhängigen Beobachtungen auf (Grinsztajn et al. 2022, S. 3), hier stammen alle Zeilen aus 36 Stadtteilen und geprüft wird an unbekannten."
+    },
+    {
+      "id": "3-28",
+      "frage": "Warum ist das Bestimmtheitsmaß der Mittelwert-Baseline negativ?",
+      "punkte": [
+        "Stufe 1 erreicht R² = −0,865 in der Kreuzvalidierung, im Hold-out −0,126.",
+        "Vorhergesagt wird der Mittelwert der Trainingsstadtteile, gemessen am Mittelwert der Testdaten.",
+        "Weil sich die Stadtteile im Niveau stark unterscheiden, liegt der eine Mittelwert für die zurückgehaltenen Stadtteile neben dem anderen.",
+        "Auf Testdaten ist R² nach unten offen: Liegt ein Modell weiter daneben als der Testmittelwert, wird es negativ."
+      ],
+      "abschnitt": "2.5, 4.5",
+      "nachfrage": "Warum fällt R² auf der Rate niedriger aus?",
+      "nachfrage_antwort": "Die Normierung nimmt den Größenunterschied heraus, der auf der Anzahl viel Varianz erklärt. Maßgeblich ist ohnehin der RMSE."
     }
   ]
 }

@@ -1,14 +1,15 @@
 # Kolloquium · Karteikarten
 
 Karteikarten zur Vorbereitung auf das Kolloquium der Bachelorarbeit
-„Einsatzlast der Feuerwehr San Francisco“. 80 Karten in 4 Stapeln à 20:
+„Einsatzlast der Feuerwehr San Francisco“. 111 Karten in 5 Stapeln:
 
 | Stapel | Thema |
 |---|---|
 | 1 | Fragestellung, Daten & Aufbereitung |
-| 2 | Methodik, Validierung & Statistik |
-| 3 | Ergebnisse & Interpretation |
-| 4 | Kritik, Limitationen & Prüfer-Angriffe |
+| 2 | Verfahren & Modellwahl |
+| 3 | Validierung & Statistik |
+| 4 | Ergebnisse & Interpretation |
+| 5 | Kritik, Limitationen & Prüfer-Angriffe |
 
 Reine statische Website (HTML, CSS, JavaScript), kein Build-Schritt, keine Abhängigkeiten.
 
@@ -39,10 +40,11 @@ Alle Inhalte stehen in `data/`. Die Programmdateien müssen dafür nicht angefas
 ```
 data/
 ├── index.json       Titel, Kartenstand, Liste und Reihenfolge der Stapel
-├── stapel-1.json
-├── stapel-2.json
-├── stapel-3.json
-└── stapel-4.json
+├── stapel-1.json    Stapel 1
+├── stapel-2.json    Stapel 2
+├── stapel-5.json    Stapel 3 (die Reihenfolge legt index.json fest)
+├── stapel-3.json    Stapel 4
+└── stapel-4.json    Stapel 5
 ```
 
 ### Aufbau einer Karte
@@ -76,10 +78,10 @@ In `frage`, `punkte`, `nachfrage` und `nachfrage_antwort` wird `**so**` fett dar
 ### Typische Änderungen
 
 - **Text korrigieren:** einfach den Text ändern. Der Lernstand der Karte bleibt erhalten.
-- **Karte hinzufügen:** Block kopieren, neue `id` vergeben (z. B. `"2-21"`), Komma zwischen den Karten nicht vergessen.
+- **Karte hinzufügen:** Block kopieren, neue `id` vergeben (z. B. `"1-29"`), Komma zwischen den Karten nicht vergessen.
 - **Karte löschen:** Block entfernen. Den Lernstand dieser Karte ignoriert die App danach.
 - **Reihenfolge ändern:** Blöcke verschieben. Ohne Mischen erscheinen die Karten in Dateireihenfolge.
-- **Neuer Stapel:** Datei `data/stapel-5.json` nach dem Muster der anderen anlegen und in `data/index.json` unter `"stapel"` eintragen.
+- **Neuer Stapel:** Datei `data/stapel-6.json` nach dem Muster der anderen anlegen und in `data/index.json` unter `"stapel"` eintragen.
 - **`id` ändern** setzt den Lernstand dieser Karte zurück, deshalb nur bei Bedarf.
 
 ### Prüfen

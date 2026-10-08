@@ -1,86 +1,8 @@
 {
   "id": "stapel-2",
-  "titel": "Methodik, Validierung & Statistik",
-  "kurz": "Methodik & Statistik",
+  "titel": "Verfahren & Modellwahl",
+  "kurz": "Verfahren",
   "karten": [
-    {
-      "id": "2-01",
-      "frage": "Wie ist die Validierung aufgebaut?",
-      "punkte": [
-        "6 der 36 Stadtteile bilden das Hold-out und bleiben bis zur Schlussbewertung gesperrt.",
-        "Auf den übrigen 30 läuft eine nach Stadtteilen gruppierte Kreuzvalidierung mit 5 Folds zu je 6 Stadtteilen.",
-        "Sie wird 10-mal mit neuer Zuteilung wiederholt: 50 Läufe je Verfahren.",
-        "Zum Schluss wird jedes Verfahren auf allen 30 Stadtteilen angepasst und einmal auf dem Hold-out gemessen."
-      ],
-      "abschnitt": "4.5",
-      "nachfrage": "Warum fünf Folds und nicht zehn?",
-      "nachfrage_antwort": "Bei zehn Folds stünden nur drei Stadtteile im Test, das Ergebnis hinge noch stärker an einzelnen Einheiten, und die seltene Klasse Brand fehlte in mehr Testfolds. Fünf Folds halten 24 Stadtteile im Training und sechs im Test."
-    },
-    {
-      "id": "2-02",
-      "frage": "Warum werden ganze Stadtteile zurückgehalten statt zeitlich zu teilen?",
-      "punkte": [
-        "Die Forschungsfrage zielt auf Stadtteile, die das Modell nicht kennt.",
-        "Bei einem Zeitschnitt stünde jeder Stadtteil in Training und Test, das Modell kennte sein Niveau.",
-        "Weil 92,5 % der Varianz zwischen den Stadtteilen liegen, mäße ein Zeitschnitt im Kern nur zeitliche Stabilität.",
-        "Räumlich geblockte Validierung ist bei Vorhersage an neuen Orten angezeigt (Roberts et al. 2017, S. 925)."
-      ],
-      "abschnitt": "4.5, 7.3",
-      "nachfrage": "Was verlieren Sie durch diese Entscheidung?",
-      "nachfrage_antwort": "Die Fortschreibung: Ob die geschätzten Zusammenhänge in einigen Jahren noch gelten, prüft die Arbeit nicht. Außerdem stehen je Fold nur 24 Stadtteile im Training."
-    },
-    {
-      "id": "2-03",
-      "frage": "Wie werden die Stadtteile auf Folds und Hold-out verteilt?",
-      "punkte": [
-        "Sortierung absteigend nach Zahl brand-dominierter Monate, bei Gleichstand nach Bevölkerung.",
-        "Dann reihum auf sechs Gruppen; Gruppe 0 ist das Hold-out, Gruppen 1 bis 5 sind die Folds.",
-        "Ohne diese Schichtung gäbe es Folds ganz ohne Brand-Testfälle.",
-        "Die Zuteilung steht als Spalte in der Datei – alle Verfahren sehen garantiert dieselben Folds."
-      ],
-      "abschnitt": "4.5",
-      "nachfrage": "Nutzen Sie damit nicht Information aus der Zielgröße – ist das ein Leck?",
-      "nachfrage_antwort": "Nein. Die Zielgröße bestimmt nur, welche Stadtteile gemeinsam getestet werden; sie geht in kein Merkmal und kein Modell ein – dieselbe Logik wie bei einer stratifizierten Gruppen-Kreuzvalidierung."
-    },
-    {
-      "id": "2-04",
-      "frage": "Was passiert in den zehn Wiederholungen?",
-      "punkte": [
-        "Die 30 Entwicklungsstadtteile bilden sechs Rangblöcke zu je fünf.",
-        "Je Wiederholung werden die fünf Stadtteile eines Blocks neu auf die fünf Folds gemischt (Seed 42 + Nummer).",
-        "Jeder Fold behält einen Stadtteil je Block: Größe 6 und Schichtung bleiben erhalten.",
-        "Das Hold-out bleibt in allen Wiederholungen unverändert; Wiederholung 0 ist die Zuteilung der Datei."
-      ],
-      "abschnitt": "3.3, 4.5",
-      "nachfrage": "Warum nicht einfach die Gruppen rotieren?",
-      "nachfrage_antwort": "Rotieren tauscht nur die Nummern der Gruppen, nicht ihre Zusammensetzung: Bei festem Hold-out entstünden zehn identische Kopien desselben Laufs mit einer Streuung von exakt null. Das Mischen innerhalb der Rangblöcke ändert die Zusammensetzung und hält Größe und Schichtung."
-    },
-    {
-      "id": "2-05",
-      "frage": "Welche Baselines gibt es und woran wird Erfolg gemessen?",
-      "punkte": [
-        "Stufe 1 (trivial): Gesamtmittelwert bzw. Mehrheitsklasse – prüft, ob die Merkmale überhaupt Information tragen.",
-        "Stufe 2 (Referenz): Poisson-GLM mit Offset bzw. multinomiales Logit mit ausgeglichenen Klassengewichten.",
-        "Beide Stufen laufen auf denselben Folds, Merkmalen und Läufen wie die Verfahren.",
-        "Erfolgreich ist ein Verfahren nur, wenn es die Stufe-2-Referenz übertrifft."
-      ],
-      "abschnitt": "4.5",
-      "nachfrage": "Warum reicht es nicht, die Mittelwert-Baseline zu schlagen?",
-      "nachfrage_antwort": "Wer nur den Mittelwert schlägt, zeigt lediglich, dass die Merkmale Information tragen. Gefragt ist, ob ein aufwendiges Verfahren mehr leistet als ein einfaches Modell mit denselben Merkmalen – dafür steht Stufe 2."
-    },
-    {
-      "id": "2-06",
-      "frage": "Warum laufen die Referenzmodelle ohne Strafterm und ohne Tuning?",
-      "punkte": [
-        "Ohne Strafterm gibt es keinen Parameter, der gewählt werden müsste.",
-        "Ein Bibliotheks-Vorgabewert wäre keine für diese Daten getroffene Wahl.",
-        "Ein optimierter Wert bräuchte ein eigenes Auswahlverfahren je Fold.",
-        "Die Referenz ist damit in jedem Lauf identisch und von keinem Suchraum abhängig."
-      ],
-      "abschnitt": "4.5",
-      "nachfrage": "Ist es nicht unfair, getunte Verfahren gegen eine ungetunte Referenz antreten zu lassen?",
-      "nachfrage_antwort": "Nein: Ohne Strafterm hat die Referenz nichts, was sich tunen ließe. Was Tuning bei linearer Form bringt, zeigt Ridge – und auch Ridge übertrifft die Referenz nicht signifikant."
-    },
     {
       "id": "2-07",
       "frage": "Warum ein Poisson-Modell und keine negative Binomialverteilung?",
@@ -173,95 +95,134 @@
       "nachfrage_antwort": "Es hätte die Suchzeit von rund 137 Minuten verzehnfacht. Geprüft ist, dass die übertragenen Parameter keinen Vorteil verschaffen; eine Suche je Wiederholung ist als Anschlussschritt benannt."
     },
     {
-      "id": "2-14",
-      "frage": "Mit welchen Gütemaßen wird der Mengenstrang bewertet?",
+      "id": "2-21",
+      "frage": "Was ist ein verallgemeinertes lineares Modell?",
       "punkte": [
-        "Hauptmaß RMSE: Wurzel des mittleren quadrierten Fehlers, in Einsätzen, bestraft große Fehler stärker.",
-        "Ergänzt um MAE (robuster gegen Ausreißer) und R².",
-        "R² wird gegen den Mittelwert der Testdaten gemessen und kann negativ werden.",
-        "Alle Maße werden nach dem Zurückrechnen auf die Anzahl berechnet, für alle Verfahren gleich."
+        "Drei Bestandteile: eine Verteilung aus der Exponentialfamilie, ein linearer Prädiktor x′β und eine Linkfunktion g, die beide verbindet: g(E[y | x]) = x′β.",
+        "Linear in den Merkmalen ist nicht der Erwartungswert selbst, sondern der mit g transformierte Erwartungswert.",
+        "Links: Identität (lineare Regression), Logit (logistische Regression), Logarithmus (Poisson-Regression).",
+        "Eingeführt von Nelder und Wedderburn, um getrennt behandelte Verfahren unter einem Schätzverfahren zusammenzufassen (Nelder & Wedderburn 1972, S. 370, 372)."
       ],
-      "abschnitt": "2.5",
-      "nachfrage": "Warum RMSE als Hauptmaß und nicht MAE?",
-      "nachfrage_antwort": "Der RMSE steht in der Einheit der Zielgröße und bestraft große Fehlgriffe stärker – gerade die zählen bei der Vorhaltung. Der MAE wird mitberichtet und führt in der Kreuzvalidierung zur selben Reihenfolge."
+      "abschnitt": "2.3",
+      "nachfrage": "Wo liegt die Grenze dieser Modellklasse?",
+      "nachfrage_antwort": "Im linearen Prädiktor: Jedes Merkmal wirkt unabhängig von den übrigen. Krümmung lässt sich über Potenzen abbilden, eine Wechselwirkung aber nur, wenn ihr Produkt vorab als eigener Regressor aufgenommen wird."
     },
     {
-      "id": "2-15",
-      "frage": "Mit welchen Gütemaßen wird der Strukturstrang bewertet, und warum nicht Accuracy?",
+      "id": "2-22",
+      "frage": "Wie funktioniert die Poisson-Regression, und wie liest man ihre Koeffizienten?",
       "punkte": [
-        "Hauptmaß Macro-F1: F1 je Klasse, ungewichtet gemittelt – jede Klasse zählt gleich.",
-        "Ergänzt um die Macro-AUROC (One-vs-Rest), die die Rangordnung der Wahrscheinlichkeiten misst.",
-        "Accuracy wird nur mitgeführt: Immer „Fehlalarm“ erreicht schon 0,80.",
-        "Die Mehrheitsklasse kommt beim Macro-F1 dagegen nur auf 0,22."
+        "Für nichtnegative ganze Zahlen ohne Obergrenze: Poisson-Verteilung mit dem Logarithmus als Link, log(μ) = x′β.",
+        "Negative Vorhersagen sind ausgeschlossen, die Koeffizienten wirken multiplikativ auf den Erwartungswert.",
+        "Kennzeichen: Erwartungswert gleich Varianz – je größer der erwartete Wert, desto größer seine Streuung.",
+        "Geschätzt per Maximum-Likelihood ohne Strafterm; mit dem Offset log(B) wird daraus ein Modell für die Rate je Einwohner."
       ],
-      "abschnitt": "2.5",
-      "nachfrage": "Wie berechnet sich der F1-Wert genau?",
-      "nachfrage_antwort": "F1 je Klasse ist das harmonische Mittel aus Präzision und Trefferquote: 2·P·R / (P + R). Macro-F1 mittelt die vier Klassenwerte ungewichtet; sagt ein Modell eine Klasse nie vorher, geht sie mit F1 = 0 ein."
+      "abschnitt": "2.3",
+      "nachfrage": "Was heißt multiplikativ konkret?",
+      "nachfrage_antwort": "Steigt ein Merkmal um eine Einheit, ändert sich der Erwartungswert um den Faktor exp(β), unabhängig vom Ausgangsniveau. Bei β = 0,1 sind das rund 10,5 % mehr Einsätze."
     },
     {
-      "id": "2-16",
-      "frage": "Mit welchem Test werden die Verfahren verglichen?",
+      "id": "2-23",
+      "frage": "Wie funktioniert das multinomiale Logit, und warum ausgeglichene Klassengewichte?",
       "punkte": [
-        "Gepaarter Wilcoxon-Vorzeichen-Rang-Test auf den 10 Wiederholungsmitteln, α = 0,05.",
-        "Gepaart, weil alle Verfahren dieselben Folds sehen – die Fold-Schwierigkeit kürzt sich heraus.",
-        "Nichtparametrisch, weil sich bei 10 Werten keine Normalverteilung annehmen lässt (Demšar 2006, S. 8).",
-        "Rechnet mit Rängen der Differenzen: große Siege und Niederlagen wiegen mehr als knappe."
+        "Gegenstück zum Poisson-Modell für eine nominale Zielgröße mit K ungeordneten Klassen.",
+        "Gegen eine Referenzklasse K werden K − 1 Gleichungen für die logarithmierten Chancenverhältnisse geschätzt (Formel 3).",
+        "Daraus folgen die Wahrscheinlichkeiten aller K Klassen, sie addieren sich zu eins; vorhergesagt wird die größte.",
+        "Ausgeglichene Gewichte lenken das Modell zu den seltenen Klassen: Accuracy 0,590 statt 0,795 der Mehrheitsklasse, aber Macro-F1 0,301 statt 0,221."
       ],
-      "abschnitt": "2.5, 6.1",
-      "nachfrage": "Warum testen Sie nicht auf den 50 Einzelläufen?",
-      "nachfrage_antwort": "Die 50 Läufe sind dieselben 30 Stadtteile mit überlappenden Trainingsmengen; sie als unabhängig zu testen wäre Pseudoreplikation und macht p-Werte zu klein. XGBoost gegen GLM wäre auf 50 Läufen scheinbar signifikant (p = 0,035), auf 10 Mitteln nicht (p = 0,275)."
+      "abschnitt": "2.3, 4.5",
+      "nachfrage": "Warum braucht es überhaupt eine Referenzklasse?",
+      "nachfrage_antwort": "Ein gemeinsamer Summand auf allen Koeffizientenvektoren ließe die Wahrscheinlichkeiten unverändert, festgelegt sind nur die Abstände zwischen den Vektoren. Erst die Referenz macht die Schätzung eindeutig (Winkelmann & Boes 2006, S. 140)."
     },
     {
-      "id": "2-17",
-      "frage": "Warum wird auf 10 Wiederholungsmitteln statt auf 50 Läufen getestet?",
+      "id": "2-24",
+      "frage": "Wie sieht die Ridge-Schätzung mathematisch aus?",
       "punkte": [
-        "Die 50 Läufe sind nicht unabhängig: gleiche 30 Stadtteile, überlappende Trainingsdaten.",
-        "Sie als unabhängig zu behandeln wäre Pseudoreplikation.",
-        "Beispiel: XGBoost gegen GLM ist auf 10 Mitteln nicht signifikant (p = 0,275), auf 50 Läufen scheinbar schon (p = 0,035).",
-        "Auch die 10 Mittel unterschätzen die Unsicherheit noch – das Intervall ist eine Untergrenze."
+        "Minimiert die Residuenquadratsumme plus λ · Σ βⱼ²; bei λ = 0 entsteht die gewöhnliche Kleinste-Quadrate-Schätzung.",
+        "Geschlossene Lösung: β̂ = (X′X + λI)⁻¹ X′y (Hastie et al. 2009, S. 64).",
+        "Der Strafterm erhöht jeden Diagonaleintrag von X′X um λ: Für λ > 0 ist die Matrix invertierbar, auch wenn X′X fast singulär ist.",
+        "Der Achsenabschnitt bleibt unbestraft; die Merkmale werden standardisiert, je Fold nur auf den Trainingszeilen."
       ],
-      "abschnitt": "6.1, 6.3",
-      "nachfrage": "Was ist der kleinste p-Wert, den der Test bei zehn Paaren liefern kann?",
-      "nachfrage_antwort": "Rund 0,002: Haben alle zehn Differenzen dasselbe Vorzeichen, ist das die extremste von 2¹⁰ = 1.024 Vorzeichenkombinationen, und zweiseitig zählen zwei davon (2/1.024). Nach Holm in der Familie aus sechs Tests wird daraus 0,012."
+      "abschnitt": "2.4, 5.2",
+      "nachfrage": "Was passiert, wenn λ sehr groß wird?",
+      "nachfrage_antwort": "Die Koeffizienten werden gegen null gezogen, das Modell sagt immer mehr den Mittelwert vorher. Gewählt wurden je Fold Werte zwischen 42 und 1.428 aus einem Suchraum von 10⁻⁵ bis 10⁵."
     },
     {
-      "id": "2-18",
-      "frage": "Wie gehen Sie mit mehreren Tests um?",
+      "id": "2-25",
+      "frage": "Was steht in der Zielfunktion von XGBoost, und welche Stellgrößen gibt es?",
       "punkte": [
-        "Primärtests: jedes Verfahren gegen seine Referenz – einzeln vorab formuliert, ohne Korrektur.",
-        "Sekundärtests: Verfahren untereinander, nach Holm korrigiert.",
-        "Holm prüft schrittweise: kleinster p-Wert gegen α/k, nächster gegen α/(k−1) usw. (Demšar 2006, S. 12–13).",
-        "Gleiche Absicherung wie Bonferroni, aber mehr Trennschärfe."
+        "Verlust über alle Beobachtungen plus ein Strafterm je Baum: Ω = γ · J + ½ · λ · ‖w‖² (Chen & Guestrin 2016, S. 786).",
+        "γ bestraft die Zahl der Endknoten, λ die Größe der Blattwerte; gesucht wird nur λ, γ bleibt auf dem Vorgabewert null.",
+        "Eine Schrittweite skaliert jeden neuen Baum herunter, damit die folgenden Bäume Spielraum für Korrekturen behalten.",
+        "Baumzahl und Schrittweite hängen zusammen: mehr Bäume, kleinere Schrittweite (Probst et al. 2019, S. 17)."
       ],
-      "abschnitt": "2.5, 6.1",
-      "nachfrage": "Warum korrigieren Sie die Primärtests nicht?",
-      "nachfrage_antwort": "Jeder Primärtest beantwortet eine eigene, vorab festgelegte Frage: Schlägt dieses Verfahren seine Referenz? Selbst korrigiert bliebe der einzige signifikante Primärbefund, Random Forest im Strukturstrang mit p = 0,004, unter 0,05."
+      "abschnitt": "2.4",
+      "nachfrage": "Welche Hyperparameter sucht die Arbeit bei XGBoost?",
+      "nachfrage_antwort": "Sieben im Mengenstrang: Baumzahl, Schrittweite, Baumtiefe, Zeilen- und Merkmalsanteil je Baum, den Strafterm λ und den Varianzexponenten der Tweedie-Verlustfunktion. In der Klassifikation entfällt der Exponent."
     },
     {
-      "id": "2-19",
-      "frage": "Was berichten Sie neben dem p-Wert, und was heißt „nicht signifikant“?",
+      "id": "2-26",
+      "frage": "Warum Zufallssuche statt Gittersuche, und warum 100 Ziehungen?",
       "punkte": [
-        "Mittlere Differenz mit 95-%-Konfidenzintervall (t-Intervall über die 10 Differenzen).",
-        "Wie oft ein Verfahren gewinnt (z. B. 8 von 10) und die Effektstärke.",
-        "Bei 10 Paaren ist die Trennschärfe gering.",
-        "„Nicht signifikant“ heißt fehlender Nachweis, nicht Gleichheit (Altman & Bland 1995, S. 485)."
+        "Die Gittersuche prüft jede Kombination, ihr Aufwand wächst exponentiell mit der Zahl der Parameter.",
+        "Meist bestimmen nur wenige Hyperparameter das Ergebnis; für diese prüft die Zufallssuche bei gleichem Aufwand mehr Werte (Bergstra & Bengio 2012, S. 281–282).",
+        "Trefferwahrscheinlichkeit 1 − (1 − v/V)^T: Einen Zielbereich von 5 % trifft sie mit 100 Ziehungen zu 99,4 %, mit 50 zu 92,3 % (Bergstra & Bengio 2012, S. 296).",
+        "Die Formel hängt nicht von der Parameterzahl ab: Ridge mit einem und XGBoost mit sieben erhalten dasselbe Budget."
       ],
-      "abschnitt": "6.1, 6.3",
-      "nachfrage": "Ridge gewinnt 8 von 10 gegen das GLM – warum ist das nicht signifikant?",
-      "nachfrage_antwort": "Der Test zählt nicht nur Siege, sondern gewichtet sie nach ihrer Größe, und die zwei Niederlagen von Ridge gehören zu den größeren Differenzen. Selbst ein reiner Vorzeichentest käme bei 8 von 10 nur auf p ≈ 0,11."
+      "abschnitt": "2.5, 5.3",
+      "nachfrage": "Hat das Budget gereicht?",
+      "nachfrage_antwort": "Ja: Die zweite Hälfte der Ziehungen verbessert den besten inneren Wert bei keinem Modell um mehr als 0,020, ein Bruchteil der Streuung zwischen den Folds (0,040 bis 0,342)."
     },
     {
-      "id": "2-20",
-      "frage": "Wie schützen Sie die Auswertung vor Leckage?",
+      "id": "2-27",
+      "frage": "Welche Hyperparameter wurden gesucht, und wo landete die Suche?",
       "punkte": [
-        "Ganze Stadtteile zurückhalten; der Selbsttest prüft, dass kein Stadtteil in Training und Test steht.",
-        "Hold-out im Code gesperrt, Auswertung nur mit ausdrücklichem Aufrufargument.",
-        "Standardisierung und Klassengewichte je Fold nur auf dem Trainingsteil angepasst.",
-        "Kein Merkmal nutzt Information aus der Zukunft (Kaufman et al. 2011, S. 559–560)."
+        "Ridge: Strafterm von 10⁻⁵ bis 10⁵, gewählt 42 bis 1.428 – die engste Zone aller Parameter.",
+        "Random Forest: Baumzahl, Baumtiefe, Beobachtungen je Blatt, Merkmale je Split; im Mengenstrang in vier von fünf Folds drei der zwölf Merkmale je Split.",
+        "XGBoost: Baumzahl, Schrittweite, Baumtiefe, Zeilen- und Merkmalsanteil, Strafterm λ, im Mengenstrang zusätzlich der Tweedie-Varianzexponent (1,01 bis 1,90).",
+        "An die Ränder stößt die Suche nur in einzelnen Folds, etwa XGBoost mit Baumtiefe 14 oder 1; die übrigen Werte liegen im Inneren des Raums."
       ],
-      "abschnitt": "4.3, 4.5, 5.2",
-      "nachfrage": "Wo sehen Sie trotzdem noch ein Restrisiko?",
-      "nachfrage_antwort": "An drei Stellen: Nachbarn eines Teststadtteils können im Training stehen, die Suche lief nur in Wiederholung 0, und die baulichen Merkmale von 2020 lagen für die frühen Jahre noch nicht vor. Die Suche ist nachgemessen, die beiden anderen sind als Grenzen benannt."
+      "abschnitt": "5.3",
+      "nachfrage": "Und wenn ein Wert am Rand liegt – lag das Optimum dahinter?",
+      "nachfrage_antwort": "Bei natürlichen Grenzen wie allen Merkmalen je Split oder einer Beobachtung je Blatt gibt es nichts dahinter. Bei der Baumzahl wiegt ein Randkontakt wenig, weil weitere Bäume den Fehler eines Random Forest kaum noch ändern (Breiman 2001, S. 5)."
+    },
+    {
+      "id": "2-30",
+      "frage": "Was zeigt die Eignungsprüfung zur funktionalen Form?",
+      "punkte": [
+        "RESET-Test auf den 24 Trainingsstadtteilen von Fold 1, auf log(1 + y): F = 360,4 – die lineare Form reicht in den Anpassungsdaten nicht.",
+        "Krümmung: Bei der Bevölkerung liegt Spearman (+0,744) über Pearson (+0,532).",
+        "Bei der Armutsquote umgekehrt (+0,617 gegen +0,342): Einzelne Stadtteile ziehen die Gerade an sich.",
+        "Wechselwirkungen: Mit allen 45 Produkten der zehn Strukturmerkmale steigt das adjustierte R² von 0,859 auf 0,932."
+      ],
+      "abschnitt": "5.1",
+      "nachfrage": "Wie funktioniert der RESET-Test?",
+      "nachfrage_antwort": "Er nimmt die quadrierten Vorhersagen eines linearen Modells als zusätzliches Merkmal auf. Gewinnt das Modell dadurch, fehlt ihm etwas, das eine Gerade nicht abbilden kann (Ramsey 1969, S. 360–362)."
+    },
+    {
+      "id": "2-31",
+      "frage": "Wie haben Sie Überdispersion und ungleiche Streuung geprüft?",
+      "punkte": [
+        "Überdispersion: Hilfsregression nach Cameron und Trivedi (Code 14, Winkelmann 2008, S. 93, 118) – der einzige der vier Tests, den keine Bibliothek mitbringt.",
+        "Die Hilfsgröße ((y − μ)² − y) / μ wird ohne Konstante auf μ regressiert; der Koeffizient entspricht dem Dispersionsparameter der negativen Binomialverteilung, t = 18,0.",
+        "Einseitig getestet, weil eine Varianz unter dem Erwartungswert bei Einsatzzahlen keine sinnvolle Gegenhypothese ist.",
+        "Breusch-Pagan (LM = 525,1) in der Voreinstellung von statsmodels, die keine Normalverteilung voraussetzt – denn Jarque-Bera verwirft sie (JB = 150,0)."
+      ],
+      "abschnitt": "5.1",
+      "nachfrage": "Was unterscheidet diesen Test vom Dispersionsindex?",
+      "nachfrage_antwort": "Der Index ist eine Kennzahl und misst die Streuung um den Mittelwert aller Stadtteile, der Test die Streuung um die Vorhersage. Er nutzt denselben Offset wie die Referenz, geprüft wird also genau die spätere Messlatte."
+    },
+    {
+      "id": "2-32",
+      "frage": "Wie haben Sie geprüft, ob sich die Einsatzarten überhaupt trennen lassen?",
+      "punkte": [
+        "Mit dem Kruskal-Wallis-Test, der verteilungsfreien Verallgemeinerung des Wilcoxon-Rangsummentests auf mehr als zwei Gruppen (Fahrmeir et al. 2023, S. 536).",
+        "Gerechnet je Merkmal über die vier Klassen, auf den Trainingsstadtteilen des ersten Folds.",
+        "Alle zehn Strukturmerkmale unterscheiden sich, H zwischen 30,6 und 459,6; die p-Werte gelten nur nominell.",
+        "Hätte kein Merkmal die Einsatzarten getrennt, wäre der Strukturstrang entfallen."
+      ],
+      "abschnitt": "5.1",
+      "nachfrage": "Heißt das, die Merkmale sagen die Einsatzart gut vorher?",
+      "nachfrage_antwort": "Nein, sie lassen eine Klassenzuordnung zu, mehr nicht. Das Logit kommt nur von 0,221 auf 0,301 Macro-F1, und kein einzelnes Merkmal trägt die Aussage."
     }
   ]
 }

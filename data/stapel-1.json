@@ -151,8 +151,9 @@
       "id": "1-12",
       "frage": "Wie sind die vier Klassen verteilt?",
       "punkte": [
-        "Entwicklungspanel: Fehlalarm 79,5 %, technische Hilfe 16,1 %, Rettung 3,6 %, Brand 0,8 %.",
-        "Hold-out: Fehlalarm 80,1 %, technische Hilfe 14,9 %, Brand 4,7 %, Rettung 0,4 %.",
+        "Alle 36 Stadtteile (Arbeit, 4.2): Fehlalarm 79,6 %, technische Hilfe 15,9 %, Rettung 3,1 %, Brand 1,5 %.",
+        "Entwicklungspanel (Ordner, panelprofil.md): Fehlalarm 79,5 %, technische Hilfe 16,1 %, Rettung 3,6 %, Brand 0,8 %.",
+        "Hold-out (Ordner, panelprofil.md): Fehlalarm 80,1 %, technische Hilfe 14,9 %, Brand 4,7 %, Rettung 0,4 %.",
         "Von 70 brand-dominierten Monaten liegen 35 allein in Bayview Hunters Point.",
         "Die Schieflage bestimmt die Wahl des Gütemaßes (Macro-F1 statt Accuracy)."
       ],
@@ -219,7 +220,7 @@
       "punkte": [
         "92,5 % der Varianz der Einsatzzahl liegen zwischen den Stadtteilen, nicht über die Monate.",
         "Der Stadtteilmittelwert allein erreicht ein Bestimmtheitsmaß von 0,925.",
-        "Die Einsatzzahlen sind stark überdispers (Dispersionsindex 79,5 statt 1).",
+        "Die Einsatzzahlen sind stark überdispers: Die Varianz liegt beim 61,8-Fachen des Mittelwerts (Poisson: 1), auf den Trainingsstadtteilen von Fold 1 beim 79,5-Fachen (5.2).",
         "Daraus folgt der Validierungsrahmen: Ganze Stadtteile müssen zurückgehalten werden."
       ],
       "abschnitt": "4.2",
@@ -264,6 +265,112 @@
       "abschnitt": "2.7",
       "nachfrage": "Welche Studie kommt Ihrer Arbeit am nächsten, und was machen Sie anders?",
       "nachfrage_antwort": "Dey et al. (2023) mit einer merkmalbasierten Lastprognose für die Standortplanung einer Feuerwehr. Dort wird je Standort ein Einsatz ja oder nein über Trefferquoten bewertet; hier geht es um die monatliche Last unbekannter Stadtteile, gemessen an einem Zähldatenmodell, mit Stadtteil-Blöcken und Rechenzeit."
+    },
+    {
+      "id": "1-21",
+      "frage": "Wie gehen Sie mit fehlenden Werten und Ausreißern um?",
+      "punkte": [
+        "Fehlende Merkmalswerte werden je Stadtteil nur vorwärts fortgeschrieben, nie rückwärts – ein Rückwärtsfüllen holte später erhobene Information in die Vergangenheit (Code 5).",
+        "Ein Anteil mit Nenner null wird fehlend statt null (Code 6); ACS-Platzhalter unter −999 werden als fehlend gesetzt.",
+        "Hat ein Stadtteil durchgehend Lücken, fällt er ganz heraus, nicht einzelne Monate (Lakeshore, Treasure Island) – nur ein rechteckiges Panel hält die Folds vergleichbar.",
+        "Keine Ausreißerbereinigung nach der Zielgröße; bereinigt werden nur Erfassungsfehler: 269 doppelte Einsatznummern, negative Antwortzeiten, Baujahre nach 2025.",
+        "Gesetzte Grenzen: Antwortzeit bis 60 Minuten, Baujahr ab 1800; unplausible Baujahre werden als fehlend markiert statt gelöscht."
+      ],
+      "abschnitt": "4.3, 4.4",
+      "nachfrage": "Warum ersetzen Sie fehlende Werte nicht, etwa durch den Mittelwert oder ein Modell?",
+      "nachfrage_antwort": "Weil jede solche Ersetzung Information aus anderen Stadtteilen oder späteren Jahren einspielt, die zum Prognosezeitpunkt nicht vorlag; fortgeschrieben wird nur der zuletzt verfügbare Stand. Die fertigen Analysedateien enthalten keine fehlenden Werte (README)."
+    },
+    {
+      "id": "1-22",
+      "frage": "Wie sind die drei baulichen Merkmale definiert?",
+      "punkte": [
+        "Altbauanteil: Parzellen mit Baujahr vor 1940, bezogen auf die Parzellen mit bekanntem Baujahr – sonst fiele er dort zu niedrig aus, wo das Verzeichnis lückenhaft ist.",
+        "Wohngebäudeanteil: Parzellen mit Wohnnutzung, bezogen auf alle Parzellen – gezählt, nicht nach Fläche.",
+        "Risikogewerbeanteil: eigene Setzung aus den Land-Use-Kategorien RETAIL/ENT (Einzelhandel, Unterhaltung) und PDR (Produktion, Verteilung, Reparatur), gemessen als Flächenanteil.",
+        "Alle drei stammen aus dem einzigen Jahrgang Land Use 2020, zugeordnet über den Flächenmittelpunkt (154.544 Parzellen, 99,5 %), und sind je Stadtteil konstant."
+      ],
+      "abschnitt": "4.3, 4.4",
+      "nachfrage": "Warum misst der Risikogewerbeanteil Fläche und nicht die Zahl der Parzellen?",
+      "nachfrage_antwort": "Damit eine große Gewerbefläche mehr Gewicht erhält als ein kleines Ladenlokal. Gewerbliche und industrielle Flächenanteile gehen schon in ältere Modelle zu Brandschäden und Feuerwehrkosten ein (Jennings 1999, S. 26–27)."
+    },
+    {
+      "id": "1-23",
+      "frage": "Wie werden die sozioökonomischen Merkmale gebildet?",
+      "punkte": [
+        "Fünf Merkmale aus den Fünfjahresschätzungen der ACS: Medianeinkommen, Armuts-, Akademiker- und Leerstandsquote, Medianmiete.",
+        "Zählgrößen werden über die Tracts summiert, Medianwerte bevölkerungsgewichtet gemittelt, weil sich ein Median nicht addieren lässt.",
+        "Quoten entstehen aus zwei Zählgrößen derselben Erhebung, etwa ACS B17001 für die Armutsquote.",
+        "Zeitlich gilt ACS-Jahrgang ≤ Einsatzjahr − 1: Der Jahrgang 2023 deckt 2019 bis 2023 ab und war 2023 noch nicht erschienen.",
+        "Je Stadtteil nehmen die Merkmale deshalb höchstens vier verschiedene Werte an."
+      ],
+      "abschnitt": "4.2, 4.3",
+      "nachfrage": "Warum beginnt der Analysezeitraum erst 2015?",
+      "nachfrage_antwort": "Das folgt aus der Verfügbarkeitsregel: Für Einsätze vor 2015 wäre der jüngste zulässige Jahrgang der von 2009, und der enthält in keinem Tract eine Angabe zum Bildungsabschluss."
+    },
+    {
+      "id": "1-24",
+      "frage": "Warum wird der Kalendermonat als Sinus und Kosinus kodiert?",
+      "punkte": [
+        "Als Zahl von 1 bis 12 lägen Dezember und Januar 11 auseinander, obwohl sie aufeinanderfolgen.",
+        "Sinus und Kosinus legen die Monate auf einen Kreis: sin(2π · Monat / 12) und cos(2π · Monat / 12).",
+        "Beide sind nötig: Der Sinus allein gibt Januar und Mai denselben Wert, erst der Kosinus trennt sie.",
+        "Die 12 ist eine gesetzte Periode – die Annahme jährlicher Saison steckt in der Kodierung, nicht im Modell."
+      ],
+      "abschnitt": "4.4",
+      "nachfrage": "Wie viel trägt die Saison zur Prognose bei?",
+      "nachfrage_antwort": "Wenig, aber verlässlich: Ohne die Saisonterme wird das Poisson-GLM um 0,28 RMSE schlechter, in zehn von zehn Wiederholungen. Sie sind die einzigen Merkmale, die nur innerhalb der Stadtteile variieren."
+    },
+    {
+      "id": "1-25",
+      "frage": "Welche Felder der Einsatzdaten sind gesperrt, und wie sichern Sie das ab?",
+      "punkte": [
+        "Zehn Felder sind nach dem No-Time-Machine-Grundsatz gesperrt, darunter eingesetzte Löschfahrzeuge, Alarmstufe und Ankunftszeitpunkt.",
+        "Sie hängen so eng mit der Zielgröße zusammen, dass ein Modell hohe Gütewerte erreichte, ohne eine Prognose zu leisten.",
+        "Ausgeschlossen schon beim Bilden der Analysedateien: Beide bestehen nur aus fest aufgezählten Spalten.",
+        "Ein Test prüft die fertige Datei, nicht den Code (Code 2) – er schlägt an, gleich an welcher Stelle der Fehler läge."
+      ],
+      "abschnitt": "4.3",
+      "nachfrage": "Warum nicht erst beim Modellieren ausschließen?",
+      "nachfrage_antwort": "Was nicht in die Datei gelangt, kann später nicht versehentlich in ein Modell geraten (Kaufman et al. 2011, S. 560)."
+    },
+    {
+      "id": "1-26",
+      "frage": "Wie ist die Einsatzzahl verteilt?",
+      "punkte": [
+        "Je Stadtteilmonat im Mittel 75,2 Einsätze, Median 53, Maximum 451 – deutlich rechtsschief.",
+        "Stadtteilmittel von 6,4 (Seacliff) bis 279,7 (Tenderloin), also Faktor 44; auf der Rate je 1.000 Einwohner nur noch Faktor 10.",
+        "Fünf Stadtteile liegen im Median über 150 Einsätzen (Tenderloin, Mission, South of Market, Financial District, Bayview Hunters Point), die übrigen 31 unter 110.",
+        "Schon der schwächste Monat im Tenderloin (179) liegt über dem stärksten Monat von 30 der übrigen 35 Stadtteile."
+      ],
+      "abschnitt": "4.2",
+      "nachfrage": "Woher kommt die Schiefe?",
+      "nachfrage_antwort": "Nicht aus schwankenden Monaten, sondern aus dem Abstand zwischen den Stadtteilen. Innerhalb eines Stadtteils schwanken die Monate in einem engen Band, das mit dem Niveau wächst."
+    },
+    {
+      "id": "1-27",
+      "frage": "Welche Merkmale hängen am stärksten mit der Einsatzhäufigkeit zusammen?",
+      "punkte": [
+        "Durchweg schwach bis mittel, in der erwarteten Richtung: Armut, Leerstand und Kriminalität mit mehr Einsätzen, Einkommen und Miete mit weniger.",
+        "Am stärksten: Risikogewerbeanteil (Pearson 0,680), Kriminalitätsindex (0,632), Leerstandsquote (0,524).",
+        "Pearson misst den linearen, Spearman den monotonen Zusammenhang; liegt Spearman höher, spricht das für einen gekrümmten Verlauf (Bevölkerung 0,619 gegen 0,480).",
+        "Die Merkmale korrelieren untereinander stärker als mit der Zielgröße: Medianeinkommen und Medianmiete zu 0,921."
+      ],
+      "abschnitt": "4.2",
+      "nachfrage": "Was folgt aus der starken Korrelation der Merkmale untereinander?",
+      "nachfrage_antwort": "Sie teilen sich die Information, und Koeffizienten werden instabil: Das Medianeinkommen erreicht einen Varianzinflationsfaktor von 10,64. Deshalb tritt Ridge an und nicht die einfache Kleinste-Quadrate-Schätzung."
+    },
+    {
+      "id": "1-28",
+      "frage": "Wie ist der Abgabeordner aufgebaut, und wie läuft der Code?",
+      "punkte": [
+        "prep/ erzeugt aus den Rohdaten die beiden Analysedateien, vorpruefung/ enthält Aufteilung, Baselines, Eignungsprüfung und Obergrenzen, modelle/ Suche, Kreuzvalidierung, Tests, Schlussbewertung und Attribution.",
+        "Die README führt 17 Aufrufe in fester Reihenfolge auf; tests/ prüft die erzeugten Dateien mit 20 Einzelprüfungen.",
+        "Die Hold-out-Stadtteile sind nur mit dem Argument holdout erreichbar; ein voller Lauf dauert rund drei Stunden.",
+        "data/raw enthält die Rohdaten im Abrufstand, die Aufbereitung lädt nichts nach; docs/ergebnisverzeichnis.md ordnet jeder Tabelle der Arbeit ihre Datei in results/ zu."
+      ],
+      "abschnitt": "3.2, 3.3 · Ordner",
+      "nachfrage": "Kann ich das bei mir nachrechnen?",
+      "nachfrage_antwort": "Ja, aus data/raw ohne Netzzugang mit den Paketversionen aus requirements.txt. Einen Census-API-Schlüssel braucht nur ein neuer Abruf, und der überschriebe die Rohdaten, sodass sich die Zahlen der Arbeit nicht mehr nachrechnen ließen."
     }
   ]
 }

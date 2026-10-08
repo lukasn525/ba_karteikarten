@@ -95,51 +95,25 @@
       "nachfrage_antwort": "Ungleiche Streuung trifft vor allem Standardfehler und Effizienz, und Koeffiziententests werden nicht berichtet. Die Baumverfahren tragen der Streuungsform ohnehin über die Poisson- bzw. Tweedie-Devianz Rechnung."
     },
     {
-      "id": "4-08",
-      "frage": "Ist es unfair, getunte Verfahren gegen eine ungetunte Referenz antreten zu lassen?",
-      "punkte": [
-        "Das Poisson-GLM hat ohne Strafterm keinen Parameter, der getunt werden könnte.",
-        "Ridge trennt den Effekt: linear wie die Referenz, getunt wie die Bäume.",
-        "Das Suchbudget ist ausgeschöpft: 50 weitere Ziehungen bringen kaum etwas.",
-        "Bei den Bäumen ist ein fremder Parametersatz sogar meist besser als der eigene (Random Forest 17 von 20)."
-      ],
-      "abschnitt": "4.5, 5.3",
-      "nachfrage": "Beim Logit hätte ein Strafterm aber helfen können?",
-      "nachfrage_antwort": "Möglich, und genau das ist als Limitation benannt: Im Strukturstrang tritt kein getuntes lineares Verfahren an. Daher bleibt offen, ob der Vorsprung des Random Forest aus seiner Flexibilität oder aus der Suche stammt."
-    },
-    {
-      "id": "4-09",
-      "frage": "Warum die dominante Einsatzart und nicht die Anteile der Einsatzarten?",
-      "punkte": [
-        "Die Forschungsfrage fragt nach der Art; für die Planung zählt, welche Art überwiegt.",
-        "Je Einsatz bliebe nur 1,7 Prozentpunkte Spielraum, ein geteilter Anteil verliert Trennschärfe.",
-        "Die Schwäche der Zielgröße ist gemessen: Selbst perfektes Stadtteilwissen erreicht nur 0,41.",
-        "Die Anteile direkt zu modellieren wäre eine sinnvolle Erweiterung – ein Ausblick."
-      ],
-      "abschnitt": "4.4, 6.2",
-      "nachfrage": "Ist die Aufgabe bei 27 von 30 gleichen Modalklassen nicht trivial?",
-      "nachfrage_antwort": "Für die Accuracy ja, die Mehrheitsklasse erreicht 0,80. Beim Macro-F1 zählen aber alle vier Klassen gleich, die Mehrheitsklasse kommt nur auf 0,22 – schwer ist gerade, die seltenen Monate zu treffen."
-    },
-    {
       "id": "4-10",
       "frage": "Benachbarte Stadtteile ähneln sich – ist die Validierung dadurch zu optimistisch?",
       "punkte": [
         "Die Blöcke folgen der Verwaltungsgrenze; Nachbarn eines Teststadtteils können im Training stehen.",
         "Räumliche Ähnlichkeit kann so Information in den Test tragen.",
-        "Ein Puffer um die Teststadtteile ließe im Mittel nur 8,6 statt 24 Trainingsstadtteile übrig.",
+        "Ein Puffer um die Teststadtteile ließe im Mittel nur 8,9 statt 24 Trainingsstadtteile übrig.",
         "Folge: Der berichtete Fehler fällt eher zu klein als zu groß aus – als Limitation benannt."
       ],
       "abschnitt": "7.3",
       "nachfrage": "Warum haben Sie keinen räumlichen Puffer verwendet?",
-      "nachfrage_antwort": "Er ließe im Mittel nur 8,6 statt 24 Trainingsstadtteile übrig, zu wenig für eine sinnvolle Anpassung. Deshalb ist der Blockzuschnitt als Limitation benannt: Der berichtete Fehler fällt eher zu klein aus."
+      "nachfrage_antwort": "Er ließe im Mittel nur 8,9 statt 24 Trainingsstadtteile übrig, zu wenig für eine sinnvolle Anpassung. Deshalb ist der Blockzuschnitt als Limitation benannt: Der berichtete Fehler fällt eher zu klein aus."
     },
     {
       "id": "4-11",
       "frage": "Warum ist der Anteil der Rettungseinsätze so klein?",
       "punkte": [
         "Ausgewertet ist der Datensatz Fire Incidents, nicht die Calls for Service.",
-        "Er erfasst im Wesentlichen nicht medizinische Einsätze – vor dem Termin an der Datensatzbeschreibung prüfen.",
-        "Deshalb liegt Rettung nur bei rund 4 % der Stadtteilmonate.",
+        "Laut Datensatzbeschreibung (DataSF) erfasst er nicht medizinische Einsätze („non-medical“).",
+        "Deshalb liegt Rettung nur bei 3,1 % der Stadtteilmonate (4.2).",
         "Fehlalarm umfasst nach NFIRS auch Fehlfunktionen von Meldeanlagen, nicht nur böswillige Alarme."
       ],
       "abschnitt": "4.1, 4.2",
@@ -262,6 +236,84 @@
       "abschnitt": "4.1, 3.3",
       "nachfrage": "Welche Entscheidung in der Arbeit war ganz Ihre eigene?",
       "nachfrage_antwort": "Persönlich beantworten – mit einer Entscheidung, die sich selbst herleiten lässt, etwa dem Wechsel vom Zeitschnitt zum Stadtteil-Split nach dem Befund der 92,5 % Zwischenvarianz."
+    },
+    {
+      "id": "4-21",
+      "frage": "Ist der Vergleich fair, wenn die Verfahren verschiedene Verlustfunktionen haben?",
+      "punkte": [
+        "Fairness heißt hier: dieselbe Zielgröße, dieselben Zeilen, dieselben Folds – nicht dieselbe Verlustfunktion.",
+        "Random Forest minimiert die Poisson-Devianz, XGBoost eine Tweedie-Devianz; scikit-learn 1.8.0 bietet für Wälder keine Tweedie-Devianz.",
+        "Der quadratische Fehler auf Rohzählungen würde von wenigen großen Stadtteilen bestimmt, die Varianz liegt beim 79,5-Fachen des Mittelwerts.",
+        "Bekämen alle den quadratischen Fehler, gewönne das Verfahren, dessen Annahmen zufällig zur Streuung passen – gemessen würde die Verlustfunktion, nicht das Verfahren."
+      ],
+      "abschnitt": "5.2",
+      "nachfrage": "Warum bleibt Ridge dann beim quadratischen Fehler?",
+      "nachfrage_antwort": "Weil sein Schätzer darauf aufgebaut ist. Geschätzt wird auf log(1 + y), sodass die Merkmale wie bei der Referenz multiplikativ wirken."
+    },
+    {
+      "id": "4-22",
+      "frage": "Das Poisson-GLM gewichtet große Stadtteile stärker – verzerrt das den Vergleich?",
+      "punkte": [
+        "Alle Modelle schätzen die Rate je 1.000 Einwohner und rechnen auf die Anzahl zurück.",
+        "Der Offset gibt großen Stadtteilen mehr Gewicht, die drei Verfahren gewichten jede Zeile gleich.",
+        "Beispiel: Ein Ratenfehler von 1,0 sind in Seacliff (2.422 Einwohner) 2,4 Einsätze, in Sunset/Parkside (79.787) 79,8.",
+        "Ausgewertet sind beide Gewichtungen: Die Anzahl gewichtet den Ratenfehler mit dem Quadrat der Bevölkerung, die Rate gar nicht – in der Kreuzvalidierung führen beide zur selben Rangfolge."
+      ],
+      "abschnitt": "5.2, 6.1, 7.3",
+      "nachfrage": "Wem kommt die Rate entgegen?",
+      "nachfrage_antwort": "Den drei Verfahren, weil sie ungewichtet bewertet wird, so wie sie angepasst werden. Übertroffen wird die Referenz trotzdem auch dort nicht."
+    },
+    {
+      "id": "4-23",
+      "frage": "Die Rücktransformation von Ridge ist verzerrt – verfälscht das den Vergleich?",
+      "punkte": [
+        "Ridge wird auf log(1 + y) geschätzt und mit expm1 zurückgerechnet; der Mittelwert der Logarithmen liegt unter dem Logarithmus des Mittelwerts.",
+        "Die Vorhersagen fallen deshalb zu niedrig aus: Ridge unterschätzt im Mittel um 7,1 Einsätze, am stärksten der drei Verfahren.",
+        "Die Verzerrung bleibt unkorrigiert – sie kostet Ridge etwas und bringt ihm nichts.",
+        "Ohne die Verschiebung sinkt der Fehler bei allen drei vergleichbar (Ordner, results/shap/verschiebung.csv: Ridge 30,93 → 28,52, Random Forest 34,96 → 31,76, XGBoost 37,39 → 34,40)."
+      ],
+      "abschnitt": "5.2 · Ordner",
+      "nachfrage": "Warum dann überhaupt log(1 + y)?",
+      "nachfrage_antwort": "Nicht wegen der Anpassung (R² 0,872 ohne, 0,861 mit Transformation), sondern wegen der Form: Die Merkmale wirken wie bei der Referenz multiplikativ, und ohne Transformation gäbe es im ersten Fold 6 von 3.168 negative Vorhersagen."
+    },
+    {
+      "id": "4-24",
+      "frage": "Warum gleichen Sie die seltenen Klassen nicht durch Resampling wie SMOTE aus?",
+      "punkte": [
+        "Ausgeglichen wird über Gewichte umgekehrt proportional zur Klassenhäufigkeit; keine Zeile wird vervielfacht oder entfernt.",
+        "Die Zeilenmenge bleibt dieselbe wie im Mengenstrang – beide Stränge laufen auf identischen Daten.",
+        "Die Gewichte entstehen je Fold auf dem Trainingsteil; global gerechnet läsen sie die Testzeilen mit.",
+        "Die Klassen werden dagegen einmal global kodiert, sonst verschöbe sich in einem Fold ohne Brandmonat die Nummerierung."
+      ],
+      "abschnitt": "5.2",
+      "nachfrage": "Hätte SMOTE nicht mehr Brandmonate erzeugt?",
+      "nachfrage_antwort": "Geprüft ist das nicht. Die 33 Brandmonate der Entwicklung stammen zu 25 aus drei Stadtteilen (Ordner, panelprofil.md); synthetische Zeilen aus deren Profilen fügten keinen unabhängigen Stadtteil hinzu, und der ist die Engstelle."
+    },
+    {
+      "id": "4-25",
+      "frage": "Warum haben Sie nicht länger oder anders getunt?",
+      "punkte": [
+        "Das Budget war ausgereizt: Die zweite Hälfte der 100 Ziehungen bringt höchstens 0,020, ein Bruchteil der Streuung zwischen den Folds.",
+        "Der innen gewählte Parametersatz ist bei den Bäumen nicht einmal besser als ein fremder (Random Forest 17, XGBoost 14 von 20 Paarungen).",
+        "Bei 24 Trainingsstadtteilen schwankt der innere Gütewert stärker, als sich die Parametersätze unterscheiden.",
+        "Die übertragenen Parameter verschaffen keinen Vorteil: In den späteren Wiederholungen fällt der Vorsprung der getunten Verfahren kleiner aus."
+      ],
+      "abschnitt": "5.3, 6.3",
+      "nachfrage": "Und eine Bayes'sche Optimierung?",
+      "nachfrage_antwort": "Nicht verglichen. Weil schon die Zufallssuche ausgereizt war, liegt der Engpass in der Menge unabhängiger Information, nicht im Suchverfahren."
+    },
+    {
+      "id": "4-26",
+      "frage": "Ist das nicht Overkill – warum überhaupt Algorithmen, wenn das GLM reicht?",
+      "punkte": [
+        "Ob Flexibilität etwas bringt, lässt sich nicht theoretisch entscheiden, nur im Vergleich unter gleichen Bedingungen (James et al. 2023, S. 27–28).",
+        "Die Eignungsprüfung zeigte Krümmung und Wechselwirkungen – ein Grund, flexible Verfahren antreten zu lassen.",
+        "Ergebnis: Im Mengenstrang trennt sich keines von der Referenz, im Strukturstrang übertrifft sie nur der Random Forest.",
+        "Gerade das ist der Beitrag: Ohne den Vergleich wäre es nicht belegt. Für die Praxis reicht das GLM, aufwendigere Verfahren wären nicht falsch, nur unwirtschaftlich."
+      ],
+      "abschnitt": "2.2, 7.2, 8",
+      "nachfrage": "Was würden Sie beim nächsten Mal zuerst tun?",
+      "nachfrage_antwort": "Zählen, wie viele unabhängige Einheiten die Daten enthalten und ob das für die Merkmale reicht, und erst danach das Verfahren wählen – das ist die übertragbare Regel der Arbeit."
     }
   ]
 }
