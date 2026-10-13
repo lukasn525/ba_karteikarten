@@ -96,8 +96,10 @@
     },
     {
       "id": "2-21",
+      "fassung": "2026-10-13",
       "frage": "Was ist ein verallgemeinertes lineares Modell?",
       "punkte": [
+        "Kurz: Eine gewichtete Summe der Merkmale wird über eine Linkfunktion mit dem Erwartungswert der Zielgröße verbunden. So trägt dieselbe lineare Grundidee auch Zähldaten (Poisson mit Logarithmus) und Kategorien (Logit), nicht nur normalverteilte Werte.",
         "Drei Bestandteile: eine Verteilung aus der Exponentialfamilie, ein linearer Prädiktor x′β und eine Linkfunktion g, die beide verbindet: g(E[y | x]) = x′β.",
         "Linear in den Merkmalen ist nicht der Erwartungswert selbst, sondern der mit g transformierte Erwartungswert.",
         "Links: Identität (lineare Regression), Logit (logistische Regression), Logarithmus (Poisson-Regression).",
