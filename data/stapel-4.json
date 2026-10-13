@@ -135,10 +135,11 @@
     },
     {
       "id": "4-13",
+      "fassung": "2026-10-13",
       "frage": "Wie aussagekräftig sind Ergebnisse auf Basis von nur 36 Stadtteilen?",
       "punkte": [
-        "Die Zahl unabhängiger Einheiten lässt sich auf Stadtteilebene nicht erhöhen.",
-        "Ein zusätzliches Jahr brächte 432 Zeilen, aber keinen weiteren Stadtteil.",
+        "Kurz: begrenzt. Über die Aussagekraft entscheiden nicht 4.752 Zeilen, sondern 36 Stadtteile, effektiv rund 39 Beobachtungen.",
+        "Die Zahl unabhängiger Einheiten lässt sich auf Stadtteilebene nicht erhöhen: Ein zusätzliches Jahr brächte 432 Zeilen, aber keinen weiteren Stadtteil.",
         "Die berichtete Streuung misst die Abhängigkeit von der Fold-Zuteilung und ist eher zu schmal.",
         "Für einen einzelnen Stadtteil ist der mittlere Fehler keine Zusage."
       ],
@@ -148,12 +149,13 @@
     },
     {
       "id": "4-14",
+      "fassung": "2026-10-13",
       "frage": "Ist das Hold-out durch seine Zusammensetzung verzerrt?",
       "punkte": [
+        "Kurz: Ja, es ist anders zusammengesetzt als die Entwicklung. Seine Ergebnisse sind keine Durchschnittsleistung über die Stadt, sondern eine Probe auf einer anderen Auswahl.",
         "Die Sortierregel legt Bayview Hunters Point (35 Brandmonate) zwangsläufig ins Hold-out.",
-        "Dort liegen 37 der 70 Brandmonate, aber keine Extremstadtteile wie Tenderloin.",
-        "Das Hold-out ist damit eine Plausibilitätsprüfung, nicht die tragende Bewertung.",
-        "Tragend ist die Kreuzvalidierung mit 50 Läufen, Streuung und Tests."
+        "Dort liegen 37 der 70 Brandmonate (4,67 % gegenüber 0,83 % in der Entwicklung), aber keine Extremstadtteile wie das Tenderloin.",
+        "Tragend ist deshalb die Kreuzvalidierung mit 50 Läufen, Streuung und Tests. Das Hold-out ist eine Plausibilitätsprüfung."
       ],
       "abschnitt": "4.2, 4.5",
       "nachfrage": "Warum haben Sie das Hold-out nicht zufällig gezogen?",
@@ -174,9 +176,10 @@
     },
     {
       "id": "4-16",
+      "fassung": "2026-10-13",
       "frage": "Ist das Modell zeitlich stabil – Stichwort Pandemie?",
       "punkte": [
-        "Geprüft wird die Übertragung auf neue Stadtteile, nicht die Fortschreibung in die Zukunft.",
+        "Kurz: Das ist nicht geprüft. Geprüft wird die Übertragung auf neue Stadtteile, nicht die Fortschreibung in die Zukunft.",
         "Das Modell enthält kein Trendmerkmal, nur die Saison.",
         "Bauliche Merkmale stammen aus einem einzigen Jahrgang, ACS-Werte sind 5-Jahres-Schätzungen.",
         "Die Pandemie wird in der Arbeit nicht gesondert behandelt – zeitliche Stabilität ist eine benannte Grenze."
@@ -252,24 +255,27 @@
     },
     {
       "id": "4-22",
+      "fassung": "2026-10-13",
       "frage": "Das Poisson-GLM gewichtet große Stadtteile stärker – verzerrt das den Vergleich?",
       "punkte": [
-        "Alle Modelle schätzen die Rate je 1.000 Einwohner und rechnen auf die Anzahl zurück.",
-        "Der Offset gibt großen Stadtteilen mehr Gewicht, die drei Verfahren gewichten jede Zeile gleich.",
-        "Beispiel: Ein Ratenfehler von 1,0 sind in Seacliff (2.422 Einwohner) 2,4 Einsätze, in Sunset/Parkside (79.787) 79,8.",
-        "Ausgewertet sind beide Gewichtungen: Die Anzahl gewichtet den Ratenfehler mit dem Quadrat der Bevölkerung, die Rate gar nicht – in der Kreuzvalidierung führen beide zur selben Rangfolge."
+        "Kurz: Die Gewichtung ist ungleich, das Ergebnis hängt aber nicht an ihr. Auf keiner der beiden Skalen schlägt ein Verfahren die Referenz.",
+        "Alle Modelle schätzen die Rate je 1.000 Einwohner und rechnen auf die Anzahl zurück. Verschieden ist nur, wie stark eine Zeile die Anpassung bestimmt.",
+        "Der Offset lässt große Stadtteile die Anpassung des GLM stärker bestimmen, die drei Verfahren gewichten jede Zeile gleich: Ein Ratenfehler von 1,0 sind in Seacliff 2,4 Einsätze, in Sunset/Parkside 79,8.",
+        "Deshalb wird auf beiden Skalen ausgewertet: Die Anzahl gewichtet den Ratenfehler mit dem Quadrat der Bevölkerung, die Rate gar nicht.",
+        "Beide führen in der Kreuzvalidierung zur selben Rangfolge. Die Gewichtung ist als Grenze benannt (Tabelle 16)."
       ],
       "abschnitt": "5.2, 6.1, 7.3",
       "nachfrage": "Wem kommt die Rate entgegen?",
-      "nachfrage_antwort": "Den drei Verfahren, weil sie ungewichtet bewertet wird, so wie sie angepasst werden. Übertroffen wird die Referenz trotzdem auch dort nicht."
+      "nachfrage_antwort": "Den drei Verfahren, weil sie ungewichtet bewertet wird, so wie sie angepasst werden. Trotzdem trennt sich dort keines von der Referenz (p = 0,084 für Ridge, 0,846 für Random Forest, 0,492 für XGBoost)."
     },
     {
       "id": "4-23",
+      "fassung": "2026-10-13",
       "frage": "Die Rücktransformation von Ridge ist verzerrt – verfälscht das den Vergleich?",
       "punkte": [
+        "Kurz: Nein. Die Verzerrung bleibt unkorrigiert, kostet Ridge etwas und bringt ihm nichts, und ohne sie bleibt die Rangfolge der drei Verfahren gleich.",
         "Ridge wird auf log(1 + y) geschätzt und mit expm1 zurückgerechnet; der Mittelwert der Logarithmen liegt unter dem Logarithmus des Mittelwerts.",
         "Die Vorhersagen fallen deshalb zu niedrig aus: Ridge unterschätzt im Mittel um 7,1 Einsätze, am stärksten der drei Verfahren.",
-        "Die Verzerrung bleibt unkorrigiert – sie kostet Ridge etwas und bringt ihm nichts.",
         "Ohne die Verschiebung sinkt der Fehler bei allen drei vergleichbar (Ordner, results/shap/verschiebung.csv: Ridge 30,93 → 28,52, Random Forest 34,96 → 31,76, XGBoost 37,39 → 34,40)."
       ],
       "abschnitt": "5.2 · Ordner",

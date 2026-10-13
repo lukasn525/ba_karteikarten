@@ -114,16 +114,27 @@
     syncPlanen();
   }
 
+  // Trägt eine Karte das Feld „fassung“ und wurde der Lernstand zu einer anderen
+  // Fassung erfasst, gilt sie wieder als neu (Stern bleibt erhalten)
+  function veraltet(id, k) {
+    const karte = daten.karten.get(id);
+    return !!(karte && karte.fassung && k.fassung !== karte.fassung);
+  }
+
   // Zustand einer Karte (lesend)
   function kz(id) {
-    return zustand.karten[id] || { status: 'neu', kritisch: false };
+    const k = zustand.karten[id];
+    if (!k) return { status: 'neu', kritisch: false };
+    return veraltet(id, k) ? Object.assign({}, k, { status: 'neu' }) : k;
   }
 
   // Zustand einer Karte (schreibend, legt bei Bedarf an, markiert als geändert)
   function kzSchreiben(id) {
     if (!zustand.karten[id]) zustand.karten[id] = { status: 'neu', kritisch: false, gewusst: 0, nochmal: 0 };
-    zustand.karten[id].geaendert = Date.now();
-    return zustand.karten[id];
+    const k = zustand.karten[id];
+    if (veraltet(id, k)) Object.assign(k, { status: 'neu', gewusst: 0, nochmal: 0, fassung: daten.karten.get(id).fassung });
+    k.geaendert = Date.now();
+    return k;
   }
 
   // ------------------------------------------------- Geräteübergreifender Abgleich
@@ -355,6 +366,7 @@
         abschnitt: k.abschnitt ? String(k.abschnitt) : '',
         nachfrage: k.nachfrage ? String(k.nachfrage) : '',
         nachfrageAntwort: k.nachfrage_antwort ? String(k.nachfrage_antwort) : '',
+        fassung: k.fassung ? String(k.fassung) : '',
         stapel: id
       });
       st.ids.push(kid);
@@ -1125,6 +1137,7 @@
           gewusst: Number(k.gewusst) || 0,
           nochmal: Number(k.nochmal) || 0,
           zuletzt: Number(k.zuletzt) || undefined,
+          fassung: typeof k.fassung === 'string' ? k.fassung : undefined,
           geaendert: jetzt
         };
       }

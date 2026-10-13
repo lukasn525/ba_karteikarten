@@ -67,6 +67,7 @@ data/
 | Feld | Pflicht | Bedeutung |
 |---|---|---|
 | `id` | ja | Eindeutige Kennung. Daran hängt der Lernstand (sicher/unsicher/kritisch). |
+| `fassung` | nein | Stand einer überarbeiteten Karte, z. B. `"2026-10-13"`. Weicht er vom gespeicherten Lernstand ab, gilt die Karte wieder als *neu*, der Stern bleibt. |
 | `frage` | ja | Vorderseite. |
 | `punkte` | ja | Rückseite, **3–5 Stichpunkte**. Lieber eine Karte mehr als eine zu lange. |
 | `abschnitt` | nein | Abschnitt der Arbeit, z. B. `"4.5"` oder `"7.3, 2.3"`. |
@@ -78,6 +79,7 @@ In `frage`, `punkte`, `nachfrage` und `nachfrage_antwort` wird `**so**` fett dar
 ### Typische Änderungen
 
 - **Text korrigieren:** einfach den Text ändern. Der Lernstand der Karte bleibt erhalten.
+- **Inhalt überarbeiten:** zusätzlich `"fassung"` auf das heutige Datum setzen. Die Karte springt dann auf allen Geräten auf *neu*.
 - **Karte hinzufügen:** Block kopieren, neue `id` vergeben (z. B. `"1-29"`), Komma zwischen den Karten nicht vergessen.
 - **Karte löschen:** Block entfernen. Den Lernstand dieser Karte ignoriert die App danach.
 - **Reihenfolge ändern:** Blöcke verschieben. Ohne Mischen erscheinen die Karten in Dateireihenfolge.

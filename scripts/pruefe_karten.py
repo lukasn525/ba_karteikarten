@@ -107,7 +107,10 @@ def pruefe() -> tuple[list[str], list[str], int]:
                     if feld != "nachfrage_antwort" or karte.get("nachfrage"):
                         hinweise.append(f"{ort}: „{feld}“ ist leer.")
 
-            unbekannt = set(karte) - {"id", "frage", "punkte", "abschnitt", "nachfrage", "nachfrage_antwort"}
+            if "fassung" in karte and (not isinstance(karte["fassung"], str) or not karte["fassung"].strip()):
+                fehler.append(f"{ort}: „fassung“ muss nicht leerer Text sein.")
+
+            unbekannt = set(karte) - {"id", "fassung", "frage", "punkte", "abschnitt", "nachfrage", "nachfrage_antwort"}
             if unbekannt:
                 hinweise.append(f"{ort}: unbekannte Felder {sorted(unbekannt)} werden ignoriert.")
             anzahl += 1

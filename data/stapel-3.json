@@ -109,12 +109,14 @@
     },
     {
       "id": "3-09",
+      "fassung": "2026-10-13",
       "frage": "Was ist Decke A, und warum liegt sie bei 0,64?",
       "punkte": [
-        "Annahme: Die beobachteten Anteile sind die wahren Wahrscheinlichkeiten.",
-        "Die Einsätze jedes Stadtteilmonats werden daraus 200-mal neu gezogen (parametrischer Bootstrap).",
-        "Das Label kippt dabei in 13,6 % der Stadtteilmonate, oft bei knappen Abständen.",
-        "Selbst ein perfektes Modell erreicht daher nur 0,64 – das Label selbst ist zufallsbehaftet."
+        "Annahme: Die beobachteten Anteile sind die wahren Wahrscheinlichkeiten. Daraus werden die Einsätze jedes Stadtteilmonats 200-mal neu gezogen (parametrischer Bootstrap).",
+        "Gemessen wird der Macro-F1 zwischen beobachtetem und neu gezogenem Label: So gut wäre ein Modell, das die wahren Wahrscheinlichkeiten kennt.",
+        "Je Ziehung kippen nur 13,6 % der Labels, die Accuracy läge also bei rund 0,86. Der Macro-F1 zählt aber jede Klasse gleich.",
+        "Die Kipper treffen die seltenen Klassen: F1 Fehlalarm 0,93 · technische Hilfe 0,70 · Rettung 0,55 · Brand 0,39, Mittel 0,64 (eigene Nachrechnung, nicht in der Arbeit).",
+        "Brand- und Rettungsmonate gewinnen meist knapp und haben weniger Einsätze: Ihr Label kippt in gut jeder dritten Ziehung, Fehlalarm nur in jeder zehnten."
       ],
       "abschnitt": "6.2",
       "nachfrage": "Warum ist Decke B und nicht Decke A die maßgebliche Grenze?",
