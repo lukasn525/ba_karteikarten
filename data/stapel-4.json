@@ -320,6 +320,45 @@
       "abschnitt": "2.2, 7.2, 8",
       "nachfrage": "Was würden Sie beim nächsten Mal zuerst tun?",
       "nachfrage_antwort": "Zählen, wie viele unabhängige Einheiten die Daten enthalten und ob das für die Merkmale reicht, und erst danach das Verfahren wählen – das ist die übertragbare Regel der Arbeit."
+    },
+    {
+      "id": "4-27",
+      "frage": "Die baulichen Merkmale stammen von 2020 – verletzt das nicht Ihre eigene Verfügbarkeitsregel?",
+      "punkte": [
+        "Kurz: Ja, für die ersten Jahre des Analysezeitraums. Das ist in 4.3 offen ausgewiesen.",
+        "Land Use 2020 ist der einzige verfügbare Jahrgang; die drei baulichen Merkmale sind deshalb je Stadtteil über alle 132 Monate konstant.",
+        "Die Abweichung bleibt begrenzt: Das Verzeichnis enthält keine Angaben zu Einsätzen, über die Zielgröße gelangt nichts in die Merkmale.",
+        "Geprüft wird die Übertragung auf unbekannte Stadtteile, nicht die Fortschreibung eines Stadtteils in der Zeit."
+      ],
+      "abschnitt": "4.3, 6.5, 7.3",
+      "nachfrage": "Hat das den baulichen Merkmalen einen Vorteil verschafft?",
+      "nachfrage_antwort": "Zu sehen ist keiner: Ohne die baulichen Merkmale werden alle vier Modelle der Ablation besser, das Poisson-GLM um 8,04 RMSE. Dass nur ein Jahrgang vorliegt, steht zudem als Grenze der zeitlichen Auflösung in Tabelle 16."
+    },
+    {
+      "id": "4-28",
+      "frage": "Mit der Macro-AUROC als Hauptmaß läge die Referenz vorn – haben Sie das passende Gütemaß gewählt?",
+      "punkte": [
+        "Kurz: Ja, und die Gesamtaussage hängt nicht daran. Mit der AUROC würde sie eher strenger.",
+        "Vorhergesagt wird eine Klasse: Die tatsächliche Zuweisung bewertet das Macro-F1, die AUROC nur die Rangordnung der Wahrscheinlichkeiten (Hand & Till 2001, S. 174).",
+        "Berichtet wird beides: In der Kreuzvalidierung liegt die AUROC beim Logit mit 0,725 vor Random Forest (0,705) und XGBoost (0,665).",
+        "Nach diesen Punktwerten überträfe auch im Strukturstrang kein Verfahren seine Referenz; getestet ist die AUROC allerdings nicht."
+      ],
+      "abschnitt": "2.5, 3.2, 6.2",
+      "nachfrage": "Warum ist der Vorsprung des Random Forest dann überhaupt ein Befund?",
+      "nachfrage_antwort": "Weil er auf dem Hauptmaß liegt und dort als Primärvergleich getestet ist (p = 0,004). Mehr als ein kleiner Vorsprung in der Kreuzvalidierung wird daraus nicht abgeleitet."
+    },
+    {
+      "id": "4-29",
+      "frage": "2,5 Sekunden je Anpassung – ist der Aufwand überhaupt ein Argument?",
+      "punkte": [
+        "Kurz: Für ein einzelnes Modell kaum, für die Modellwahl schon. Absolut bleibt die Zeit je Anpassung gering.",
+        "Der größte Posten ist die Suche: 25 Suchläufe mit je 100 Ziehungen über vier innere Folds sind 10.000 Anpassungen und rund 137 Minuten, davon 36 Sekunden auf Ridge.",
+        "Parallelisierung gleicht den Abstand nicht aus: Random Forest wird um den Faktor 2,06 schneller, Ridge um 1,08, XGBoost mit 0,84 sogar langsamer.",
+        "Jede Anpassung ist nur zweimal gemessen (Abweichung unter 1 % bei den Ensembles, 6 % bei Ridge), die Zeiten sind als Größenordnung zu lesen."
+      ],
+      "abschnitt": "6.4",
+      "nachfrage": "Warum zählen Sie die Suche zum Aufwand des Verfahrens?",
+      "nachfrage_antwort": "Weil zu einem Verfahren mit Hyperparametern die Suche gehört: Der Nachteil der Baumverfahren entsteht nicht erst beim finalen Fit, sondern vervielfacht sich über die Modellwahl. Die Referenzen brauchen keine Suche."
     }
   ]
 }

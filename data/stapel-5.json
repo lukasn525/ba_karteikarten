@@ -210,6 +210,44 @@
       "abschnitt": "4.5 · Ordner",
       "nachfrage": "Wie unterscheidet sich das Hold-out von den Entwicklungsstadtteilen?",
       "nachfrage_antwort": "Im Mittel mehr Einsätze (89,0 gegen 72,5), aber deutlich weniger Streuung (Standardabweichung 46,5 gegen 71,4), weil kein Extremstadtteil wie das Tenderloin dabei ist."
+    },
+    {
+      "id": "2-39",
+      "frage": "Was bedeutet das ± in Ihren Ergebnistabellen?",
+      "punkte": [
+        "Die Standardabweichung über die zehn Wiederholungsmittel, nicht über die 50 einzelnen Folds (Code 11).",
+        "Gemittelt wird in zwei Schritten, erst über die fünf Folds einer Wiederholung, dann über die zehn Wiederholungen; der Mittelwert ist derselbe wie direkt über alle 50 Läufe.",
+        "Über die Folds streut der RMSE dagegen um 19,92 bis 23,81, ein Vielfaches jedes Verfahrensunterschieds (höchstens 6,46).",
+        "Beide Streuungen stehen als eigene Spalten in der Ergebnisdatei, ihr Abstand ist nachprüfbar."
+      ],
+      "abschnitt": "4.5, 6.1",
+      "nachfrage": "Wie groß ist die Streuung über die Wiederholungen konkret?",
+      "nachfrage_antwort": "Im Mengenstrang Poisson-GLM 32,99 ± 3,25, Ridge 30,93 ± 1,61, Random Forest 34,96 ± 5,33 und XGBoost 37,39 ± 4,43 RMSE (Tabelle 9). Ridge hängt damit am wenigsten von der Fold-Zuteilung ab."
+    },
+    {
+      "id": "2-40",
+      "frage": "Wie ist abgesichert, dass alle Verfahren wirklich dieselben Merkmale und Folds sehen?",
+      "punkte": [
+        "Der Merkmalssatz steht an einer einzigen Stelle: Die Aufbereitung führt die Konstanten PRAEDIKTOREN und SAISON, beide Modellskripte importieren sie und führen keine eigene Liste.",
+        "Die Zuteilung steht als Spalten fold und ist_holdout in beiden Analysedateien – eine Eigenschaft des Datensatzes, nicht der Algorithmen.",
+        "Code 9 prüft an der erzeugten Datei: kein Stadtteil in Training und Test, kein Zugriff aufs Hold-out, kein Stadtteil in zwei Testfolds, jeder genau einmal Testfall oder im Hold-out.",
+        "Weitere Prüfungen halten beide Dateien gegeneinander und bauen die Aufteilung aus ihnen nach; alle laufen im Katalog aus 20 Einzelprüfungen am Ende der Aufbereitung."
+      ],
+      "abschnitt": "3.2, 4.5 · Code 9",
+      "nachfrage": "Warum reicht es nicht, dass alle Verfahren dieselbe Datei lesen?",
+      "nachfrage_antwort": "Bei einer veralteten Aufteilung liefen sonst alle Verfahren auf falschen, aber untereinander identischen Mengen: Der Vergleich bliebe fair und das Ergebnis trotzdem falsch."
+    },
+    {
+      "id": "2-41",
+      "frage": "Warum ein Konfidenzintervall nach der t-Verteilung, wenn Sie wegen fehlender Normalverteilung den Wilcoxon-Test verwenden?",
+      "punkte": [
+        "Die Testentscheidung trifft allein der Wilcoxon-Test; das Intervall beschreibt nur, wie groß der Abstand in RMSE bzw. Macro-F1 ist.",
+        "Verteilungsfrei ergänzt wird es durch die Zahl der gewonnenen Wiederholungen, die ohne Annahme über die Verteilung der Differenzen auskommt (Demšar 2006, S. 8–9).",
+        "In den Tabellen 10 und 12 schließt das Intervall die Null genau bei den signifikanten Vergleichen aus, etwa Ridge gegen XGBoost mit [+3,53; +9,40]: Intervall und Test widersprechen sich nirgends."
+      ],
+      "abschnitt": "3.2, 6.1, 6.2",
+      "nachfrage": "Wie wird das Intervall berechnet?",
+      "nachfrage_antwort": "Mittlere Differenz ± 2,262 · s / √10, mit s als Standardabweichung der zehn Differenzen und 2,262 als t-Quantil bei 9 Freiheitsgraden. Für Ridge gegen das GLM ergibt 2,06 ± 2,82 das Intervall [−0,76; +4,88] aus Tabelle 10 (eigene Nachrechnung, nicht in der Arbeit)."
     }
   ]
 }

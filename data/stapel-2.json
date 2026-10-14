@@ -225,6 +225,58 @@
       "abschnitt": "5.1",
       "nachfrage": "Heißt das, die Merkmale sagen die Einsatzart gut vorher?",
       "nachfrage_antwort": "Nein, sie lassen eine Klassenzuordnung zu, mehr nicht. Das Logit kommt nur von 0,221 auf 0,301 Macro-F1, und kein einzelnes Merkmal trägt die Aussage."
+    },
+    {
+      "id": "2-35",
+      "frage": "Was sind Hyperparameter, und welcher Zielkonflikt steckt hinter ihrer Wahl?",
+      "punkte": [
+        "Sie werden nicht mit den Modellparametern geschätzt, sondern vor dem Anpassen gewählt, etwa λ bei Ridge oder die Baumtiefe, und legen fest, wie flexibel ein Modell ist.",
+        "Zu starr liegt ein Modell schon auf den Trainingsdaten daneben (Underfitting), zu flexibel folgt es dem Rauschen und verliert auf neuen Daten (Overfitting) (Murphy 2022, S. 13, 120, 188).",
+        "Der erwartete Fehler zerlegt sich in Verzerrung und Varianz: Mit wachsender Flexibilität sinkt die Verzerrung und steigt die Varianz, das Minimum liegt dazwischen (Hastie et al. 2009, S. 38, 223).",
+        "Das Optimum lässt sich nicht ausrechnen, nur durch Ausprobieren finden (Murphy 2022, S. 313–314). Der dabei erreichte Wert ist optimistisch und belegt nicht die Prognosegüte, dafür braucht es eine äußere Aufteilung (Bischl et al. 2023, S. 18–19)."
+      ],
+      "abschnitt": "2.5, 6.5",
+      "nachfrage": "Wo zeigt sich dieser Zielkonflikt in Ihren Ergebnissen?",
+      "nachfrage_antwort": "Am deutlichsten in der Ablation: Bei 24 Trainingsstadtteilen kosten redundante Merkmale mehr Varianz, als sie an Verzerrung abbauen (Hastie et al. 2009, S. 38). Ohne die baulichen Merkmale wird das Poisson-GLM um 8,04 RMSE besser."
+    },
+    {
+      "id": "2-36",
+      "frage": "Wie arbeitet ein Entscheidungsbaum, und worin könnte der Vorsprung der Baumverfahren vor dem GLM liegen?",
+      "punkte": [
+        "Ein Baum teilt den Merkmalsraum schrittweise in Regionen und sagt in jedem Endknoten den Mittelwert seiner Trainingsbeobachtungen vorher (James et al. 2023, S. 333–334).",
+        "Zerlegt man die Funktion in Summanden je Merkmal, je Merkmalspaar, je Tripel usw., bildet ein Baum mit J Endknoten Wechselwirkungen bis zur Ordnung J − 1 ab, ohne dass eine vorgegeben werden muss (Hastie et al. 2009, S. 362).",
+        "Ein GLM ohne Produktterme ist nur der erste Summand: Der mögliche Vorsprung von Random Forest und XGBoost liegt genau in den übrigen.",
+        "Ein einzelner Baum ist instabil; erst Bagging (Random Forest) und Boosting (XGBoost) machen daraus brauchbare Verfahren (James et al. 2023, S. 343–345).",
+        "Gegen streng monotone Umformungen der Merkmale sind Bäume unempfindlich, deshalb braucht nur Ridge standardisierte Merkmale (Hastie et al. 2009, S. 352)."
+      ],
+      "abschnitt": "2.3, 2.4, 5.2",
+      "nachfrage": "Haben die Bäume diesen Spielraum hier genutzt?",
+      "nachfrage_antwort": "Kaum: Im Mengenstrang übertrifft keines der Verfahren die Referenz, im Strukturstrang nur der Random Forest um 0,017 Macro-F1. Bei Stadtteilen, die das Modell nicht kennt, bleibt einem flexiblen Verfahren wenig, was es über eine einfache Form hinaus lernen könnte."
+    },
+    {
+      "id": "2-37",
+      "frage": "Wie stark hängt das Ergebnis an der Wahl des Parametersatzes?",
+      "punkte": [
+        "Kreuzprobe: Jeder Testfold wird mit jedem der fünf je Fold gesuchten Parametersätze ausgewertet.",
+        "Zwischen bestem und schlechtestem Satz liegen im selben Fold im Mittel 2,54 RMSE bei Ridge, 4,91 beim Random Forest und 9,14 bei XGBoost, im Strukturstrang 0,056 und 0,102 Macro-F1.",
+        "Bei XGBoost übersteigt das die Spanne zwischen den drei Verfahren (6,46 RMSE): Die Parameterwahl bewegt das Ergebnis ähnlich stark wie die Verfahrenswahl.",
+        "Die Referenzen haben keine Hyperparameter und sind davon frei: Ihre Güte hängt nicht davon ab, wie ein Suchraum bemessen wurde."
+      ],
+      "abschnitt": "5.3",
+      "nachfrage": "Warum testen Sie die Kreuzprobe nicht?",
+      "nachfrage_antwort": "Sie umfasst nur fünf Folds und bleibt deshalb beschreibend."
+    },
+    {
+      "id": "2-38",
+      "frage": "Warum suchen Sie auch beim Random Forest, obwohl Tuning dort wenig bringt?",
+      "punkte": [
+        "Der Random Forest liefert schon mit Vorgabewerten brauchbare Ergebnisse und reagiert deutlich weniger empfindlich auf Hyperparameter als etwa Support Vector Machines (Probst et al. 2019, S. 13).",
+        "Ihn auszunehmen wäre trotzdem eine ungleiche Behandlung: Der Vergleich soll die Verfahren trennen, nicht den Aufwand, der in sie gesteckt wurde.",
+        "Das stützt zugleich den Befund im Strukturstrang: Dass der Vorsprung des Random Forest ein reiner Suchgewinn ist, ist unwahrscheinlich."
+      ],
+      "abschnitt": "5.3, 6.2",
+      "nachfrage": "Warum sind die Suchräume in beiden Strängen gleich?",
+      "nachfrage_antwort": "Weil zwischen den Strängen nur die Verlustfunktion wechselt. Allein der Varianzexponent der Tweedie-Verlustfunktion entfällt in der Klassifikation, wo er ohne Wirkung bliebe."
     }
   ]
 }
