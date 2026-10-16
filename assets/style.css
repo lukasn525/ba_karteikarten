@@ -332,22 +332,16 @@ dialog::backdrop { background: rgba(10, 18, 28, .55); }
   * { transition: none !important; }
 }
 
-/* ---------- Teile (z. B. Arbeit und Code) ---------- */
-.teile {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 4px;
-  background: var(--flaeche); border: 1px solid var(--linie); border-radius: 14px;
-  padding: 4px; margin: 0 0 14px;
+/* ---------- Weitere Teile (z. B. Code) abgesetzt auf derselben Startseite ---------- */
+.teil-abschnitt {
+  margin: 34px 2px 14px; padding-top: 22px; border-top: 2px solid var(--linie);
+  scroll-margin-top: 72px;
 }
-.teil-knopf {
-  border: 0; background: transparent; border-radius: 10px; padding: 8px 10px; cursor: pointer;
-  display: flex; flex-direction: column; align-items: center; gap: 0; min-height: 48px; color: var(--text-2);
+.teil-abschnitt h2 { font-size: 20px; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+.teil-abschnitt h2::before {
+  content: ""; width: 6px; height: 22px; border-radius: 3px; background: var(--orange);
 }
-.teil-knopf span { font-weight: 650; font-size: 15px; color: var(--text); }
-.teil-knopf small { font-size: 12px; }
-.teil-knopf.an { background: var(--akzent); color: var(--akzent-text); }
-.teil-knopf.an span { color: var(--akzent-text); }
-.teil-knopf:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
-.teil-hinweis { margin: -4px 2px 14px; font-size: 13.5px; color: var(--text-2); }
+.teil-abschnitt p { margin: 0; font-size: 13.5px; color: var(--text-2); }
 .stapel-nr { min-width: 38px; width: auto; padding: 0 6px; }
 
 /* Code in Karten: Datei- und Funktionsnamen, lange Pfade brechen um */

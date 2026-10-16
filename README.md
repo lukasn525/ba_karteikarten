@@ -1,7 +1,7 @@
 # Kolloquium · Karteikarten
 
 Karteikarten zur Vorbereitung auf das Kolloquium der Bachelorarbeit
-„Einsatzlast der Feuerwehr San Francisco“. Zwei getrennte Teile, oben auf der Startseite umschaltbar:
+„Einsatzlast der Feuerwehr San Francisco“. Zwei Teile auf derselben Startseite, der Code-Teil abgesetzt darunter:
 
 **Arbeit** – 5 Stapel:
 
@@ -63,10 +63,11 @@ data/
 
 ### Teile
 
-`teile` in `index.json` trennt die Stapel in Bereiche mit eigener Startseite (`#/` für den
-ersten Teil, `#/teil/<id>` für die übrigen). Jeder Stapel steht in genau einem Teil, Stapel ohne
-Teil landen im ersten. `praefix` setzt die Stapelnummer (`C1`, `C2`). Eine Unterlagen-Gruppe mit
-`"teile": [...]` erscheint in diesen Teilen, ohne das Feld nur im ersten. In Fragen und
+`teile` in `index.json` trennt die Stapel in Bereiche. Alle stehen auf derselben Startseite: der
+erste Teil oben wie gewohnt, jeder weitere darunter abgesetzt mit Überschrift. Jeder Teil hat sein
+eigenes „Stapelübergreifend“ (eigene Runden, eigene Übersicht); `#/teil/<id>` springt zum Abschnitt.
+Jeder Stapel steht in genau einem Teil, Stapel ohne Teil landen im ersten. `praefix` setzt die
+Stapelnummer (`C1`, `C2`). Karten des Tages kommen nur aus dem ersten Teil. In Fragen und
 Stichpunkten wird `` `so` `` als Code dargestellt.
 
 ### Aufbau einer Karte

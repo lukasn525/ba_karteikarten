@@ -598,45 +598,59 @@
   function render() {
     entferneAusgeblendeteAusRunde();
     const { seite, param } = aktuelleSeite();
+    if (seite !== '' && seite !== 'teil') letzterSprung = '';   // nach Rückkehr wieder zum Abschnitt springen
     if (seite === 'lernen') renderLernen();
     else if (seite === 'ergebnis') renderErgebnis();
     else if (seite === 'uebersicht') renderUebersicht(param || 'alle');
-    else if (seite === 'teil' && daten.teilById.has(param)) renderStart(daten.teilById.get(param));
-    else renderStart(ersterTeil());
+    else renderStart();
   }
 
   // ------------------------------------------------------------- Startseite
 
-  // Umschalter zwischen den Teilen, nur wenn es mehr als einen gibt
-  function teileHtml(aktiv) {
-    if (daten.teile.length < 2) return '';
-    return `<nav class="teile" aria-label="Teile">${daten.teile.map(t => {
-      const an = t === aktiv;
-      return `<button type="button" class="teil-knopf${an ? ' an' : ''}" data-aktion="teil" data-teil="${esc(t.id)}"
-        aria-pressed="${an}"><span>${esc(t.titel)}</span><small>${t.ids.length} Karten</small></button>`;
-    }).join('')}</nav>`;
-  }
-
-  function renderStart(teil) {
-    ansicht.teil = teil.id;
-    setzeKopf(daten.meta.titel || 'Kolloquium', `${teil.ids.length} Karten · ${teil.stapel.length} Stapel`, false);
-    const r = zustand.runde;
-    const laeuft = r && !r.fertig && offenAnzahl(r);
+  // Ein Teil auf der Startseite: Stapel und „Stapelübergreifend“. Der erste Teil steht
+  // wie bisher oben, jeder weitere folgt abgesetzt mit eigener Überschrift auf derselben Seite.
+  function teilHtml(teil) {
     const alle = statistik(teil.ids);
     const alleLernbar = statistik(lernbar(teil.ids));
-    // Karten des Tages nur im ersten Teil (Arbeit); der Code-Teil wird getrennt abgefragt
-    const mitTag = teil === ersterTeil();
-    const tag = mitTag ? tageskarten() : null;
+    const mehrere = daten.teile.length > 1;
+    let h = '';
+    if (teil !== ersterTeil()) {
+      h += `<section class="teil-abschnitt" id="teil-${esc(teil.id)}">
+        <h2>${esc(teil.titel)}</h2>
+        ${teil.untertitel ? `<p>${fmt(teil.untertitel)}</p>` : ''}
+      </section>`;
+    }
+    h += '<div class="stapel-liste">' + teil.stapel.map(stapelHtml).join('') + '</div>';
+    const t = esc(teil.id);
+    h += `<section class="alle-karten">
+      <h2>Stapelübergreifend${mehrere ? ` · ${esc(teil.titel)}` : ''}</h2>
+      <p>${alle.sicher} sicher · ${alle.unsicher} unsicher · ${alle.neu} neu · ${alle.kritisch} kritisch markiert${alle.ausgeblendet ? ` · ${alle.ausgeblendet} ausgeblendet` : ''}</p>
+      <div class="knopfreihe">
+        <button class="btn btn-primaer" data-aktion="lernen" data-art="alle" data-teil="${t}" ${alleLernbar.gesamt ? '' : 'disabled'}>Alle ${alleLernbar.gesamt} Karten</button>
+        <button class="btn" data-aktion="lernen" data-art="kritisch" data-teil="${t}" ${alleLernbar.kritisch ? '' : 'disabled'}>★ Kritische (${alleLernbar.kritisch})</button>
+        <button class="btn" data-aktion="lernen" data-art="unsicher" data-teil="${t}" ${alleLernbar.unsicher ? '' : 'disabled'}>Unsichere (${alleLernbar.unsicher})</button>
+        <button class="btn" data-aktion="uebersicht" data-ziel="${esc(teilZiel(teil))}">Alle ansehen</button>
+      </div>
+    </section>`;
+    return h;
+  }
+
+  let letzterSprung = '';   // #/teil/<id> springt einmal zum Abschnitt, nicht bei jedem Neuzeichnen
+
+  function renderStart() {
+    setzeKopf(daten.meta.titel || 'Kolloquium', `${daten.reihenfolge.length} Karten · ${daten.stapel.length} Stapel`, false);
+    const r = zustand.runde;
+    const laeuft = r && !r.fertig && offenAnzahl(r);
+    // Karten des Tages nur aus dem ersten Teil (Arbeit); der Code-Teil wird getrennt abgefragt
+    const tag = tageskarten();
 
     let h = `<section class="intro">
       <h1>${esc(daten.meta.titel || 'Karteikarten')}</h1>
       ${daten.meta.untertitel ? `<p>${esc(daten.meta.untertitel)}</p>` : ''}
     </section>`;
-    h += teileHtml(teil);
-    if (teil.untertitel) h += `<p class="teil-hinweis">${fmt(teil.untertitel)}</p>`;
 
     if (tag) h += tageskartenHtml(tag);
-    else if (mitTag && !sync.geholt) {
+    else if (!sync.geholt) {
       h += `<section class="tages"><div class="tages-kopf"><div><h2>Karten des Tages</h2>
         <p>werden zusammengestellt …</p></div></div></section>`;
     }
@@ -655,31 +669,25 @@
       h += `<div class="warnung"><b>Hinweise zu den Kartendateien</b><ul>${liste}${mehr}</ul></div>`;
     }
 
-    h += '<div class="stapel-liste">' + teil.stapel.map(stapelHtml).join('') + '</div>';
+    h += daten.teile.map(teilHtml).join('');
 
-    const t = esc(teil.id);
-    h += `<section class="alle-karten">
-      <h2>Stapelübergreifend${daten.teile.length > 1 ? ` · ${esc(teil.titel)}` : ''}</h2>
-      <p>${alle.sicher} sicher · ${alle.unsicher} unsicher · ${alle.neu} neu · ${alle.kritisch} kritisch markiert${alle.ausgeblendet ? ` · ${alle.ausgeblendet} ausgeblendet` : ''}</p>
-      <div class="knopfreihe">
-        <button class="btn btn-primaer" data-aktion="lernen" data-art="alle" data-teil="${t}" ${alleLernbar.gesamt ? '' : 'disabled'}>Alle ${alleLernbar.gesamt} Karten</button>
-        <button class="btn" data-aktion="lernen" data-art="kritisch" data-teil="${t}" ${alleLernbar.kritisch ? '' : 'disabled'}>★ Kritische (${alleLernbar.kritisch})</button>
-        <button class="btn" data-aktion="lernen" data-art="unsicher" data-teil="${t}" ${alleLernbar.unsicher ? '' : 'disabled'}>Unsichere (${alleLernbar.unsicher})</button>
-        <button class="btn" data-aktion="uebersicht" data-ziel="${esc(teilZiel(teil))}">Alle ansehen</button>
-      </div>
-    </section>`;
-
-    // Unterlagen: Gruppen ohne „teile“ erscheinen im ersten Teil
-    if (Array.isArray(daten.meta.unterlagen)) {
-      h += unterlagenHtml(daten.meta.unterlagen.filter(g => (g && Array.isArray(g.teile)
-        ? g.teile.map(String).includes(teil.id) : teil === ersterTeil())));
-    }
+    if (Array.isArray(daten.meta.unterlagen)) h += unterlagenHtml(daten.meta.unterlagen);
 
     const fuss = [daten.meta.stand ? `Kartenstand ${daten.meta.stand}` : '', daten.meta.hinweis || ''].filter(Boolean).join(' · ');
     if (fuss) h += `<p class="fuss">${esc(fuss)}</p>`;
     h += `<p class="fuss sync-zeile" data-sync data-zustand="${sync.status}">${esc(syncText())}</p>`;
 
     app.innerHTML = h;
+
+    // Rückkehr aus einer Runde oder Übersicht des Code-Teils: zum Abschnitt springen
+    const { seite, param } = aktuelleSeite();
+    if (seite === 'teil' && location.hash !== letzterSprung) {
+      letzterSprung = location.hash;
+      const ziel = document.getElementById(`teil-${param}`);
+      if (ziel) requestAnimationFrame(() => ziel.scrollIntoView({ block: 'start' }));
+    } else if (seite !== 'teil') {
+      letzterSprung = '';
+    }
   }
 
   function stapelHtml(st) {
@@ -764,7 +772,7 @@
   }
 
   function stelleTageskartenZusammen(datum) {
-    const pool = lernbar(ersterTeil().ids);   // nur der erste Teil, der Code-Teil hat eigene Runden
+    const pool = lernbar(ersterTeil().ids);   // nur der erste Teil (Arbeit), der Code-Teil hat eigene Runden
     if (!pool.length) return [];
     const zufall = zufallsquelle('tageskarten|' + datum);
     const ziel = Math.min(pool.length, TAGES_MIN + Math.floor(zufall() * (TAGES_MAX - TAGES_MIN + 1)));
@@ -1363,11 +1371,6 @@
       case 'lernen': {
         const { ids, titel } = auswahl(btn.dataset.art, btn.dataset.stapel || '', btn.dataset.teil || '');
         starteRunde(ids, titel);
-        break;
-      }
-      case 'teil': {
-        const teil = daten.teilById.get(btn.dataset.teil);
-        if (teil) navigiere(startPfad(teil));
         break;
       }
       case 'fortsetzen': navigiere('lernen'); break;
