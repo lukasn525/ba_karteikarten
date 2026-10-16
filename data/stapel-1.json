@@ -32,10 +32,10 @@
       "id": "1-03",
       "frage": "Worin liegt die praktische Relevanz der Arbeit?",
       "punkte": [
-        "Die Hilfsfrist hängt an der Entfernung zur Wache und daran, ob eine Einheit verfügbar ist.",
-        "Wachen, Fahrzeuge und Personal werden lange vor dem Alarm geplant – also auf Basis der erwarteten Einsatzlast.",
-        "Diese Entscheidungen fallen für Gebiete und Zeiträume, nicht für einzelne Alarme.",
-        "Der Nutzen liegt vor allem dort, wo eine eigene Einsatzstatistik fehlt oder zu kurz ist."
+        "Die Arbeit prognostiziert die erwartete Einsatzlast je Gebiet – genau die Größe, nach der Wachen, Fahrzeuge und Personal lange vor dem Alarm geplant werden.",
+        "Diese Planung entscheidet über die Hilfsfrist: Sie hängt an der Entfernung zur Wache und daran, ob eine Einheit verfügbar ist.",
+        "Geplant wird für Gebiete und Zeiträume, nicht für einzelne Alarme – dazu passt die Einheit Stadtteil × Monat.",
+        "Der größte Nutzen liegt dort, wo eine eigene Einsatzstatistik fehlt oder zu kurz ist."
       ],
       "abschnitt": "4.1",
       "nachfrage": "San Francisco hat doch eine Einsatzhistorie – wofür braucht die Stadt Ihr Modell?",
@@ -45,10 +45,10 @@
       "id": "1-04",
       "frage": "Warum gerade San Francisco als Untersuchungsgebiet?",
       "punkte": [
-        "Die Stadt veröffentlicht Feuerwehr-, Kriminalitäts- und Baudaten offen und aktuell.",
-        "Sie stellt ihre Berichtsgliederung (41 Analysis Neighborhoods) samt Zuordnung der Census Tracts bereit.",
-        "Analyse- und Berichtseinheit fallen damit zusammen.",
-        "Die Wahl folgt aus der Datenlage, nicht aus einem inhaltlichen Sonderinteresse an der Stadt."
+        "Wegen der Datenlage: Die Stadt veröffentlicht Feuerwehr-, Kriminalitäts- und Baudaten offen und aktuell.",
+        "Sie stellt außerdem ihre Berichtsgliederung bereit (41 Analysis Neighborhoods) samt Zuordnung der Census Tracts.",
+        "Analysiert wird damit auf derselben Ebene, auf der die Stadt berichtet: Analyse- und Berichtseinheit fallen zusammen.",
+        "Ein inhaltliches Sonderinteresse an San Francisco gibt es nicht."
       ],
       "abschnitt": "4.1",
       "nachfrage": "Lassen sich Ihre Ergebnisse auf eine deutsche Stadt übertragen?",
@@ -85,7 +85,7 @@
       "frage": "Aus welchen Datenquellen besteht der Datensatz?",
       "punkte": [
         "SFFD Fire Incidents: Einsatzmeldungen, Grundlage beider Zielgrößen.",
-        "SFPD-Anzeigen in zwei Quellen: heutiges System ab 2018 und Altsystem davor (nur Koordinaten).",
+        "SFPD-Anzeigen für den Kriminalitätsindex, aus zwei Quellen: heutiges System ab 2018, Altsystem davor (nur mit Koordinaten).",
         "Land Use 2020 (154.544 Parzellen) für die drei baulichen Merkmale.",
         "American Community Survey (5-Jahres-Schätzungen) für Sozioökonomie und Bevölkerung.",
         "Stadtteilgeometrie und Zuordnung Census Tract → Stadtteil vom Planning Department."
@@ -98,10 +98,10 @@
       "id": "1-08",
       "frage": "Wie groß ist der Rohbestand und was geht davon in die Analyse ein?",
       "punkte": [
-        "Rohbestand: 720.258 Einsatzmeldungen aus 41 Stadtteilen (2003 bis Februar 2026).",
-        "Im Analysezeitraum 2015–2025 liegen 371.316 Meldungen, in den 36 Analysestadtteilen 357.553.",
-        "Aufgenommen werden nur Meldungen mit Stadtteil, erfasster Ankunft und 0 bis 60 Minuten Antwortzeit.",
-        "Zuschnitt und Bevölkerung werden nach der Aufbereitung geprüft; eine Abweichung bricht den Lauf ab."
+        "In die Analyse gehen 357.553 der 720.258 Rohmeldungen ein, knapp die Hälfte.",
+        "Der Rohbestand reicht von 2003 bis Februar 2026 über 41 Stadtteile; der Analysezeitraum 2015–2025 lässt 371.316 übrig, die 36 Analysestadtteile 357.553.",
+        "Aufgenommen wird eine Meldung nur mit Stadtteil, erfasster Ankunft und einer Antwortzeit von 0 bis 60 Minuten.",
+        "Nach der Aufbereitung werden Zuschnitt und Bevölkerung geprüft; eine Abweichung bricht den Lauf ab."
       ],
       "abschnitt": "4.3, 3.3",
       "nachfrage": "Wie stellen Sie sicher, dass bei der Aufbereitung keine Stadtteile stillschweigend verloren gehen?",
@@ -111,11 +111,10 @@
       "id": "1-09",
       "frage": "Welche Zielgrößen gibt es, und wie hängen die beiden Stränge zusammen?",
       "punkte": [
-        "Mengenstrang: Anzahl der Einsätze je Stadtteil und Monat (Regression), berichtet wird auf der Anzahl.",
-        "Geschätzt wird dabei die Rate je 1.000 Einwohner: Die ML-Verfahren lernen sie und rechnen mit der Bevölkerung auf die Anzahl zurück, das GLM über den Offset.",
-        "Die Rate trennt Größe von Struktur und wird zusätzlich als Robustheitsprüfung ausgewertet.",
-        "Strukturstrang: die im Stadtteilmonat überwiegende Einsatzart (Klassifikation mit vier Klassen).",
-        "Beide Stränge nutzen dieselbe Einheit, dieselben Merkmale und dieselben Folds."
+        "Zwei Zielgrößen: die Anzahl der Einsätze je Stadtteil und Monat (Mengenstrang, Regression) und die überwiegende Einsatzart (Strukturstrang, Klassifikation mit vier Klassen).",
+        "Zusammen beschreiben sie die Einsatzlast nach Menge und Zusammensetzung – auf derselben Einheit, mit denselben Merkmalen und denselben Folds.",
+        "Im Mengenstrang wird intern die Rate je 1.000 Einwohner geschätzt: Die ML-Verfahren rechnen sie mit der Bevölkerung auf die Anzahl zurück, das GLM über den Offset.",
+        "Berichtet wird auf der Anzahl; die Rate trennt Größe von Struktur und wird zusätzlich als Robustheitsprüfung ausgewertet."
       ],
       "abschnitt": "4.1",
       "nachfrage": "Warum berichten Sie die Anzahl und nicht die Rate als Hauptzielgröße?",
@@ -138,10 +137,10 @@
       "id": "1-11",
       "frage": "Warum wird die Einsatzart je Stadtteilmonat und nicht je Einsatz bestimmt?",
       "punkte": [
-        "Innerhalb eines Stadtteilmonats tragen alle Einsätze dieselben Merkmale.",
+        "Weil die Merkmale nur je Stadtteilmonat variieren: Alle Einsätze eines Stadtteilmonats tragen dieselben Merkmale, ein Modell könnte sie nicht unterscheiden.",
         "357.553 Einsätze verteilen sich auf nur rund 4.750 verschiedene Merkmalsprofile.",
-        "Je Einsatz läge der Spielraum über der Mehrheitsklasse bei nur 1,7 Prozentpunkten (50,0 % gegen 48,3 %).",
-        "Ein am Schwellwert geteilter Anteil wäre die Alternative, kostet aber Trennschärfe (Median-Split ≈ ein Drittel weniger Stichprobe)."
+        "Je Einsatz läge der Spielraum über der Mehrheitsklasse deshalb bei nur 1,7 Prozentpunkten (50,0 % gegen 48,3 %).",
+        "Je Stadtteilmonat beantwortet das Label dagegen die Planungsfrage: welche Art in einem Gebiet und Monat überwiegt."
       ],
       "abschnitt": "4.4",
       "nachfrage": "Warum haben Sie dann nicht die Anteile der Einsatzarten direkt modelliert?",
@@ -151,11 +150,10 @@
       "id": "1-12",
       "frage": "Wie sind die vier Klassen verteilt?",
       "punkte": [
-        "Alle 36 Stadtteile (Arbeit, 4.2): Fehlalarm 79,6 %, technische Hilfe 15,9 %, Rettung 3,1 %, Brand 1,5 %.",
-        "Entwicklungspanel (Ordner, panelprofil.md): Fehlalarm 79,5 %, technische Hilfe 16,1 %, Rettung 3,6 %, Brand 0,8 %.",
-        "Hold-out (Ordner, panelprofil.md): Fehlalarm 80,1 %, technische Hilfe 14,9 %, Brand 4,7 %, Rettung 0,4 %.",
-        "Von 70 brand-dominierten Monaten liegen 35 allein in Bayview Hunters Point.",
-        "Die Schieflage bestimmt die Wahl des Gütemaßes (Macro-F1 statt Accuracy)."
+        "Stark schief: Fehlalarm überwiegt in rund vier von fünf Stadtteilmonaten (79,6 %), dann technische Hilfe 15,9 %, Rettung 3,1 %, Brand 1,5 % (alle 36 Stadtteile, 4.2).",
+        "Brand ballt sich räumlich: Von 70 brand-dominierten Monaten liegen 35 allein in Bayview Hunters Point.",
+        "Deshalb weichen Entwicklung und Hold-out voneinander ab: Brand 0,8 % gegen 4,7 %, Rettung 3,6 % gegen 0,4 % (Ordner, panelprofil.md).",
+        "Die Schieflage bestimmt das Gütemaß: Macro-F1 statt Accuracy, weil immer „Fehlalarm“ schon rund 0,80 Accuracy erreicht."
       ],
       "abschnitt": "4.2",
       "nachfrage": "Warum ist der Rettungsanteil so klein, wo Feuerwehren doch viel Rettungsdienst fahren?",
@@ -208,7 +206,8 @@
         "Grundsatz: Ein Prädiktor muss zum Prognosezeitpunkt verfügbar gewesen sein (no-time-machine requirement).",
         "Ein ACS-Jahrgang geht erst ab seiner Veröffentlichung ein.",
         "Der Kriminalitätsindex endet im Vormonat.",
-        "Lag-Werte der Einsatzzahl liegen in der Datei, sind aber bewusst keine Merkmale."
+        "Lag-Werte der Einsatzzahl liegen in der Datei, sind aber bewusst keine Merkmale.",
+        "Einzige Ausnahme: die baulichen Merkmale aus Land Use 2020, für die frühen Jahre offen als Abweichung ausgewiesen."
       ],
       "abschnitt": "4.3",
       "nachfrage": "Warum keine Lags – die würden die Prognose doch deutlich verbessern?",
@@ -218,9 +217,9 @@
       "id": "1-17",
       "frage": "Was zeigt die explorative Analyse über die Struktur des Panels?",
       "punkte": [
-        "92,5 % der Varianz der Einsatzzahl liegen zwischen den Stadtteilen, nicht über die Monate.",
-        "Der Stadtteilmittelwert allein erreicht ein Bestimmtheitsmaß von 0,925.",
-        "Die Einsatzzahlen sind stark überdispers: Die Varianz liegt beim 61,8-Fachen des Mittelwerts (Poisson: 1), auf den Trainingsstadtteilen von Fold 1 beim 79,5-Fachen (5.2).",
+        "Die Stadtteile unterscheiden sich viel stärker untereinander als über die Monate: 92,5 % der Varianz der Einsatzzahl liegen zwischen ihnen.",
+        "Der Stadtteilmittelwert allein erreicht deshalb schon ein Bestimmtheitsmaß von 0,925.",
+        "Die Einsatzzahlen sind stark überdispers: Varianz das 61,8-Fache des Mittelwerts (Poisson: 1), auf den Trainingsstadtteilen von Fold 1 das 79,5-Fache (5.2).",
         "Daraus folgt der Validierungsrahmen: Ganze Stadtteile müssen zurückgehalten werden."
       ],
       "abschnitt": "4.2",
@@ -231,7 +230,7 @@
       "id": "1-18",
       "frage": "Warum entsprechen 4.752 Zeilen nur rund 39 unabhängigen Beobachtungen?",
       "punkte": [
-        "Die Monate eines Stadtteils ähneln sich stark: Intraklassenkorrelation 0,926.",
+        "Weil sich die Monate eines Stadtteils stark ähneln und kaum neue Information bringen: Intraklassenkorrelation 0,926.",
         "Designeffekt = 1 + (132 − 1) · 0,926 ≈ 122.",
         "Effektive Stichprobe = 4.752 / 122 ≈ 39.",
         "Bauliche Merkmale haben genau 36 effektive Werte – einen je Stadtteil."
@@ -257,8 +256,8 @@
       "id": "1-20",
       "frage": "Wo liegt die Forschungslücke?",
       "punkte": [
-        "Die Literaturstränge stehen nebeneinander und treffen sich an keinem gemeinsamen Gegenstand.",
-        "Brandforschung belegt Zusammenhänge für Brandinzidenz, Feuerwehrarbeiten prognostizieren Gebäude- oder Standortrisiken.",
+        "Es fehlt eine Arbeit, die die Einsatzlast unbekannter Gebiete aus Strukturmerkmalen prognostiziert und die Verfahren dabei an einem Zähldatenmodell misst.",
+        "Brandforschung belegt Zusammenhänge für Brandinzidenz, Feuerwehrarbeiten prognostizieren Gebäude- oder Standortrisiken – die Stränge treffen sich an keinem gemeinsamen Gegenstand.",
         "Vergleichsstudien sehen Baumverfahren vorn, prüfen aber nicht bei gruppierten Daten mit unbekannten Gruppen.",
         "Keine Prognosearbeit misst sich an einem Zähldatenmodell oder berichtet Rechenzeiten."
       ],
@@ -270,11 +269,11 @@
       "id": "1-21",
       "frage": "Wie gehen Sie mit fehlenden Werten und Ausreißern um?",
       "punkte": [
-        "Fehlende Merkmalswerte werden je Stadtteil nur vorwärts fortgeschrieben, nie rückwärts – ein Rückwärtsfüllen holte später erhobene Information in die Vergangenheit (Code 5).",
-        "Ein Anteil mit Nenner null wird fehlend statt null (Code 6); ACS-Platzhalter unter −999 werden als fehlend gesetzt.",
-        "Hat ein Stadtteil durchgehend Lücken, fällt er ganz heraus, nicht einzelne Monate (Lakeshore, Treasure Island) – nur ein rechteckiges Panel hält die Folds vergleichbar.",
-        "Keine Ausreißerbereinigung nach der Zielgröße; bereinigt werden nur Erfassungsfehler: 269 doppelte Einsatznummern, negative Antwortzeiten, Baujahre nach 2025.",
-        "Gesetzte Grenzen: Antwortzeit bis 60 Minuten, Baujahr ab 1800; unplausible Baujahre werden als fehlend markiert statt gelöscht."
+        "Fehlende Werte werden nicht ersetzt, sondern je Stadtteil nur vorwärts fortgeschrieben – rückwärts zu füllen holte später erhobene Information in die Vergangenheit (Code 5).",
+        "Hat ein Stadtteil durchgehend Lücken, fällt er ganz heraus statt einzelner Monate (Lakeshore, Treasure Island): Nur ein rechteckiges Panel hält die Folds vergleichbar.",
+        "Ausreißer nach der Zielgröße werden nicht entfernt; bereinigt werden nur Erfassungsfehler: 269 doppelte Einsatznummern, negative Antwortzeiten, Baujahre nach 2025.",
+        "Gesetzte Grenzen: Antwortzeit bis 60 Minuten, Baujahr ab 1800; unplausible Baujahre gelten als fehlend statt gelöscht.",
+        "Technische Sonderfälle: Ein Anteil mit Nenner null wird fehlend statt null (Code 6), ebenso ACS-Platzhalter unter −999."
       ],
       "abschnitt": "4.3, 4.4",
       "nachfrage": "Warum ersetzen Sie fehlende Werte nicht, etwa durch den Mittelwert oder ein Modell?",
@@ -284,7 +283,7 @@
       "id": "1-22",
       "frage": "Wie sind die drei baulichen Merkmale definiert?",
       "punkte": [
-        "Altbauanteil: Parzellen mit Baujahr vor 1940, bezogen auf die Parzellen mit bekanntem Baujahr – sonst fiele er dort zu niedrig aus, wo das Verzeichnis lückenhaft ist.",
+        "Altbauanteil: Parzellen mit Baujahr vor 1940 an allen mit bekanntem Baujahr – so drücken Lücken im Verzeichnis den Anteil nicht.",
         "Wohngebäudeanteil: Parzellen mit Wohnnutzung, bezogen auf alle Parzellen – gezählt, nicht nach Fläche.",
         "Risikogewerbeanteil: eigene Setzung aus den Land-Use-Kategorien RETAIL/ENT (Einzelhandel, Unterhaltung) und PDR (Produktion, Verteilung, Reparatur), gemessen als Flächenanteil.",
         "Alle drei stammen aus dem einzigen Jahrgang Land Use 2020, zugeordnet über den Flächenmittelpunkt (154.544 Parzellen, 99,5 %), und sind je Stadtteil konstant."
@@ -297,10 +296,10 @@
       "id": "1-23",
       "frage": "Wie werden die sozioökonomischen Merkmale gebildet?",
       "punkte": [
-        "Fünf Merkmale aus den Fünfjahresschätzungen der ACS: Medianeinkommen, Armuts-, Akademiker- und Leerstandsquote, Medianmiete.",
-        "Zählgrößen werden über die Tracts summiert, Medianwerte bevölkerungsgewichtet gemittelt, weil sich ein Median nicht addieren lässt.",
-        "Quoten entstehen aus zwei Zählgrößen derselben Erhebung, etwa ACS B17001 für die Armutsquote.",
-        "Zeitlich gilt ACS-Jahrgang ≤ Einsatzjahr − 1: Der Jahrgang 2023 deckt 2019 bis 2023 ab und war 2023 noch nicht erschienen.",
+        "Aus den ACS-Fünfjahresschätzungen auf Tract-Ebene, über den Crosswalk zu Stadtteilen verdichtet: Medianeinkommen, Medianmiete, Armuts-, Akademiker- und Leerstandsquote.",
+        "Zählgrößen werden über die Tracts summiert und Quoten daraus gebildet, Zähler und Nenner aus derselben Erhebung (etwa ACS B17001 für Armut).",
+        "Medianwerte werden bevölkerungsgewichtet gemittelt, weil sich ein Median nicht addieren lässt.",
+        "Zeitlich gilt ACS-Jahrgang ≤ Einsatzjahr − 1: Der Jahrgang 2023 deckt 2019 bis 2023 ab, war 2023 aber noch nicht erschienen.",
         "Je Stadtteil nehmen die Merkmale deshalb höchstens vier verschiedene Werte an."
       ],
       "abschnitt": "4.2, 4.3",
@@ -350,10 +349,10 @@
       "id": "1-27",
       "frage": "Welche Merkmale hängen am stärksten mit der Einsatzhäufigkeit zusammen?",
       "punkte": [
-        "Durchweg schwach bis mittel, in der erwarteten Richtung: Armut, Leerstand und Kriminalität mit mehr Einsätzen, Einkommen und Miete mit weniger.",
-        "Am stärksten: Risikogewerbeanteil (Pearson 0,680), Kriminalitätsindex (0,632), Leerstandsquote (0,524).",
+        "Am stärksten: Risikogewerbeanteil (Pearson 0,680), Kriminalitätsindex (0,632) und Leerstandsquote (0,524).",
+        "Insgesamt sind die Zusammenhänge schwach bis mittel und zeigen in die erwartete Richtung: Armut, Leerstand und Kriminalität gehen mit mehr Einsätzen einher, Einkommen und Miete mit weniger.",
         "Pearson misst den linearen, Spearman den monotonen Zusammenhang; liegt Spearman höher, spricht das für einen gekrümmten Verlauf (Bevölkerung 0,619 gegen 0,480).",
-        "Die Merkmale korrelieren untereinander stärker als mit der Zielgröße: Medianeinkommen und Medianmiete zu 0,921."
+        "Untereinander hängen die Merkmale stärker zusammen als mit der Zielgröße, etwa Medianeinkommen und Medianmiete mit 0,921."
       ],
       "abschnitt": "4.2",
       "nachfrage": "Was folgt aus der starken Korrelation der Merkmale untereinander?",
@@ -363,9 +362,9 @@
       "id": "1-28",
       "frage": "Wie ist der Abgabeordner aufgebaut, und wie läuft der Code?",
       "punkte": [
-        "prep/ erzeugt aus den Rohdaten die beiden Analysedateien, vorpruefung/ enthält Aufteilung, Baselines, Eignungsprüfung und Obergrenzen, modelle/ Suche, Kreuzvalidierung, Tests, Schlussbewertung und Attribution.",
-        "Die README führt 17 Aufrufe in fester Reihenfolge auf; tests/ prüft die erzeugten Dateien mit 20 Einzelprüfungen.",
-        "Die Hold-out-Stadtteile sind nur mit dem Argument holdout erreichbar; ein voller Lauf dauert rund drei Stunden.",
+        "prep/ baut aus den Rohdaten die beiden Analysedateien, vorpruefung/ enthält Aufteilung, Baselines, Eignungsprüfung und Obergrenzen, modelle/ Suche, Kreuzvalidierung, Tests, Schlussbewertung und Attribution.",
+        "tests/ prüft die erzeugten Dateien mit 20 Einzelprüfungen.",
+        "Gestartet wird über 17 Aufrufe in fester Reihenfolge, die die README aufführt; ein voller Lauf dauert rund drei Stunden, das Hold-out ist nur mit dem Argument holdout erreichbar.",
         "data/raw enthält die Rohdaten im Abrufstand, die Aufbereitung lädt nichts nach; docs/ergebnisverzeichnis.md ordnet jeder Tabelle der Arbeit ihre Datei in results/ zu."
       ],
       "abschnitt": "3.2, 3.3 · Ordner",

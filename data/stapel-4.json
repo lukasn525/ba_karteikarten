@@ -7,10 +7,10 @@
       "id": "4-01",
       "frage": "Warum sind Sie bei Validierung und Referenzmodell vom ursprünglichen Plan abgewichen?",
       "punkte": [
-        "Geplant waren ein Zeitschnitt und die negative Binomialverteilung.",
-        "Ein Zeitschnitt prüft die Forschungsfrage nicht: Jeder Stadtteil stünde in Training und Test.",
-        "Bei 92,5 % Zwischenvarianz hätte er im Kern nur die zeitliche Stabilität gemessen.",
-        "Die negative Binomialverteilung korrigiert Standardfehler, gebraucht werden nur Punktvorhersagen."
+        "Geplant waren ein Zeitschnitt und die negative Binomialverteilung; beide passten nicht zur Fragestellung.",
+        "Zeitschnitt → Stadtteil-Split: Beim Zeitschnitt stünde jeder Stadtteil in Training und Test, die Vorhersage für unbekannte Stadtteile bliebe ungeprüft.",
+        "Den Ausschlag gab die explorative Analyse: Bei 92,5 % Zwischenvarianz hätte der Zeitschnitt im Kern nur die zeitliche Stabilität gemessen.",
+        "Negative Binomialverteilung → Poisson-GLM: Sie korrigiert Standardfehler, gebraucht werden aber nur Punktvorhersagen."
       ],
       "abschnitt": "7.3, 2.3",
       "nachfrage": "Was kostet Sie der Verzicht auf den Zeitschnitt?",
@@ -20,10 +20,10 @@
       "id": "4-02",
       "frage": "Warum genau Ridge, Random Forest und XGBoost?",
       "punkte": [
-        "Die Arbeit fragt, ob Flexibilität auf diesen Daten etwas bringt.",
-        "Baumensembles finden Krümmung und Wechselwirkungen selbst – durch Mitteln (Random Forest) oder Nachkorrigieren (XGBoost).",
+        "Je ein Vertreter je Bauprinzip: Mitteln vieler Bäume (Random Forest), Nachkorrigieren (XGBoost) und ein lineares Verfahren mit Strafterm (Ridge).",
+        "Die Arbeit fragt, ob Flexibilität auf diesen Daten etwas bringt; die Baumensembles finden Krümmung und Wechselwirkungen selbst.",
         "Ridge ist linear, durchläuft aber dieselbe Suche: Erst der Abstand zu ihm trennt Flexibilität von Tuning.",
-        "Je ein Vertreter je Bauprinzip; weitere wären nur Varianten derselben Prinzipien."
+        "Weitere Verfahren wären nur Varianten derselben Prinzipien."
       ],
       "abschnitt": "5.1",
       "nachfrage": "Hätte ein anderes flexibles Verfahren nicht besser abschneiden können?",
@@ -46,10 +46,10 @@
       "id": "4-04",
       "frage": "Warum kein Mehrebenenmodell mit eigenem Niveau je Stadtteil?",
       "punkte": [
-        "Ein Mehrebenenmodell schätzt für jeden bekannten Stadtteil einen Zufallseffekt.",
+        "Weil es für unbekannte Stadtteile keinen Vorteil bringt: Dort reduziert es sich auf die Form der Referenz.",
+        "Ein Mehrebenenmodell schätzt für jeden bekannten Stadtteil einen Zufallseffekt, also ein eigenes Niveau.",
         "Für einen Stadtteil ohne Trainingsdaten geht dieser Effekt mit dem Erwartungswert null ein.",
-        "Übrig bleibt der feste Teil – dieselbe Form wie die Referenz.",
-        "Bei der Vorhersage für unbekannte Stadtteile bringt es deshalb keinen Vorteil."
+        "Übrig bleibt der feste Teil – dieselbe Form wie das Poisson-GLM."
       ],
       "abschnitt": "5.1",
       "nachfrage": "Hätte es die Unsicherheit nicht besser abgebildet?",
@@ -59,9 +59,9 @@
       "id": "4-05",
       "frage": "Die Linearität ist verletzt – warum verwenden Sie Ridge trotzdem?",
       "punkte": [
-        "Verletzt ist sie in den Anpassungsdaten (RESET F = 360,4), das wird offen ausgewiesen.",
-        "Gerade deshalb ist Ridge im Vergleich: Es prüft, ob sich die Nichtlinearität auf neuen Stadtteilen auszahlt.",
-        "Sie tut es nicht: Ridge ist in der Kreuzvalidierung bestes Verfahren, signifikant vor beiden Bäumen.",
+        "Gerade deshalb steht Ridge im Vergleich: Als lineares Gegenstück zu den Bäumen zeigt es, ob sich das Modellieren der Nichtlinearität auf neuen Stadtteilen auszahlt.",
+        "Verletzt ist die Linearität in den Anpassungsdaten (RESET F = 360,4), das wird offen ausgewiesen.",
+        "Es zahlt sich nicht aus: Ridge ist in der Kreuzvalidierung bestes Verfahren, signifikant vor beiden Bäumen.",
         "Die verletzten Annahmen sichern Unverzerrtheit und Standardfehler – darauf verzichtet Ridge als Vorhersagemodell bewusst."
       ],
       "abschnitt": "5.1",
@@ -73,8 +73,8 @@
       "frage": "Wie kann ein lineares Modell bei nachgewiesener Nichtlinearität am besten abschneiden?",
       "punkte": [
         "Die Krümmung ist in den Trainingsdaten sichtbar, lässt sich aus 24 Stadtteilen aber nicht verlässlich lernen.",
-        "Flexible Modelle passen sich an die Trainingsstadtteile an (Varianz), Ridge hat die geringste Varianz.",
-        "Die Tests behandeln 3.168 Zeilen als unabhängig, bei Designeffekt 122 – ihr p-Wert gilt nur nominell.",
+        "Flexible Modelle passen sich zu stark an die Trainingsstadtteile an (Varianz); Ridge hat die geringste Varianz, und das wiegt mehr als seine Verzerrung.",
+        "Zudem ist der Nachweis schwächer, als er aussieht: Die Tests behandeln 3.168 Zeilen als unabhängig, bei Designeffekt 122 gilt ihr p-Wert nur nominell.",
         "Belegt ist nur, dass eine Gerade diese Stadtteile schlechter beschreibt, nicht dass Flexibilität sie besser vorhersagt."
       ],
       "abschnitt": "5.1, 6.3",
@@ -85,10 +85,9 @@
       "id": "4-07",
       "frage": "Homoskedastizität und Normalverteilung sind auch verletzt – ist das ein Problem?",
       "punkte": [
-        "Breusch-Pagan LM = 525,1: ungleiche Streuung, bei Zähldaten erwartbar (Varianz wächst mit dem Niveau).",
-        "Jarque-Bera JB = 150,0: Abweichung in den Rändern, Schiefe 0,02, Wölbung 4,07.",
-        "Beides betrifft Standardfehler und Inferenz, nicht die Punktvorhersage.",
-        "Berichtet werden keine Koeffizienten-Tests – die Verletzungen sind für die Fragestellung folgenlos."
+        "Nein: Beide betreffen Standardfehler und Inferenz, nicht die Punktvorhersage, und Koeffiziententests berichtet die Arbeit nicht.",
+        "Breusch-Pagan LM = 525,1: ungleiche Streuung, bei Zähldaten erwartbar, weil die Varianz mit dem Niveau wächst.",
+        "Jarque-Bera JB = 150,0: Abweichung in den Rändern, Schiefe 0,02, Wölbung 4,07."
       ],
       "abschnitt": "5.1",
       "nachfrage": "Warum dann keine gewichtete Schätzung?",
@@ -98,10 +97,10 @@
       "id": "4-10",
       "frage": "Benachbarte Stadtteile ähneln sich – ist die Validierung dadurch zu optimistisch?",
       "punkte": [
+        "Möglicherweise ja: Der berichtete Fehler fällt eher zu klein als zu groß aus – das ist als Limitation benannt.",
         "Die Blöcke folgen der Verwaltungsgrenze; Nachbarn eines Teststadtteils können im Training stehen.",
-        "Räumliche Ähnlichkeit kann so Information in den Test tragen.",
-        "Ein Puffer um die Teststadtteile ließe im Mittel nur 8,9 statt 24 Trainingsstadtteile übrig.",
-        "Folge: Der berichtete Fehler fällt eher zu klein als zu groß aus – als Limitation benannt."
+        "Über räumliche Ähnlichkeit kann so Information in den Test gelangen.",
+        "Ein Puffer um die Teststadtteile ließe im Mittel nur 8,9 statt 24 Trainingsstadtteile übrig."
       ],
       "abschnitt": "7.3",
       "nachfrage": "Warum haben Sie keinen räumlichen Puffer verwendet?",
@@ -192,10 +191,10 @@
       "id": "4-17",
       "frage": "Ist die Wohnbevölkerung die richtige Bezugsgröße?",
       "punkte": [
-        "Sie ist nur eine Annäherung an die tatsächliche Exposition.",
-        "Financial District (Rate 10,4), South of Market (10,1) und Tenderloin (9,4) haben extrem hohe Raten.",
+        "Nur näherungsweise: Sie bildet die tatsächliche Exposition nicht vollständig ab.",
         "Pendler und Besucher stehen nicht in der Einwohnerzahl, verursachen aber Einsätze.",
-        "In der Limitationstabelle benannt: Die Rate überzeichnet Innenstadtlagen."
+        "Deshalb haben Innenstadtlagen extrem hohe Raten: Financial District 10,4, South of Market 10,1, Tenderloin 9,4.",
+        "In der Limitationstabelle benannt: Die Rate überzeichnet Innenstadtlagen – auch deshalb ist die Anzahl die Hauptzielgröße."
       ],
       "abschnitt": "7.3",
       "nachfrage": "Wie würde sich eine bessere Bezugsgröße auf die Ergebnisse auswirken?",
@@ -205,10 +204,10 @@
       "id": "4-18",
       "frage": "Was hat eine Feuerwehr praktisch von Ihren Ergebnissen?",
       "punkte": [
-        "Die Prognose verfehlt einen Stadtteilmonat im Mittel um rund 20 Einsätze (MAE).",
-        "Sie trennt Stadtteile nach ihrer Last, aber nicht einzelne Monate eines Stadtteils.",
-        "Nutzbar als Eingangsgröße für Standortfragen, nicht für die Bemessung nach Monatszahlen.",
-        "Für die Modellwahl: Das Poisson-GLM reicht; aufwendigere Verfahren wären nicht falsch, nur unwirtschaftlich."
+        "Eine Eingangsgröße für Standortfragen – nicht für die Bemessung nach Monatszahlen.",
+        "Die Prognose trennt Stadtteile nach ihrer Last, aber nicht einzelne Monate eines Stadtteils; sie verfehlt einen Stadtteilmonat im Mittel um rund 20 Einsätze (MAE).",
+        "Für die Modellwahl: Das Poisson-GLM reicht; aufwendigere Verfahren wären nicht falsch, nur unwirtschaftlich.",
+        "Am meisten nützt das dort, wo eine eigene Einsatzstatistik fehlt."
       ],
       "abschnitt": "7.2",
       "nachfrage": "Würden Sie das Modell einer Feuerwehr zur Ressourcenverteilung empfehlen?",
@@ -286,10 +285,9 @@
       "id": "4-24",
       "frage": "Warum gleichen Sie die seltenen Klassen nicht durch Resampling wie SMOTE aus?",
       "punkte": [
-        "Ausgeglichen wird über Gewichte umgekehrt proportional zur Klassenhäufigkeit; keine Zeile wird vervielfacht oder entfernt.",
-        "Die Zeilenmenge bleibt dieselbe wie im Mengenstrang – beide Stränge laufen auf identischen Daten.",
-        "Die Gewichte entstehen je Fold auf dem Trainingsteil; global gerechnet läsen sie die Testzeilen mit.",
-        "Die Klassen werden dagegen einmal global kodiert, sonst verschöbe sich in einem Fold ohne Brandmonat die Nummerierung."
+        "Weil Klassengewichte die seltenen Klassen ebenso stärken, ohne die Daten zu verändern: Gewichte umgekehrt proportional zur Klassenhäufigkeit, keine Zeile wird vervielfacht oder entfernt.",
+        "So bleibt die Zeilenmenge dieselbe wie im Mengenstrang – beide Stränge laufen auf identischen Daten.",
+        "Die Gewichte entstehen je Fold nur auf dem Trainingsteil; global gerechnet läsen sie die Testzeilen mit."
       ],
       "abschnitt": "5.2",
       "nachfrage": "Hätte SMOTE nicht mehr Brandmonate erzeugt?",

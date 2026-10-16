@@ -125,9 +125,9 @@
       "frage": "Schadet es, dass nur in Wiederholung 0 gesucht wird? Wo haben Sie das gemessen?",
       "punkte": [
         "**`modelle/m02_menge.py` · `leakage_diagnose()`** (Z. 613–647), Gegenstück in m03",
-        "Vergleicht den Vorsprung gegen die Baseline in W0 mit dem in W1–9.",
+        "Vergleicht den Vorsprung gegen die Baseline in W0 mit dem in W1–9: Ein Leck müsste ihn in W1–9 vergrößern.",
         "Den Anteil von 80 % Teststadtteilen aus der Suchmenge zählt `vorpruefung/panelprofil.py` · `suchmenge()`.",
-        "Ein Leck müsste den Vorsprung in W1–9 vergrößern; er ist in allen acht Vergleichen kleiner, um das 0,098- bis 0,317-Fache der Fold-Streuung."
+        "Ergebnis: kein Schaden erkennbar – der Vorsprung ist in allen acht Vergleichen in W1–9 kleiner, um das 0,098- bis 0,317-Fache der Fold-Streuung."
       ],
       "abschnitt": "6.3",
       "nachfrage": "Warum ist das kein Beweis?",

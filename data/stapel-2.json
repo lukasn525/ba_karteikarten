@@ -7,10 +7,10 @@
       "id": "2-07",
       "frage": "Warum ein Poisson-Modell und keine negative Binomialverteilung?",
       "punkte": [
-        "Die Daten sind überdispers (Dispersionsindex 79,5), Poisson unterstellt Varianz gleich Mittelwert.",
-        "Der Poisson-Schätzer bleibt als Pseudo-ML-Schätzer konsistent, solange der Erwartungswert stimmt (Gourieroux et al. 1981, S. 8; Winkelmann 2008, S. 89).",
-        "Verzerrt werden nur Standardfehler und p-Werte (Gourieroux et al. 1981, S. 9).",
-        "Die Arbeit braucht nur Punktvorhersagen – die Korrektur der negativen Binomialverteilung wird nicht gebraucht."
+        "Weil nur Punktvorhersagen gebraucht werden, und für die reicht Poisson auch bei überdispersen Daten.",
+        "Überdispers sind die Daten durchaus (Dispersionsindex 79,5), Poisson unterstellt Varianz gleich Mittelwert.",
+        "Der Poisson-Schätzer bleibt aber als Pseudo-ML-Schätzer konsistent, solange der Erwartungswert stimmt (Gourieroux et al. 1981, S. 8; Winkelmann 2008, S. 89).",
+        "Verzerrt werden nur Standardfehler und p-Werte (Gourieroux et al. 1981, S. 9) – genau das, was die negative Binomialverteilung korrigieren würde."
       ],
       "abschnitt": "2.3",
       "nachfrage": "Und wenn der Erwartungswert falsch spezifiziert ist?",
@@ -20,10 +20,10 @@
       "id": "2-08",
       "frage": "Was ist der Offset, und wie behandeln Sie die Größe der Stadtteile?",
       "punkte": [
-        "Aus log(μ / B) = x′β folgt log(μ) = log(B) + x′β, mit B als Bevölkerung.",
-        "log(B) geht mit festem Koeffizienten 1 ein und wird nicht geschätzt (Winkelmann 2008, S. 74–75).",
-        "Die ML-Verfahren lernen die Rate je 1.000 Einwohner; die Vorhersage wird mit der Bevölkerung zurückgerechnet.",
-        "Ohne diese Behandlung: Random Forest 50,9 statt 35,0 RMSE, XGBoost 51,8 statt 37,4."
+        "Der Offset ist log(Bevölkerung) als Summand mit festem Koeffizienten 1, der nicht geschätzt wird: Das GLM modelliert damit die Rate je Einwohner (Winkelmann 2008, S. 74–75).",
+        "Herleitung: Aus log(μ / B) = x′β folgt log(μ) = log(B) + x′β, mit B als Bevölkerung.",
+        "Die ML-Verfahren erreichen dasselbe direkt: Sie lernen die Rate je 1.000 Einwohner, die Vorhersage wird mit der Bevölkerung zurückgerechnet.",
+        "Ohne diese Behandlung wären die Bäume deutlich schlechter: Random Forest 50,9 statt 35,0 RMSE, XGBoost 51,8 statt 37,4."
       ],
       "abschnitt": "2.3, 4.5, 5.2",
       "nachfrage": "Warum dann zusätzlich log(Bevölkerung) als Merkmal?",
@@ -33,10 +33,10 @@
       "id": "2-09",
       "frage": "Wie funktioniert Ridge Regression, und warum Ridge statt einfacher Regression?",
       "punkte": [
-        "Lineare Regression mit L2-Strafterm auf die quadrierten Koeffizienten; λ steuert die Stärke.",
-        "Sie schrumpft Koeffizienten korrelierter Merkmale, ohne eines zu entfernen.",
-        "Die Merkmale korrelieren stark: Haushaltseinkommen VIF 10,64 (problematisch ab 5 bis 10).",
-        "Ridge nimmt bewusst etwas Verzerrung in Kauf, um die Varianz zu senken (Hoerl & Kennard 1970, S. 55–56)."
+        "Lineare Regression mit L2-Strafterm auf die quadrierten Koeffizienten; λ steuert, wie stark sie geschrumpft werden.",
+        "Gewählt, weil die Merkmale stark korrelieren: Haushaltseinkommen VIF 10,64 (problematisch ab 5 bis 10) – einfache Kleinste-Quadrate-Koeffizienten würden instabil.",
+        "Ridge schrumpft die Koeffizienten korrelierter Merkmale, ohne eines zu entfernen.",
+        "Dafür nimmt sie bewusst etwas Verzerrung in Kauf, um die Varianz zu senken (Hoerl & Kennard 1970, S. 55–56)."
       ],
       "abschnitt": "2.4, 5.1",
       "nachfrage": "Warum ist es wichtig, dass kein Merkmal entfernt wird?",
@@ -72,10 +72,10 @@
       "id": "2-12",
       "frage": "Warum gibt es Ridge nicht im Strukturstrang?",
       "punkte": [
-        "Die Einsatzart ist eine nominale Zielgröße.",
-        "Ridge ließe sich nur über eine Indikatorspalte je Klasse übertragen.",
-        "Diese Variante liefert Werte unter 0 oder über 1, also keine Wahrscheinlichkeiten.",
-        "Random Forest und XGBoost übertragen sich ohne Bruch, es wechselt nur die Verlustfunktion."
+        "Weil Ridge für eine nominale Zielgröße wie die Einsatzart keine Wahrscheinlichkeiten liefert.",
+        "Übertragen ließe es sich nur über eine Indikatorspalte je Klasse, und diese Variante liefert Werte unter 0 oder über 1.",
+        "Random Forest und XGBoost übertragen sich dagegen ohne Bruch, es wechselt nur die Verlustfunktion.",
+        "Das lineare Verfahren im Strukturstrang ist die Referenz selbst: das ungestrafte multinomiale Logit."
       ],
       "abschnitt": "5.1",
       "nachfrage": "Wäre eine penalisierte logistische Regression nicht das Ridge-Gegenstück gewesen?",
@@ -129,7 +129,7 @@
         "Gegenstück zum Poisson-Modell für eine nominale Zielgröße mit K ungeordneten Klassen.",
         "Gegen eine Referenzklasse K werden K − 1 Gleichungen für die logarithmierten Chancenverhältnisse geschätzt (Formel 3).",
         "Daraus folgen die Wahrscheinlichkeiten aller K Klassen, sie addieren sich zu eins; vorhergesagt wird die größte.",
-        "Ausgeglichene Gewichte lenken das Modell zu den seltenen Klassen: Accuracy 0,590 statt 0,795 der Mehrheitsklasse, aber Macro-F1 0,301 statt 0,221."
+        "Ausgeglichene Gewichte, damit die seltenen Klassen nicht im Fehlalarm untergehen: Accuracy 0,590 statt 0,795 der Mehrheitsklasse, aber Macro-F1 – das Hauptmaß – 0,301 statt 0,221."
       ],
       "abschnitt": "2.3, 4.5",
       "nachfrage": "Warum braucht es überhaupt eine Referenzklasse?",
@@ -191,10 +191,11 @@
       "id": "2-30",
       "frage": "Was zeigt die Eignungsprüfung zur funktionalen Form?",
       "punkte": [
-        "RESET-Test auf den 24 Trainingsstadtteilen von Fold 1, auf log(1 + y): F = 360,4 – die lineare Form reicht in den Anpassungsdaten nicht.",
-        "Krümmung: Bei der Bevölkerung liegt Spearman (+0,744) über Pearson (+0,532).",
-        "Bei der Armutsquote umgekehrt (+0,617 gegen +0,342): Einzelne Stadtteile ziehen die Gerade an sich.",
-        "Wechselwirkungen: Mit allen 45 Produkten der zehn Strukturmerkmale steigt das adjustierte R² von 0,859 auf 0,932."
+        "Die lineare Form reicht in den Anpassungsdaten nicht: Es gibt Krümmung und Wechselwirkungen.",
+        "RESET-Test auf den 24 Trainingsstadtteilen von Fold 1, auf log(1 + y): F = 360,4.",
+        "Krümmung: Bei der Bevölkerung liegt Spearman (+0,744) über Pearson (+0,532); bei der Armutsquote ist es umgekehrt (+0,617 gegen +0,342), weil einzelne Stadtteile die Gerade an sich ziehen.",
+        "Wechselwirkungen: Mit allen 45 Produkten der zehn Strukturmerkmale steigt das adjustierte R² von 0,859 auf 0,932.",
+        "Folge: Flexible Verfahren treten an – ob sich das auf neuen Stadtteilen auszahlt, entscheidet erst der Vergleich."
       ],
       "abschnitt": "5.1",
       "nachfrage": "Wie funktioniert der RESET-Test?",
@@ -204,10 +205,10 @@
       "id": "2-31",
       "frage": "Wie haben Sie Überdispersion und ungleiche Streuung geprüft?",
       "punkte": [
-        "Überdispersion: Hilfsregression nach Cameron und Trivedi (Code 14, Winkelmann 2008, S. 93, 118) – der einzige der vier Tests, den keine Bibliothek mitbringt.",
-        "Die Hilfsgröße ((y − μ)² − y) / μ wird ohne Konstante auf μ regressiert; der Koeffizient entspricht dem Dispersionsparameter der negativen Binomialverteilung, t = 18,0.",
-        "Einseitig getestet, weil eine Varianz unter dem Erwartungswert bei Einsatzzahlen keine sinnvolle Gegenhypothese ist.",
-        "Breusch-Pagan (LM = 525,1) in der Voreinstellung von statsmodels, die keine Normalverteilung voraussetzt – denn Jarque-Bera verwirft sie (JB = 150,0)."
+        "Überdispersion mit der Hilfsregression nach Cameron und Trivedi, ungleiche Streuung mit dem Breusch-Pagan-Test – beide zeigen deutliche Verletzungen.",
+        "Cameron-Trivedi: ((y − μ)² − y) / μ wird ohne Konstante auf μ regressiert; der Koeffizient entspricht dem Dispersionsparameter der negativen Binomialverteilung, t = 18,0 (Winkelmann 2008, S. 93, 118).",
+        "Einseitig getestet, weil eine Varianz unter dem Erwartungswert bei Einsatzzahlen keine sinnvolle Gegenhypothese ist; als einziger der vier Tests bringt ihn keine Bibliothek mit (Code 14).",
+        "Breusch-Pagan: LM = 525,1, in der Voreinstellung von statsmodels, die keine Normalverteilung voraussetzt – denn Jarque-Bera verwirft sie (JB = 150,0)."
       ],
       "abschnitt": "5.1",
       "nachfrage": "Was unterscheidet diesen Test vom Dispersionsindex?",
@@ -244,8 +245,8 @@
       "frage": "Wie arbeitet ein Entscheidungsbaum, und worin könnte der Vorsprung der Baumverfahren vor dem GLM liegen?",
       "punkte": [
         "Ein Baum teilt den Merkmalsraum schrittweise in Regionen und sagt in jedem Endknoten den Mittelwert seiner Trainingsbeobachtungen vorher (James et al. 2023, S. 333–334).",
-        "Zerlegt man die Funktion in Summanden je Merkmal, je Merkmalspaar, je Tripel usw., bildet ein Baum mit J Endknoten Wechselwirkungen bis zur Ordnung J − 1 ab, ohne dass eine vorgegeben werden muss (Hastie et al. 2009, S. 362).",
-        "Ein GLM ohne Produktterme ist nur der erste Summand: Der mögliche Vorsprung von Random Forest und XGBoost liegt genau in den übrigen.",
+        "Dadurch erfasst er Wechselwirkungen, ohne dass man sie vorgeben muss: Ein Baum mit J Endknoten bildet sie bis zur Ordnung J − 1 ab (Hastie et al. 2009, S. 362).",
+        "Ein GLM ohne Produktterme kennt nur Summanden je einzelnem Merkmal – der mögliche Vorsprung von Random Forest und XGBoost liegt genau in den Wechselwirkungen darüber.",
         "Ein einzelner Baum ist instabil; erst Bagging (Random Forest) und Boosting (XGBoost) machen daraus brauchbare Verfahren (James et al. 2023, S. 343–345).",
         "Gegen streng monotone Umformungen der Merkmale sind Bäume unempfindlich, deshalb braucht nur Ridge standardisierte Merkmale (Hastie et al. 2009, S. 352)."
       ],
@@ -257,9 +258,9 @@
       "id": "2-37",
       "frage": "Wie stark hängt das Ergebnis an der Wahl des Parametersatzes?",
       "punkte": [
-        "Kreuzprobe: Jeder Testfold wird mit jedem der fünf je Fold gesuchten Parametersätze ausgewertet.",
-        "Zwischen bestem und schlechtestem Satz liegen im selben Fold im Mittel 2,54 RMSE bei Ridge, 4,91 beim Random Forest und 9,14 bei XGBoost, im Strukturstrang 0,056 und 0,102 Macro-F1.",
-        "Bei XGBoost übersteigt das die Spanne zwischen den drei Verfahren (6,46 RMSE): Die Parameterwahl bewegt das Ergebnis ähnlich stark wie die Verfahrenswahl.",
+        "Bei XGBoost stark: Die Wahl des Parametersatzes bewegt das Ergebnis ähnlich stark wie die Wahl des Verfahrens.",
+        "Gemessen mit der Kreuzprobe: Jeder Testfold wird mit jedem der fünf je Fold gesuchten Parametersätze ausgewertet.",
+        "Zwischen bestem und schlechtestem Satz liegen im selben Fold im Mittel 2,54 RMSE bei Ridge, 4,91 beim Random Forest und 9,14 bei XGBoost, im Strukturstrang 0,056 und 0,102 Macro-F1 – die Spanne zwischen den drei Verfahren beträgt nur 6,46 RMSE.",
         "Die Referenzen haben keine Hyperparameter und sind davon frei: Ihre Güte hängt nicht davon ab, wie ein Suchraum bemessen wurde."
       ],
       "abschnitt": "5.3",
@@ -270,8 +271,8 @@
       "id": "2-38",
       "frage": "Warum suchen Sie auch beim Random Forest, obwohl Tuning dort wenig bringt?",
       "punkte": [
-        "Der Random Forest liefert schon mit Vorgabewerten brauchbare Ergebnisse und reagiert deutlich weniger empfindlich auf Hyperparameter als etwa Support Vector Machines (Probst et al. 2019, S. 13).",
-        "Ihn auszunehmen wäre trotzdem eine ungleiche Behandlung: Der Vergleich soll die Verfahren trennen, nicht den Aufwand, der in sie gesteckt wurde.",
+        "Aus Gleichbehandlung: Der Vergleich soll die Verfahren trennen, nicht den Aufwand, der in sie gesteckt wurde – also durchlaufen alle dieselbe Suche.",
+        "Dass Tuning beim Random Forest wenig bringt, stimmt: Er liefert schon mit Vorgabewerten brauchbare Ergebnisse und reagiert deutlich weniger empfindlich als etwa Support Vector Machines (Probst et al. 2019, S. 13).",
         "Das stützt zugleich den Befund im Strukturstrang: Dass der Vorsprung des Random Forest ein reiner Suchgewinn ist, ist unwahrscheinlich."
       ],
       "abschnitt": "5.3, 6.2",

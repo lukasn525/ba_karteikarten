@@ -72,10 +72,9 @@
       "id": "2-06",
       "frage": "Warum laufen die Referenzmodelle ohne Strafterm und ohne Tuning?",
       "punkte": [
-        "Ohne Strafterm gibt es keinen Parameter, der gewählt werden müsste.",
-        "Ein Bibliotheks-Vorgabewert wäre keine für diese Daten getroffene Wahl.",
-        "Ein optimierter Wert bräuchte ein eigenes Auswahlverfahren je Fold.",
-        "Die Referenz ist damit in jedem Lauf identisch und von keinem Suchraum abhängig."
+        "Damit die Messlatte fest steht: Ohne Strafterm gibt es keinen Parameter, die Referenz ist in jedem Lauf identisch und von keinem Suchraum abhängig.",
+        "Mit Strafterm müsste ein Wert gewählt werden, und ein Bibliotheks-Vorgabewert wäre keine für diese Daten getroffene Wahl.",
+        "Ein optimierter Wert bräuchte ein eigenes Auswahlverfahren je Fold – die Referenz hinge dann selbst an einer Suche."
       ],
       "abschnitt": "4.5",
       "nachfrage": "Ist es nicht unfair, getunte Verfahren gegen eine ungetunte Referenz antreten zu lassen?",
@@ -189,7 +188,7 @@
       "id": "2-33",
       "frage": "Warum wird einkernig gerechnet, und was ist exakt reproduzierbar?",
       "punkte": [
-        "Jede Anpassung läuft zur Kontrolle zusätzlich über alle Kerne: Ridge und Random Forest stimmen überein, XGBoost weicht um bis zu 50,88 Einsätze ab (bei einem Mittelwert von 75).",
+        "Weil XGBoost über mehrere Kerne nicht reproduzierbar rechnet: Im Kontrolllauf über alle Kerne weicht es um bis zu 50,88 Einsätze ab (bei einem Mittelwert von 75), Ridge und Random Forest stimmen überein.",
         "Als Ursache kommt die Reihenfolge der Gleitkomma-Additionen beim parallelen Rechnen in Betracht (Goldberg 1991, S. 30).",
         "Alle berichteten Gütemaße stammen deshalb aus der einkernigen Anpassung; Startwert überall 42, in den Wiederholungen 42 plus deren Nummer.",
         "Exakt reproduzierbar: Gütemaße, Hyperparameter, Baselines, SHAP-Beiträge, Spezifikationsgegenprobe; nicht: Laufzeiten und der Kernvergleich."
