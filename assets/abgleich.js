@@ -7,6 +7,8 @@
  * - Die Runde gewinnt als Ganzes nach „rundeGeaendert“.
  * - Einstellungen gewinnen nach „einstellungen.geaendert“.
  * - „zurueckgesetzt“ verwirft alles, was davor geändert wurde (Zurücksetzen, Import).
+ * - Karten des Tages: der neuere Tag gewinnt; am selben Tag bleibt die zuerst
+ *   erstellte Auswahl, „erledigt“ gewinnt nach „geaendert“.
  */
 (function (wurzel, fabrik) {
   if (typeof module === 'object' && module.exports) module.exports = fabrik();
@@ -17,7 +19,24 @@
   const zeit = x => (typeof x === 'number' && isFinite(x) ? x : 0);
 
   function leer() {
-    return { version: 2, karten: {}, runde: null, rundeGeaendert: 0, einstellungen: { mischen: true, geaendert: 0 }, zurueckgesetzt: 0 };
+    return { version: 2, karten: {}, runde: null, rundeGeaendert: 0, einstellungen: { mischen: true, geaendert: 0 }, zurueckgesetzt: 0, tageskarten: null };
+  }
+
+  const istTageskarten = t => !!t && typeof t === 'object' && typeof t.datum === 'string' && Array.isArray(t.ids);
+
+  function tageskartenWahl(x, y) {
+    if (!istTageskarten(x)) return istTageskarten(y) ? y : null;
+    if (!istTageskarten(y)) return x;
+    if (x.datum !== y.datum) return x.datum > y.datum ? x : y;
+    // Gleicher Tag: die zuerst erstellte Auswahl bleibt (bei Gleichstand eindeutig über den Inhalt)
+    const ex = zeit(x.erstellt);
+    const ey = zeit(y.erstellt);
+    const basis = ex !== ey ? (ex < ey ? x : y) : (JSON.stringify(x.ids) <= JSON.stringify(y.ids) ? x : y);
+    const gx = zeit(x.geaendert);
+    const gy = zeit(y.geaendert);
+    const neuer = gx !== gy ? (gx > gy ? x : y) : (zeit(x.erledigt) >= zeit(y.erledigt) ? x : y);
+    if (zeit(neuer.erledigt) === zeit(basis.erledigt) && zeit(basis.geaendert) === Math.max(gx, gy)) return basis;
+    return Object.assign({}, basis, { erledigt: zeit(neuer.erledigt), geaendert: Math.max(gx, gy) });
   }
 
   // Grobe Formprüfung, damit kein Unsinn gespeichert wird
@@ -51,7 +70,10 @@
     const eb = b.einstellungen || {};
     const einstellungen = Object.assign({ mischen: true, geaendert: 0 }, zeit(eb.geaendert) > zeit(ea.geaendert) ? eb : ea);
 
-    return { version: 2, karten, runde: runde || null, rundeGeaendert, einstellungen, zurueckgesetzt: zurueck };
+    let tageskarten = tageskartenWahl(a.tageskarten, b.tageskarten);
+    if (tageskarten && zeit(tageskarten.erstellt) < zurueck) tageskarten = null;   // vor dem Zurücksetzen erstellt
+
+    return { version: 2, karten, runde: runde || null, rundeGeaendert, einstellungen, zurueckgesetzt: zurueck, tageskarten };
   }
 
   return { leer, istLernstand, zusammenfuehren };

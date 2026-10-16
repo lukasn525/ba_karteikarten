@@ -115,11 +115,19 @@ Häufigster Fehler: ein fehlendes oder überzähliges Komma.
 - Jede neue Runde enthält wieder **alle** Karten der Auswahl, auch die gut gekonnten. Es gibt keine Intervallwiederholung.
 - Status je Karte: *sicher* (zuletzt auf Anhieb gewusst), *unsicher* (zuletzt mindestens einmal „Nochmal“), *neu*.
 - **★** markiert eine Karte als kritisch. Kritische Karten lassen sich gesammelt lernen.
+- **Auge** blendet eine Karte vorübergehend aus (in der Lernansicht, in der Übersicht oder mit Taste A).
+  Ausgeblendete Karten werden in keiner Runde abgefragt, auch nicht in einer laufenden; in der Übersicht
+  bleiben sie sichtbar, ausgegraut und mit „ausgeblendet“ gekennzeichnet (eigener Filter). Erneuter Klick
+  aufs Auge blendet sie wieder ein. Ausblenden in der Lernansicht lässt sich mit Z zurücknehmen.
+- **Karten des Tages** (oben auf der Startseite): jeden Tag 15–20 zufällige Karten aus allen Stapeln,
+  überwiegend kritische, unsichere und neue, dazu etwa ein Fünftel sichere zur Auffrischung; lange nicht
+  gesehene Karten kommen eher dran. Die Auswahl wird beim ersten Öffnen des Tages festgelegt und gilt auf
+  allen Geräten. Einstellbar über `TAGES_MIN`, `TAGES_MAX` und `TAGES_ANTEIL_SICHER` in `assets/app.js`.
 - Nach der Runde: „Neue Runde“ oder „Nur die schwierigen“.
 
 **Bedienung:** Tippen/Klicken dreht die Karte um und wieder zurück. Auf dem Smartphone: nach rechts
 wischen = gewusst, nach links = nochmal. Tastatur: Leertaste umdrehen und zurückdrehen · ← oder 1 nochmal ·
-→ oder 2 gewusst · K kritisch · Z letzte Antwort zurücknehmen.
+→ oder 2 gewusst · K kritisch · A ausblenden · Z letzte Antwort zurücknehmen.
 
 ### Lernstand – geräteübergreifend
 

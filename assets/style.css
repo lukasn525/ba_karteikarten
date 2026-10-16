@@ -286,6 +286,34 @@ dialog::backdrop { background: rgba(10, 18, 28, .55); }
 .sync-zeile[data-zustand="fehler"]::before { color: var(--kritisch); }
 .fuss.sync-zeile { margin-top: 6px; }
 
+/* ---------- Karten des Tages ---------- */
+.tages {
+  background: var(--flaeche); border-radius: var(--radius); box-shadow: var(--schatten);
+  border-left: 4px solid var(--orange); padding: 16px; margin-bottom: 16px; display: grid; gap: 10px;
+}
+.tages-kopf { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.tages-kopf h2 { font-size: 17px; margin: 0; line-height: 1.3; }
+.tages-kopf p { margin: 2px 0 0; font-size: 13.5px; color: var(--text-2); }
+.tages-kopf .chip { flex: none; }
+.tages-mix { margin: 0; font-size: 14px; color: var(--text-2); }
+
+/* ---------- Ausblenden ---------- */
+.auge {
+  position: absolute; top: 12px; right: 58px; width: 44px; height: 44px; border-radius: 12px;
+  border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; color: var(--text-3);
+}
+.auge svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.auge.an { color: var(--rost); }
+@media (prefers-color-scheme: dark) { .auge.an { color: var(--orange); } }
+.karte .karte-meta { padding-right: 100px; }
+.eintrag summary { padding-right: 100px; }
+.eintrag .auge { top: 6px; right: 50px; }
+.eintrag.ausgeblendet summary .nr,
+.eintrag.ausgeblendet summary .frage-text { opacity: .5; }
+.chip.aus { background: transparent; border-style: dashed; color: var(--text-2); }
+.status-linie { flex-wrap: wrap; }
+.status-linie .chip { white-space: nowrap; }
+
 @media (min-width: 640px) {
   main { padding-top: 26px; }
   .stapel-liste { grid-template-columns: 1fr 1fr; }
@@ -294,7 +322,7 @@ dialog::backdrop { background: rgba(10, 18, 28, .55); }
 }
 
 @media print {
-  .topbar, .aktionen, .werkzeuge, .stern, #toast { display: none !important; }
+  .topbar, .aktionen, .werkzeuge, .stern, .auge, #toast { display: none !important; }
   body { background: #fff; }
   .eintrag { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
   .eintrag .inhalt { display: block !important; }

@@ -15,6 +15,10 @@
   // Nach so vielen Wiederholungen in Folge kommt eine neue Karte dazu, solange Platz ist
   const WDH_VOR_NEU = 2;
   const WISCH_SCHWELLE = 90;   // Pixel, ab denen ein Wisch als Antwort zählt
+  // Karten des Tages: so viele Karten werden je Tag zufällig zusammengestellt
+  const TAGES_MIN = 15;
+  const TAGES_MAX = 20;
+  const TAGES_ANTEIL_SICHER = 0.2;   // Anteil bereits sicherer Karten (zur Auffrischung)
 
   const app = document.getElementById('app');
   const kopfTitel = document.getElementById('kopf-titel');
@@ -35,13 +39,16 @@
 
   const STERN_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>';
   const HAKEN_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const AUGE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const AUGE_ZU_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/></svg>';
 
   const FILTER = [
     ['alle', 'Alle'],
     ['kritisch', '★ Kritisch'],
     ['unsicher', 'Unsicher'],
     ['neu', 'Neu'],
-    ['sicher', 'Sicher']
+    ['sicher', 'Sicher'],
+    ['ausgeblendet', 'Ausgeblendet']
   ];
 
   // ------------------------------------------------------------------ Hilfen
@@ -77,7 +84,8 @@
       runde: null,
       rundeGeaendert: 0,
       einstellungen: { mischen: true, geaendert: 0 },
-      zurueckgesetzt: 0
+      zurueckgesetzt: 0,
+      tageskarten: null
     };
   }
 
@@ -99,7 +107,8 @@
         runde,
         rundeGeaendert: Number(z.rundeGeaendert) || (runde ? Number(runde.ende || runde.start) || 0 : 0),
         einstellungen: Object.assign(basis.einstellungen, (z && z.einstellungen) || {}),
-        zurueckgesetzt: Number(z.zurueckgesetzt) || 0
+        zurueckgesetzt: Number(z.zurueckgesetzt) || 0,
+        tageskarten: (z && z.tageskarten) || null
       };
     } catch (e) {
       return leererZustand();
@@ -154,8 +163,17 @@
     zuletzt: 0,
     timer: null,
     laeuft: false,
-    nochmal: false
+    nochmal: false,
+    geholt: false          // erster Abruf beendet (geklappt oder nicht)
   };
+
+  // Nach dem ersten Abruf (oder spätestens nach 4 s) dürfen die Karten des Tages
+  // zusammengestellt werden – vorher könnte der Lernstand dieses Geräts veraltet sein
+  function ersterAbrufFertig() {
+    if (sync.geholt) return;
+    sync.geholt = true;
+    if (daten.reihenfolge.length && aktuelleSeite().seite === '') neuZeichnen();
+  }
 
   async function rpc(name, body, keepalive) {
     const antwort = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
@@ -240,6 +258,8 @@
       else { sync.zuletzt = Date.now(); syncAnzeigen('ok'); }
     } catch (e) {
       syncFehler(e);
+    } finally {
+      ersterAbrufFertig();
     }
   }
 
@@ -289,16 +309,21 @@
   window.addEventListener('online', () => syncHolen());
 
   function statistik(ids) {
-    const s = { gesamt: ids.length, sicher: 0, unsicher: 0, neu: 0, kritisch: 0 };
+    const s = { gesamt: ids.length, sicher: 0, unsicher: 0, neu: 0, kritisch: 0, ausgeblendet: 0 };
     for (const id of ids) {
       const k = kz(id);
       if (k.status === 'sicher') s.sicher++;
       else if (k.status === 'unsicher') s.unsicher++;
       else s.neu++;
       if (k.kritisch) s.kritisch++;
+      if (k.ausgeblendet) s.ausgeblendet++;
     }
     return s;
   }
+
+  // Ausgeblendete Karten bleiben sichtbar (Übersicht), werden aber nicht abgefragt
+  const istAusgeblendet = id => !!kz(id).ausgeblendet;
+  const lernbar = ids => ids.filter(id => daten.karten.has(id) && !istAusgeblendet(id));
 
   // ------------------------------------------------------------ Daten laden
 
@@ -441,6 +466,34 @@
     return (r.neu ? r.neu.length : 0) + Object.keys(r.lernen || {}).length;
   }
 
+  // Nimmt ausgeblendete Karten aus der laufenden Runde (auch wenn sie auf einem
+  // anderen Gerät ausgeblendet wurden). Abgeschlossene Runden bleiben unverändert.
+  function entferneAusgeblendeteAusRunde() {
+    const r = zustand.runde;
+    if (!r || r.fertig || !Array.isArray(r.ids) || !Array.isArray(r.neu)) return;
+    const raus = new Set(r.ids.filter(istAusgeblendet));
+    if (!raus.size) return;
+    r.ids = r.ids.filter(id => !raus.has(id));
+    r.neu = r.neu.filter(id => !raus.has(id));
+    r.erledigt = (r.erledigt || []).filter(id => !raus.has(id));
+    for (const id of raus) { delete r.lernen[id]; delete r.fehler[id]; }
+    if (raus.has(r.aktuell)) { r.aktuell = null; r.umgedreht = false; }
+    if (!r.ids.length) zustand.runde = null;
+    else if (!offenAnzahl(r)) rundeBeenden(r);
+    speichere(true);
+  }
+
+  function rundeBeenden(r) {
+    r.fertig = true;
+    r.ende = Date.now();
+    // Karten des Tages als erledigt vermerken
+    const t = zustand.tageskarten;
+    if (r.tag && t && t.datum === r.tag) {
+      t.erledigt = r.ende;
+      t.geaendert = r.ende;
+    }
+  }
+
   // ------------------------------------------------------------- Navigation
 
   function aktuelleSeite() {
@@ -462,6 +515,7 @@
   }
 
   function render() {
+    entferneAusgeblendeteAusRunde();
     const { seite, param } = aktuelleSeite();
     if (seite === 'lernen') renderLernen();
     else if (seite === 'ergebnis') renderErgebnis();
@@ -476,13 +530,22 @@
     const r = zustand.runde;
     const laeuft = r && !r.fertig && offenAnzahl(r);
     const alle = statistik(daten.reihenfolge);
+    const alleLernbar = statistik(lernbar(daten.reihenfolge));
+    const tag = tageskarten();
 
     let h = `<section class="intro">
       <h1>${esc(daten.meta.titel || 'Karteikarten')}</h1>
       ${daten.meta.untertitel ? `<p>${esc(daten.meta.untertitel)}</p>` : ''}
     </section>`;
 
-    if (laeuft) {
+    if (tag) h += tageskartenHtml(tag);
+    else if (!sync.geholt) {
+      h += `<section class="tages"><div class="tages-kopf"><div><h2>Karten des Tages</h2>
+        <p>werden zusammengestellt …</p></div></div></section>`;
+    }
+
+    // Läuft gerade die Runde der Karten des Tages, steht „Fortsetzen“ schon im Kasten oben
+    if (laeuft && !(tag && r.tag === tag.datum)) {
       h += `<button class="weiter" data-aktion="fortsetzen">
         <div><strong>Runde fortsetzen</strong><span>${esc(r.titel)} · noch ${offenAnzahl(r)} von ${r.ids.length} Karten offen</span></div>
         <span class="pfeil" aria-hidden="true">→</span>
@@ -499,11 +562,11 @@
 
     h += `<section class="alle-karten">
       <h2>Stapelübergreifend</h2>
-      <p>${alle.sicher} sicher · ${alle.unsicher} unsicher · ${alle.neu} neu · ${alle.kritisch} kritisch markiert</p>
+      <p>${alle.sicher} sicher · ${alle.unsicher} unsicher · ${alle.neu} neu · ${alle.kritisch} kritisch markiert${alle.ausgeblendet ? ` · ${alle.ausgeblendet} ausgeblendet` : ''}</p>
       <div class="knopfreihe">
-        <button class="btn btn-primaer" data-aktion="lernen" data-art="alle">Alle ${alle.gesamt} Karten</button>
-        <button class="btn" data-aktion="lernen" data-art="kritisch" ${alle.kritisch ? '' : 'disabled'}>★ Kritische (${alle.kritisch})</button>
-        <button class="btn" data-aktion="lernen" data-art="unsicher" ${alle.unsicher ? '' : 'disabled'}>Unsichere (${alle.unsicher})</button>
+        <button class="btn btn-primaer" data-aktion="lernen" data-art="alle" ${alleLernbar.gesamt ? '' : 'disabled'}>Alle ${alleLernbar.gesamt} Karten</button>
+        <button class="btn" data-aktion="lernen" data-art="kritisch" ${alleLernbar.kritisch ? '' : 'disabled'}>★ Kritische (${alleLernbar.kritisch})</button>
+        <button class="btn" data-aktion="lernen" data-art="unsicher" ${alleLernbar.unsicher ? '' : 'disabled'}>Unsichere (${alleLernbar.unsicher})</button>
         <button class="btn" data-aktion="uebersicht" data-ziel="alle">Alle ansehen</button>
       </div>
     </section>`;
@@ -519,12 +582,13 @@
 
   function stapelHtml(st) {
     const s = statistik(st.ids);
+    const l = statistik(lernbar(st.ids));   // Zahlen auf den Knöpfen: nur, was auch abgefragt wird
     const pGut = s.gesamt ? (s.sicher / s.gesamt) * 100 : 0;
     const pNoch = s.gesamt ? (s.unsicher / s.gesamt) * 100 : 0;
     return `<article class="stapel">
       <div class="stapel-kopf">
         <div class="stapel-nr">${st.nr}</div>
-        <div><h2>${esc(st.titel)}</h2><p>${s.gesamt} Karten${s.kritisch ? ` · ${s.kritisch} kritisch` : ''}</p></div>
+        <div><h2>${esc(st.titel)}</h2><p>${s.gesamt} Karten${s.kritisch ? ` · ${s.kritisch} kritisch` : ''}${s.ausgeblendet ? ` · ${s.ausgeblendet} ausgeblendet` : ''}</p></div>
       </div>
       <div class="balken" role="img" aria-label="${s.sicher} sicher, ${s.unsicher} unsicher, ${s.neu} neu">
         <div class="gut" style="width:${pGut}%"></div><div class="noch" style="width:${pNoch}%"></div>
@@ -535,9 +599,9 @@
         <span><i class="punkt" style="background:var(--text-3)"></i>${s.neu} neu</span>
       </div>
       <div class="knopfreihe">
-        <button class="btn btn-primaer" data-aktion="lernen" data-art="stapel" data-stapel="${esc(st.id)}">Lernen</button>
+        <button class="btn btn-primaer" data-aktion="lernen" data-art="stapel" data-stapel="${esc(st.id)}" ${l.gesamt ? '' : 'disabled'}>Lernen</button>
         <button class="btn" data-aktion="uebersicht" data-ziel="${esc(st.id)}">Übersicht</button>
-        ${s.kritisch ? `<button class="btn" data-aktion="lernen" data-art="kritisch" data-stapel="${esc(st.id)}">★ Kritische (${s.kritisch})</button>` : ''}
+        ${l.kritisch ? `<button class="btn" data-aktion="lernen" data-art="kritisch" data-stapel="${esc(st.id)}">★ Kritische (${l.kritisch})</button>` : ''}
       </div>
     </article>`;
   }
@@ -557,6 +621,134 @@
     return teile ? `<section class="alle-karten unterlagen"><h2>Unterlagen zum Herunterladen</h2>${teile}</section>` : '';
   }
 
+  // ------------------------------------------------------- Karten des Tages
+  // Jeden Tag werden TAGES_MIN bis TAGES_MAX Karten zufällig zusammengestellt:
+  // überwiegend kritische (★), unsichere und neue Karten, dazu etwa ein Fünftel
+  // bereits sichere Karten zur Auffrischung. Lange nicht gesehene Karten kommen eher dran.
+  // Die Auswahl wird beim ersten Öffnen des Tages festgelegt, im Lernstand gespeichert
+  // und damit auf allen Geräten gleich (assets/abgleich.js).
+
+  const zwei = n => String(n).padStart(2, '0');
+  function heute() {
+    const d = new Date();
+    return `${d.getFullYear()}-${zwei(d.getMonth() + 1)}-${zwei(d.getDate())}`;
+  }
+  const datumKurz = datum => { const [, m, t] = datum.split('-'); return `${t}.${m}.`; };
+
+  // Zufall mit fester Saat (gleiches Datum + gleicher Lernstand = gleiche Auswahl)
+  function zufallsquelle(text) {
+    let h = 1779033703 ^ text.length;
+    for (let i = 0; i < text.length; i++) {
+      h = Math.imul(h ^ text.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    let a = h >>> 0;
+    return () => {   // mulberry32
+      a = (a + 0x6D2B79F5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // Gewichtete Auswahl ohne Zurücklegen (je höher das Gewicht, desto eher dabei)
+  function ziehe(ids, anzahl, gewicht, zufall) {
+    return ids
+      .map(id => ({ id, schluessel: Math.pow(Math.max(zufall(), 1e-12), 1 / gewicht(id)) }))
+      .sort((a, b) => b.schluessel - a.schluessel)
+      .slice(0, anzahl)
+      .map(x => x.id);
+  }
+
+  function stelleTageskartenZusammen(datum) {
+    const pool = lernbar(daten.reihenfolge);
+    if (!pool.length) return [];
+    const zufall = zufallsquelle('tageskarten|' + datum);
+    const ziel = Math.min(pool.length, TAGES_MIN + Math.floor(zufall() * (TAGES_MAX - TAGES_MIN + 1)));
+    const jetzt = Date.now();
+    // 1 (gerade gesehen) bis 3 (zwei Wochen oder länger nicht gesehen bzw. nie)
+    const frische = id => {
+      const zuletzt = Number(kz(id).zuletzt) || 0;
+      const tage = zuletzt ? Math.max(0, (jetzt - zuletzt) / 864e5) : 14;
+      return 1 + Math.min(tage, 14) / 7;
+    };
+    const fokus = [];
+    const sicher = [];
+    for (const id of pool) {
+      const k = kz(id);
+      (k.status === 'sicher' && !k.kritisch ? sicher : fokus).push(id);
+    }
+    const gewichtFokus = id => {
+      const k = kz(id);
+      let g = k.status === 'unsicher' ? 4 : k.status === 'sicher' ? 0 : 2;   // neu = 2
+      if (k.kritisch) g += 4;
+      return g * frische(id);
+    };
+    let anzahlSicher = Math.min(sicher.length, Math.max(2, Math.round(ziel * TAGES_ANTEIL_SICHER)));
+    const anzahlFokus = Math.min(fokus.length, ziel - anzahlSicher);
+    anzahlSicher = Math.min(sicher.length, ziel - anzahlFokus);   // fehlende Fokus-Karten auffüllen
+    const auswahlIds = new Set([
+      ...ziehe(fokus, anzahlFokus, gewichtFokus, zufall),
+      ...ziehe(sicher, anzahlSicher, frische, zufall)
+    ]);
+    return daten.reihenfolge.filter(id => auswahlIds.has(id));
+  }
+
+  // Auswahl von heute (legt sie beim ersten Aufruf des Tages an)
+  function tageskarten() {
+    const datum = heute();
+    const t = zustand.tageskarten;
+    if (t && t.datum === datum && Array.isArray(t.ids)) return t;
+    if (!sync.geholt) return null;   // erst den Online-Stand abwarten
+    const ids = stelleTageskartenZusammen(datum);
+    if (!ids.length) return null;
+    const jetzt = Date.now();
+    zustand.tageskarten = { datum, ids, erstellt: jetzt, erledigt: 0, geaendert: jetzt };
+    speichere();
+    return zustand.tageskarten;
+  }
+
+  function tageskartenHtml(t) {
+    const ids = lernbar(t.ids);
+    const r = zustand.runde;
+    const laeuft = r && r.tag === t.datum && !r.fertig && offenAnzahl(r);
+    let kritisch = 0, unsicher = 0, neu = 0, sicher = 0;
+    for (const id of ids) {
+      const k = kz(id);
+      if (k.kritisch) kritisch++;
+      else if (k.status === 'unsicher') unsicher++;
+      else if (k.status === 'sicher') sicher++;
+      else neu++;
+    }
+    const mix = [
+      kritisch ? `${kritisch} ★ kritisch` : '',
+      unsicher ? `${unsicher} unsicher` : '',
+      neu ? `${neu} neu` : '',
+      sicher ? `${sicher} sicher` : ''
+    ].filter(Boolean).join(' · ');
+    const aus = t.ids.filter(id => daten.karten.has(id) && istAusgeblendet(id)).length;
+    let status = '';
+    let knopf;
+    if (laeuft) {
+      status = `<span class="chip">noch ${offenAnzahl(r)} offen</span>`;
+      knopf = '<button class="btn btn-primaer" data-aktion="fortsetzen">Fortsetzen</button>';
+    } else if (t.erledigt) {
+      status = '<span class="chip gut">heute erledigt</span>';
+      knopf = `<button class="btn" data-aktion="tageskarten" ${ids.length ? '' : 'disabled'}>Nochmal üben</button>`;
+    } else {
+      knopf = `<button class="btn btn-primaer" data-aktion="tageskarten" ${ids.length ? '' : 'disabled'}>Starten</button>`;
+    }
+    return `<section class="tages">
+      <div class="tages-kopf">
+        <div><h2>Karten des Tages</h2><p>${datumKurz(t.datum)} · ${ids.length} Karten${aus ? ` (${aus} ausgeblendet)` : ''}</p></div>
+        ${status}
+      </div>
+      ${mix ? `<p class="tages-mix">${mix}</p>` : ''}
+      <div class="knopfreihe">${knopf}</div>
+    </section>`;
+  }
+
   // ----------------------------------------------------------------- Runden
 
   function auswahl(art, stapelId) {
@@ -569,12 +761,18 @@
     return { ids, titel };
   }
 
-  function starteRunde(ids, titel) {
-    ids = ids.filter(id => daten.karten.has(id));
-    if (!ids.length) { toast('In dieser Auswahl sind keine Karten.'); return; }
+  // `tag`: Datum, wenn die Runde aus den Karten des Tages besteht
+  function starteRunde(ids, titel, tag) {
+    const vorhanden = ids.filter(id => daten.karten.has(id));
+    ids = lernbar(vorhanden);   // ausgeblendete Karten werden nie abgefragt
+    if (!ids.length) {
+      toast(vorhanden.length ? 'Alle Karten dieser Auswahl sind ausgeblendet.' : 'In dieser Auswahl sind keine Karten.');
+      return;
+    }
     const reihe = zustand.einstellungen.mischen ? mischen(ids) : ids.slice();
     zustand.runde = {
       titel,
+      tag: tag || null,
       ids: ids.slice(),
       neu: reihe,            // noch nicht gezeigte Karten, in Reihenfolge
       lernen: {},            // „Nochmal“-Karten: id -> Zug, in dem sie zuletzt dran war
@@ -672,7 +870,7 @@
     r.aktuell = null;
     k.zuletzt = Date.now();
     r.umgedreht = false;
-    if (!offenAnzahl(r)) { r.fertig = true; r.ende = Date.now(); }
+    if (!offenAnzahl(r)) rundeBeenden(r);
     speichere(true);
 
     // kurze Ausblend-Animation, dann nächste Karte
@@ -697,16 +895,28 @@
     const roh = verlauf.pop();
     if (!roh) return;
     const s = JSON.parse(roh);
+    const istAusblenden = s.art === 'ausblenden';
     const kritischJetzt = kz(s.id).kritisch;
+    // Wird eine Antwort zurückgenommen, bleibt das Ausblenden, wie es jetzt ist;
+    // wird das Ausblenden zurückgenommen, gilt der Stand davor
+    const ausgeblendet = istAusblenden ? !!(s.karte && s.karte.ausgeblendet) : istAusgeblendet(s.id);
+    const warFertig = !!(zustand.runde && zustand.runde.fertig);
     zustand.runde = s.runde;
     // Als neue Änderung markieren, damit der Abgleich die zurückgenommene Antwort nicht zurückholt
     zustand.karten[s.id] = s.karte
-      ? Object.assign(s.karte, { kritisch: kritischJetzt, geaendert: Date.now() })
-      : { status: 'neu', kritisch: kritischJetzt, gewusst: 0, nochmal: 0, geaendert: Date.now() };
-    zustand.runde.umgedreht = true;
+      ? Object.assign(s.karte, { kritisch: kritischJetzt, ausgeblendet, geaendert: Date.now() })
+      : { status: 'neu', kritisch: kritischJetzt, ausgeblendet, gewusst: 0, nochmal: 0, geaendert: Date.now() };
+    if (!istAusblenden) zustand.runde.umgedreht = true;
     zustand.runde.fertig = false;
+    delete zustand.runde.ende;
+    // Wurde damit die Runde der Karten des Tages wieder geöffnet, gilt sie nicht mehr als erledigt
+    const t = zustand.tageskarten;
+    if (warFertig && zustand.runde.tag && t && t.datum === zustand.runde.tag && t.erledigt) {
+      t.erledigt = 0;
+      t.geaendert = Date.now();
+    }
     speichere(true);
-    toast('Letzte Antwort zurückgenommen');
+    toast(istAusblenden ? 'Ausblenden zurückgenommen' : 'Letzte Antwort zurückgenommen');
     if (aktuelleSeite().seite === 'lernen') renderLernen();
     else navigiere('lernen', true);
   }
@@ -723,12 +933,48 @@
     toast(k.kritisch ? 'Als kritisch markiert' : 'Markierung entfernt');
   }
 
+  // Karte vorübergehend ausblenden bzw. wieder einblenden.
+  // Ausgeblendete Karten werden in keiner Runde abgefragt, bleiben aber in der Übersicht.
+  function toggleAusgeblendet(id) {
+    if (!daten.karten.has(id) || sperre) return;
+    const r = zustand.runde;
+    const imLernen = aktuelleSeite().seite === 'lernen' && r && !r.fertig && r.aktuell === id;
+    if (imLernen) {
+      // Rückgängig (Z) holt die Karte wieder in die Runde
+      verlauf.push(JSON.stringify({ art: 'ausblenden', runde: r, karte: zustand.karten[id] || null, id }));
+      if (verlauf.length > 30) verlauf.shift();
+    }
+    const k = kzSchreiben(id);
+    k.ausgeblendet = !k.ausgeblendet;
+    speichere();
+    toast(k.ausgeblendet
+      ? (imLernen ? 'Karte ausgeblendet – Z bzw. Rückgängig holt sie zurück' : 'Karte ausgeblendet – wird nicht mehr abgefragt')
+      : 'Karte wieder eingeblendet');
+    if (imLernen) {
+      render();                // nimmt die Karte aus der Runde und zeigt die nächste
+      window.scrollTo(0, 0);
+      return;
+    }
+    // Übersicht/Ergebnis: neu zeichnen, aufgeklappte Karten bleiben offen
+    const offen = new Set([...app.querySelectorAll('details.eintrag[open]')].map(d => d.dataset.id));
+    if (aktuelleSeite().seite === 'uebersicht') renderListe();
+    else render();
+    app.querySelectorAll('details.eintrag').forEach(d => { if (offen.has(d.dataset.id)) d.open = true; });
+  }
+
   // ------------------------------------------------------------ Lernansicht
 
   function sternHtml(id) {
     const an = !!kz(id).kritisch;
     return `<button class="stern${an ? ' an' : ''}" data-aktion="stern" data-id="${esc(id)}" aria-pressed="${an}"
       aria-label="Als kritisch markieren" title="Als kritisch markieren (K)">${STERN_SVG}</button>`;
+  }
+
+  function augeHtml(id) {
+    const aus = istAusgeblendet(id);
+    const text = aus ? 'Wieder einblenden' : 'Ausblenden (wird nicht mehr abgefragt)';
+    return `<button class="auge${aus ? ' an' : ''}" data-aktion="ausblenden" data-id="${esc(id)}" aria-pressed="${aus}"
+      aria-label="${text}" title="${text}${aktuelleSeite().seite === 'lernen' ? ' (A)' : ''}">${aus ? AUGE_ZU_SVG : AUGE_SVG}</button>`;
   }
 
   function antwortHtml(k) {
@@ -747,6 +993,7 @@
   }
 
   function renderLernen() {
+    entferneAusgeblendeteAusRunde();
     const r = zustand.runde;
     if (!r) { navigiere('', true); return; }
     if (r.fertig || !offenAnzahl(r)) { navigiere('ergebnis', true); return; }
@@ -776,7 +1023,7 @@
     let karte, aktionen;
     if (!r.umgedreht) {
       karte = `<article class="karte vorne einblenden" id="karte" tabindex="0" aria-label="Frage – zum Umdrehen tippen">
-        ${meta}${sternHtml(id)}
+        ${meta}${augeHtml(id)}${sternHtml(id)}
         <h2 class="frage">${fmt(k.frage)}</h2>
         <p class="tipp">${istTouch ? 'Tippen, um die Antwort zu sehen' : 'Klicken oder Leertaste, um die Antwort zu sehen'}</p>
       </article>`;
@@ -785,7 +1032,7 @@
       </div></div>`;
     } else {
       karte = `<article class="karte hinten" id="karte" aria-label="Antwort – zum Zurückdrehen tippen">
-        ${meta}${sternHtml(id)}
+        ${meta}${augeHtml(id)}${sternHtml(id)}
         <h2 class="frage">${fmt(k.frage)}</h2>
         ${antwortHtml(k)}
       </article>
@@ -809,7 +1056,7 @@
     let aktiv = false;
 
     el.addEventListener('pointerdown', e => {
-      if (e.button !== 0 || e.target.closest('.stern') || sperre) return;
+      if (e.button !== 0 || e.target.closest('.stern, .auge') || sperre) return;
       start = { x: e.clientX, y: e.clientY, id: e.pointerId };
       dx = 0;
       aktiv = false;
@@ -897,10 +1144,11 @@
     if (z.status === 'sicher') chips.push('<span class="chip gut">sicher</span>');
     else if (z.status === 'unsicher') chips.push('<span class="chip nochmal">unsicher</span>');
     else chips.push('<span class="chip">neu</span>');
+    if (z.ausgeblendet) chips.push('<span class="chip aus">ausgeblendet</span>');
     if (k.abschnitt) chips.push(`<span class="chip">Abschnitt ${esc(k.abschnitt)}</span>`);
     if (zusatzChip) chips.push(`<span class="chip nochmal">${esc(zusatzChip)}</span>`);
-    return `<details class="eintrag" data-id="${esc(id)}">
-      <summary><span class="nr">${esc(id)}</span>${fmt(k.frage)}<span class="status-linie">${chips.join('')}</span>${sternHtml(id)}</summary>
+    return `<details class="eintrag${z.ausgeblendet ? ' ausgeblendet' : ''}" data-id="${esc(id)}">
+      <summary><span class="nr">${esc(id)}</span><span class="frage-text">${fmt(k.frage)}</span><span class="status-linie">${chips.join('')}</span>${augeHtml(id)}${sternHtml(id)}</summary>
       <div class="inhalt">${antwortHtml(k)}</div>
     </details>`;
   }
@@ -910,6 +1158,7 @@
     let ids = st ? st.ids : daten.reihenfolge;
     const f = ansicht.filter;
     if (f === 'kritisch') ids = ids.filter(id => kz(id).kritisch);
+    else if (f === 'ausgeblendet') ids = ids.filter(istAusgeblendet);
     else if (f !== 'alle') ids = ids.filter(id => (kz(id).status || 'neu') === f);
     const woerter = normal(ansicht.suche).split(/\s+/).filter(Boolean);
     if (woerter.length) {
@@ -955,8 +1204,9 @@
     if (!liste) return;
     document.getElementById('anzahl').textContent = `${ids.length} ${ids.length === 1 ? 'Karte' : 'Karten'}`;
     const btn = document.getElementById('btn-auswahl');
-    btn.disabled = !ids.length;
-    btn.textContent = ids.length ? `Diese ${ids.length} lernen` : 'Lernen';
+    const zuLernen = lernbar(ids).length;   // ausgeblendete werden nicht abgefragt
+    btn.disabled = !zuLernen;
+    btn.textContent = zuLernen ? `Diese ${zuLernen} lernen` : 'Lernen';
     document.getElementById('btn-aufklappen').textContent = 'Alle aufklappen';
 
     if (!ids.length) {
@@ -995,6 +1245,16 @@
         e.stopPropagation();
         toggleKritisch(btn.dataset.id);
         break;
+      case 'ausblenden':
+        e.preventDefault();
+        e.stopPropagation();
+        toggleAusgeblendet(btn.dataset.id);
+        break;
+      case 'tageskarten': {
+        const t = tageskarten();
+        if (t) starteRunde(t.ids, `Karten des Tages · ${datumKurz(t.datum)}`, t.datum);
+        break;
+      }
       case 'lernen': {
         const { ids, titel } = auswahl(btn.dataset.art, btn.dataset.stapel || '');
         starteRunde(ids, titel);
@@ -1010,7 +1270,7 @@
       case 'start': navigiere(''); break;
       case 'neue-runde': {
         const r = zustand.runde;
-        if (r) starteRunde(r.ids, r.titel);
+        if (r) starteRunde(r.ids, r.titel, r.tag);
         break;
       }
       case 'schwierige': {
@@ -1067,6 +1327,7 @@
       if (r.umgedreht && (taste === 'ArrowLeft' || taste === '1')) { e.preventDefault(); antworten(false); return; }
       if (r.umgedreht && (taste === 'ArrowRight' || taste === '2')) { e.preventDefault(); antworten(true); return; }
       if ((taste === 'k' || taste === 'K') && r.aktuell) { toggleKritisch(r.aktuell); return; }
+      if ((taste === 'a' || taste === 'A') && r.aktuell) { toggleAusgeblendet(r.aktuell); return; }
     }
     if ((taste === 'z' || taste === 'Z') && verlauf.length && (seite === 'lernen' || seite === 'ergebnis')) {
       rueckgaengig();
@@ -1134,6 +1395,7 @@
         karten[id] = {
           status: ['sicher', 'unsicher'].includes(k.status) ? k.status : 'neu',
           kritisch: !!k.kritisch,
+          ausgeblendet: !!k.ausgeblendet,
           gewusst: Number(k.gewusst) || 0,
           nochmal: Number(k.nochmal) || 0,
           zuletzt: Number(k.zuletzt) || undefined,
@@ -1195,6 +1457,7 @@
     bereinigeRunde();
     render();
     window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
+    setTimeout(ersterAbrufFertig, 4000);   // falls der Online-Speicher nicht antwortet
     syncHolen();
   }
 
