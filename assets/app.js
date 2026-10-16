@@ -514,7 +514,8 @@
   function bereinigeRunde() {
     const r = zustand.runde;
     if (!r) return;
-    const gibt = id => daten.karten.has(id);
+    // Eine Runde der Karten des Tages enthält nie Code-Karten (auch nicht aus einer älteren Fassung)
+    const gibt = id => daten.karten.has(id) && (!r.tag || imErstenTeil(id));
     r.ids = (r.ids || []).filter(gibt);
     r.erledigt = (r.erledigt || []).filter(gibt);
     r.fehler = r.fehler || {};
@@ -772,7 +773,7 @@
   }
 
   function stelleTageskartenZusammen(datum) {
-    const pool = lernbar(ersterTeil().ids);   // nur der erste Teil (Arbeit), der Code-Teil hat eigene Runden
+    const pool = lernbar(ersterTeil().ids).filter(imErstenTeil);   // nur der Teil Arbeit
     if (!pool.length) return [];
     const zufall = zufallsquelle('tageskarten|' + datum);
     const ziel = Math.min(pool.length, TAGES_MIN + Math.floor(zufall() * (TAGES_MAX - TAGES_MIN + 1)));
@@ -805,11 +806,19 @@
     return daten.reihenfolge.filter(id => auswahlIds.has(id));
   }
 
-  // Auswahl von heute (legt sie beim ersten Aufruf des Tages an)
+  // Karten des Tages kommen nur aus dem ersten Teil (Arbeit), nie aus dem Code-Teil
+  const imErstenTeil = id => {
+    const k = daten.karten.get(id);
+    return !!k && daten.stapelById.get(k.stapel).teil === ersterTeil().id;
+  };
+
+  // Auswahl von heute (legt sie beim ersten Aufruf des Tages an). Eine gespeicherte
+  // Auswahl wird beim Lesen gefiltert, nicht umgeschrieben: der Abgleich behält die
+  // zuerst erstellte Auswahl, ein Umschreiben würde wieder überschrieben.
   function tageskarten() {
     const datum = heute();
     const t = zustand.tageskarten;
-    if (t && t.datum === datum && Array.isArray(t.ids)) return t;
+    if (t && t.datum === datum && Array.isArray(t.ids)) return Object.assign({}, t, { ids: t.ids.filter(imErstenTeil) });
     if (!sync.geholt) return null;   // erst den Online-Stand abwarten
     const ids = stelleTageskartenZusammen(datum);
     if (!ids.length) return null;
