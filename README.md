@@ -13,7 +13,7 @@ Karteikarten zur Vorbereitung auf das Kolloquium der Bachelorarbeit
 | 4 | Ergebnisse & Interpretation |
 | 5 | Kritik, Limitationen & Prüfer-Angriffe |
 
-**Code** – 2 Stapel, eigene Runden und eigenes „Alle Karten“:
+**Code** – 2 Stapel (31 + 15 Karten), eigene Runden und eigenes „Alle Karten“:
 
 | Stapel | Thema |
 |---|---|
