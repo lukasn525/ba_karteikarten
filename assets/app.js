@@ -27,12 +27,13 @@
   const menue = document.getElementById('menue');
   const toastEl = document.getElementById('toast');
 
-  const daten = { meta: {}, stapel: [], stapelById: new Map(), karten: new Map(), reihenfolge: [], warnungen: [] };
+  const daten = { meta: {}, stapel: [], stapelById: new Map(), karten: new Map(), reihenfolge: [], warnungen: [],
+    teile: [], teilById: new Map() };
   let zustand = ladeZustand();
   let verlauf = [];            // Rückgängig-Schritte (nur im Speicher)
   let sperre = false;          // verhindert Doppelantworten während der Animation
   let gezogenBis = 0;          // unterdrückt den Klick direkt nach einem Wisch
-  const ansicht = { ziel: null, filter: 'alle', suche: '' };
+  const ansicht = { ziel: null, filter: 'alle', suche: '', teil: '' };
 
   const istTouch = window.matchMedia('(pointer: coarse)').matches;
   const hatTastatur = window.matchMedia('(hover: hover)').matches;
@@ -54,8 +55,8 @@
   // ------------------------------------------------------------------ Hilfen
 
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  // Erlaubt **fett** in Fragen und Stichpunkten
-  const fmt = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  // Erlaubt **fett** und `Code` in Fragen und Stichpunkten
+  const fmt = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
   const normal = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
   function mischen(liste) {
@@ -413,6 +414,86 @@
       else warne(erg.reason && erg.reason.message ? erg.reason.message : `${meta.stapel[i]} konnte nicht geladen werden.`);
     });
     if (!daten.reihenfolge.length) throw new Ladefehler('Es wurde keine einzige Karte gefunden.');
+    baueTeile();
+  }
+
+  // Teile trennen die Stapel in eigenständige Bereiche (z. B. Arbeit und Code),
+  // jeweils mit eigener Startseite und eigenem „Alle Karten“.
+  // Festgelegt in data/index.json unter „teile“; ohne das Feld gibt es einen Teil.
+  // Stapel ohne Teil kommen in den ersten Teil.
+  function baueTeile() {
+    const roh = Array.isArray(daten.meta.teile) ? daten.meta.teile : [];
+    const vergeben = new Set();
+    const neuerTeil = (id, t) => ({
+      id,
+      titel: String(t.titel || id),
+      kurz: String(t.kurz || t.titel || id),
+      untertitel: t.untertitel ? String(t.untertitel) : '',
+      praefix: t.praefix ? String(t.praefix) : '',
+      stapel: [],
+      ids: []
+    });
+    roh.forEach((t, i) => {
+      if (!t || !t.id || !Array.isArray(t.stapel)) { warne(`index.json: Teil ${i + 1} ohne „id“ oder „stapel“ – übersprungen.`); return; }
+      const id = String(t.id);
+      if (daten.teilById.has(id)) { warne(`index.json: Teil-id „${id}“ ist doppelt – übersprungen.`); return; }
+      const teil = neuerTeil(id, t);
+      for (const sid of t.stapel.map(String)) {
+        const st = daten.stapelById.get(sid);
+        if (!st) { warne(`index.json: Teil „${id}“ nennt den unbekannten Stapel „${sid}“.`); continue; }
+        if (vergeben.has(sid)) { warne(`index.json: Stapel „${sid}“ steht in mehreren Teilen.`); continue; }
+        vergeben.add(sid);
+        teil.stapel.push(st);
+      }
+      daten.teile.push(teil);
+      daten.teilById.set(id, teil);
+    });
+    const uebrig = daten.stapel.filter(st => !vergeben.has(st.id));
+    if (!daten.teile.length) {
+      const teil = neuerTeil('karten', { titel: daten.meta.titel || 'Karten' });
+      daten.teile.push(teil);
+      daten.teilById.set(teil.id, teil);
+    }
+    daten.teile[0].stapel.push(...uebrig);
+    for (const teil of daten.teile) {
+      teil.stapel.forEach((st, i) => {
+        st.teil = teil.id;
+        st.nr = `${teil.praefix}${i + 1}`;
+        teil.ids.push(...st.ids);
+      });
+    }
+  }
+
+  const ersterTeil = () => daten.teile[0];
+
+  // Ziel einer Übersicht: Stapel-id, „alle“ (erster Teil) oder „teil-<id>“
+  function zielAufloesen(ziel) {
+    const st = daten.stapelById.get(ziel);
+    if (st) return { st, teil: daten.teilById.get(st.teil) };
+    if (ziel === 'alle') return { st: null, teil: ersterTeil() };
+    if (typeof ziel === 'string' && ziel.startsWith('teil-')) {
+      const teil = daten.teilById.get(ziel.slice(5));
+      if (teil) return { st: null, teil };
+    }
+    return { st: null, teil: null };
+  }
+
+  const teilZiel = teil => (teil === ersterTeil() ? 'alle' : `teil-${teil.id}`);
+  const startPfad = teil => (!teil || teil === ersterTeil() ? '' : `teil/${encodeURIComponent(teil.id)}`);
+  const alleTitel = teil => (teil === ersterTeil() ? 'Alle Stapel' : `${teil.kurz} · alle Stapel`);
+
+  // Zu welchem Teil gehört die gerade gezeigte Seite? Steuert den Zurück-Knopf.
+  function aktuellerTeil() {
+    const { seite, param } = aktuelleSeite();
+    if (seite === 'uebersicht') return zielAufloesen(param || 'alle').teil || ersterTeil();
+    if (seite === 'teil') return daten.teilById.get(param) || ersterTeil();
+    if (seite === 'lernen' || seite === 'ergebnis') {
+      const id = zustand.runde && (zustand.runde.ids || [])[0];
+      const k = id && daten.karten.get(id);
+      const st = k && daten.stapelById.get(k.stapel);
+      if (st) return daten.teilById.get(st.teil) || ersterTeil();
+    }
+    return daten.teilById.get(ansicht.teil) || ersterTeil();
   }
 
   function zeigeLadefehler(e) {
@@ -520,26 +601,42 @@
     if (seite === 'lernen') renderLernen();
     else if (seite === 'ergebnis') renderErgebnis();
     else if (seite === 'uebersicht') renderUebersicht(param || 'alle');
-    else renderStart();
+    else if (seite === 'teil' && daten.teilById.has(param)) renderStart(daten.teilById.get(param));
+    else renderStart(ersterTeil());
   }
 
   // ------------------------------------------------------------- Startseite
 
-  function renderStart() {
-    setzeKopf(daten.meta.titel || 'Kolloquium', `${daten.reihenfolge.length} Karten · ${daten.stapel.length} Stapel`, false);
+  // Umschalter zwischen den Teilen, nur wenn es mehr als einen gibt
+  function teileHtml(aktiv) {
+    if (daten.teile.length < 2) return '';
+    return `<nav class="teile" aria-label="Teile">${daten.teile.map(t => {
+      const an = t === aktiv;
+      return `<button type="button" class="teil-knopf${an ? ' an' : ''}" data-aktion="teil" data-teil="${esc(t.id)}"
+        aria-pressed="${an}"><span>${esc(t.titel)}</span><small>${t.ids.length} Karten</small></button>`;
+    }).join('')}</nav>`;
+  }
+
+  function renderStart(teil) {
+    ansicht.teil = teil.id;
+    setzeKopf(daten.meta.titel || 'Kolloquium', `${teil.ids.length} Karten · ${teil.stapel.length} Stapel`, false);
     const r = zustand.runde;
     const laeuft = r && !r.fertig && offenAnzahl(r);
-    const alle = statistik(daten.reihenfolge);
-    const alleLernbar = statistik(lernbar(daten.reihenfolge));
-    const tag = tageskarten();
+    const alle = statistik(teil.ids);
+    const alleLernbar = statistik(lernbar(teil.ids));
+    // Karten des Tages nur im ersten Teil (Arbeit); der Code-Teil wird getrennt abgefragt
+    const mitTag = teil === ersterTeil();
+    const tag = mitTag ? tageskarten() : null;
 
     let h = `<section class="intro">
       <h1>${esc(daten.meta.titel || 'Karteikarten')}</h1>
       ${daten.meta.untertitel ? `<p>${esc(daten.meta.untertitel)}</p>` : ''}
     </section>`;
+    h += teileHtml(teil);
+    if (teil.untertitel) h += `<p class="teil-hinweis">${fmt(teil.untertitel)}</p>`;
 
     if (tag) h += tageskartenHtml(tag);
-    else if (!sync.geholt) {
+    else if (mitTag && !sync.geholt) {
       h += `<section class="tages"><div class="tages-kopf"><div><h2>Karten des Tages</h2>
         <p>werden zusammengestellt …</p></div></div></section>`;
     }
@@ -558,20 +655,25 @@
       h += `<div class="warnung"><b>Hinweise zu den Kartendateien</b><ul>${liste}${mehr}</ul></div>`;
     }
 
-    h += '<div class="stapel-liste">' + daten.stapel.map(stapelHtml).join('') + '</div>';
+    h += '<div class="stapel-liste">' + teil.stapel.map(stapelHtml).join('') + '</div>';
 
+    const t = esc(teil.id);
     h += `<section class="alle-karten">
-      <h2>Stapelübergreifend</h2>
+      <h2>Stapelübergreifend${daten.teile.length > 1 ? ` · ${esc(teil.titel)}` : ''}</h2>
       <p>${alle.sicher} sicher · ${alle.unsicher} unsicher · ${alle.neu} neu · ${alle.kritisch} kritisch markiert${alle.ausgeblendet ? ` · ${alle.ausgeblendet} ausgeblendet` : ''}</p>
       <div class="knopfreihe">
-        <button class="btn btn-primaer" data-aktion="lernen" data-art="alle" ${alleLernbar.gesamt ? '' : 'disabled'}>Alle ${alleLernbar.gesamt} Karten</button>
-        <button class="btn" data-aktion="lernen" data-art="kritisch" ${alleLernbar.kritisch ? '' : 'disabled'}>★ Kritische (${alleLernbar.kritisch})</button>
-        <button class="btn" data-aktion="lernen" data-art="unsicher" ${alleLernbar.unsicher ? '' : 'disabled'}>Unsichere (${alleLernbar.unsicher})</button>
-        <button class="btn" data-aktion="uebersicht" data-ziel="alle">Alle ansehen</button>
+        <button class="btn btn-primaer" data-aktion="lernen" data-art="alle" data-teil="${t}" ${alleLernbar.gesamt ? '' : 'disabled'}>Alle ${alleLernbar.gesamt} Karten</button>
+        <button class="btn" data-aktion="lernen" data-art="kritisch" data-teil="${t}" ${alleLernbar.kritisch ? '' : 'disabled'}>★ Kritische (${alleLernbar.kritisch})</button>
+        <button class="btn" data-aktion="lernen" data-art="unsicher" data-teil="${t}" ${alleLernbar.unsicher ? '' : 'disabled'}>Unsichere (${alleLernbar.unsicher})</button>
+        <button class="btn" data-aktion="uebersicht" data-ziel="${esc(teilZiel(teil))}">Alle ansehen</button>
       </div>
     </section>`;
 
-    if (Array.isArray(daten.meta.unterlagen)) h += unterlagenHtml(daten.meta.unterlagen);
+    // Unterlagen: Gruppen ohne „teile“ erscheinen im ersten Teil
+    if (Array.isArray(daten.meta.unterlagen)) {
+      h += unterlagenHtml(daten.meta.unterlagen.filter(g => (g && Array.isArray(g.teile)
+        ? g.teile.map(String).includes(teil.id) : teil === ersterTeil())));
+    }
 
     const fuss = [daten.meta.stand ? `Kartenstand ${daten.meta.stand}` : '', daten.meta.hinweis || ''].filter(Boolean).join(' · ');
     if (fuss) h += `<p class="fuss">${esc(fuss)}</p>`;
@@ -662,7 +764,7 @@
   }
 
   function stelleTageskartenZusammen(datum) {
-    const pool = lernbar(daten.reihenfolge);
+    const pool = lernbar(ersterTeil().ids);   // nur der erste Teil, der Code-Teil hat eigene Runden
     if (!pool.length) return [];
     const zufall = zufallsquelle('tageskarten|' + datum);
     const ziel = Math.min(pool.length, TAGES_MIN + Math.floor(zufall() * (TAGES_MAX - TAGES_MIN + 1)));
@@ -751,12 +853,13 @@
 
   // ----------------------------------------------------------------- Runden
 
-  function auswahl(art, stapelId) {
+  function auswahl(art, stapelId, teilId) {
     const st = stapelId ? daten.stapelById.get(stapelId) : null;
-    let ids = st ? st.ids : daten.reihenfolge;
+    const teil = daten.teilById.get(teilId) || ersterTeil();
+    let ids = st ? st.ids : teil.ids;
     if (art === 'kritisch') ids = ids.filter(id => kz(id).kritisch);
     if (art === 'unsicher') ids = ids.filter(id => kz(id).status === 'unsicher');
-    const basis = st ? st.kurz : 'Alle Stapel';
+    const basis = st ? st.kurz : alleTitel(teil);
     const titel = art === 'kritisch' ? `★ Kritische · ${basis}` : art === 'unsicher' ? `Unsichere · ${basis}` : basis;
     return { ids, titel };
   }
@@ -1154,8 +1257,8 @@
   }
 
   function gefilterteIds() {
-    const st = ansicht.ziel !== 'alle' ? daten.stapelById.get(ansicht.ziel) : null;
-    let ids = st ? st.ids : daten.reihenfolge;
+    const { st, teil } = zielAufloesen(ansicht.ziel);
+    let ids = st ? st.ids : teil ? teil.ids : [];
     const f = ansicht.filter;
     if (f === 'kritisch') ids = ids.filter(id => kz(id).kritisch);
     else if (f === 'ausgeblendet') ids = ids.filter(istAusgeblendet);
@@ -1172,10 +1275,11 @@
   }
 
   function renderUebersicht(ziel) {
-    const st = ziel !== 'alle' ? daten.stapelById.get(ziel) : null;
-    if (ziel !== 'alle' && !st) { navigiere('', true); return; }
+    const { st, teil } = zielAufloesen(ziel);
+    if (!teil) { navigiere('', true); return; }
     if (ansicht.ziel !== ziel) { ansicht.suche = ''; ansicht.ziel = ziel; }
-    setzeKopf('Übersicht', st ? `Stapel ${st.nr} · ${st.titel}` : 'Alle Stapel', true);
+    ansicht.teil = teil.id;
+    setzeKopf('Übersicht', st ? `Stapel ${st.nr} · ${st.titel}` : alleTitel(teil), true);
 
     app.innerHTML = `<div class="werkzeuge">
         <input type="search" class="suche" id="suche" placeholder="In Fragen und Antworten suchen …" value="${esc(ansicht.suche)}" autocomplete="off" enterkeyhint="search">
@@ -1213,12 +1317,13 @@
       liste.innerHTML = '<p class="leer">Keine Karten für diese Auswahl.</p>';
       return;
     }
-    if (ansicht.ziel === 'alle') {
+    const { st: zielStapel, teil } = zielAufloesen(ansicht.ziel);
+    if (!zielStapel && teil) {
       let h = '';
-      for (const st of daten.stapel) {
-        const teil = ids.filter(id => daten.karten.get(id).stapel === st.id);
-        if (!teil.length) continue;
-        h += `<h2 class="gruppe">${st.nr} · ${esc(st.titel)}</h2><div class="liste">${teil.map(id => eintragHtml(id)).join('')}</div>`;
+      for (const st of teil.stapel) {
+        const teilIds = ids.filter(id => daten.karten.get(id).stapel === st.id);
+        if (!teilIds.length) continue;
+        h += `<h2 class="gruppe">${st.nr} · ${esc(st.titel)}</h2><div class="liste">${teilIds.map(id => eintragHtml(id)).join('')}</div>`;
       }
       liste.innerHTML = h;
     } else {
@@ -1256,8 +1361,13 @@
         break;
       }
       case 'lernen': {
-        const { ids, titel } = auswahl(btn.dataset.art, btn.dataset.stapel || '');
+        const { ids, titel } = auswahl(btn.dataset.art, btn.dataset.stapel || '', btn.dataset.teil || '');
         starteRunde(ids, titel);
+        break;
+      }
+      case 'teil': {
+        const teil = daten.teilById.get(btn.dataset.teil);
+        if (teil) navigiere(startPfad(teil));
         break;
       }
       case 'fortsetzen': navigiere('lernen'); break;
@@ -1267,7 +1377,7 @@
       case 'nochmal': antworten(false); break;
       case 'gewusst': antworten(true); break;
       case 'rueckgaengig': rueckgaengig(); break;
-      case 'start': navigiere(''); break;
+      case 'start': navigiere(startPfad(aktuellerTeil())); break;
       case 'neue-runde': {
         const r = zustand.runde;
         if (r) starteRunde(r.ids, r.titel, r.tag);
@@ -1298,8 +1408,8 @@
         break;
       }
       case 'auswahl-lernen': {
-        const st = ansicht.ziel !== 'alle' ? daten.stapelById.get(ansicht.ziel) : null;
-        const basis = st ? st.kurz : 'Alle Stapel';
+        const { st, teil } = zielAufloesen(ansicht.ziel);
+        const basis = st ? st.kurz : alleTitel(teil || ersterTeil());
         const eingeschraenkt = ansicht.filter !== 'alle' || ansicht.suche.trim();
         starteRunde(gefilterteIds(), eingeschraenkt ? `Auswahl · ${basis}` : basis);
         break;
@@ -1307,7 +1417,7 @@
     }
   });
 
-  btnZurueck.addEventListener('click', () => navigiere(''));
+  btnZurueck.addEventListener('click', () => navigiere(startPfad(aktuellerTeil())));
 
   document.addEventListener('keydown', e => {
     if (menue.open || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -1344,7 +1454,8 @@
   document.getElementById('btn-menue').addEventListener('click', () => {
     optMischen.checked = !!zustand.einstellungen.mischen;
     const stand = daten.meta.stand ? `Kartenstand ${daten.meta.stand} · ` : '';
-    document.getElementById('menue-stand').textContent = `${stand}${daten.reihenfolge.length} Karten in ${daten.stapel.length} Stapeln`;
+    const teile = daten.teile.length > 1 ? ` (${daten.teile.map(t => `${t.titel} ${t.ids.length}`).join(' · ')})` : '';
+    document.getElementById('menue-stand').textContent = `${stand}${daten.reihenfolge.length} Karten in ${daten.stapel.length} Stapeln${teile}`;
     btnReset.textContent = 'Lernstand zurücksetzen';
     syncAnzeigen();
     if (typeof menue.showModal === 'function') menue.showModal();

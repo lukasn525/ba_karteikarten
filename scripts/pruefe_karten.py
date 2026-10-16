@@ -5,7 +5,7 @@ Aufruf im Projektordner:
 
 Geprüft wird: gültiges JSON (mit Zeilenangabe), Pflichtfelder, doppelte ids,
 3–5 Stichpunkte je Karte, leere Texte (auch eine fehlende Antwort auf die
-Nachfrage). Exit-Code 1 bei Fehlern, sonst 0.
+Nachfrage) und die Zuordnung der Stapel zu den Teilen. Exit-Code 1 bei Fehlern, sonst 0.
 Nur Python-Standardbibliothek, keine Installation nötig.
 """
 
@@ -51,11 +51,13 @@ def pruefe() -> tuple[list[str], list[str], int]:
 
     gesehen: dict[str, str] = {}
     fragen: dict[str, str] = {}
+    stapel_ids: list[str] = []
     for name in stapel:
         datei = DATEN / name
         inhalt = lade(datei, fehler)
         if inhalt is None:
             continue
+        stapel_ids.append(str(inhalt.get("id") or name.removesuffix(".json")))
         karten = inhalt.get("karten")
         if not isinstance(karten, list):
             fehler.append(f"{name}: Feld „karten“ fehlt oder ist keine Liste.")
@@ -115,7 +117,38 @@ def pruefe() -> tuple[list[str], list[str], int]:
                 hinweise.append(f"{ort}: unbekannte Felder {sorted(unbekannt)} werden ignoriert.")
             anzahl += 1
 
+    pruefe_teile(meta, stapel_ids, fehler, hinweise)
     return fehler, hinweise, anzahl
+
+
+def pruefe_teile(meta: dict, stapel_ids: list[str], fehler: list[str], hinweise: list[str]) -> None:
+    """Teile in index.json: jeder genannte Stapel existiert und steht in genau einem Teil."""
+    teile = meta.get("teile")
+    if teile is None:
+        return
+    if not isinstance(teile, list):
+        fehler.append("index.json: Feld „teile“ muss eine Liste sein.")
+        return
+    vergeben: dict[str, str] = {}
+    teil_ids: set[str] = set()
+    for i, teil in enumerate(teile, start=1):
+        if not isinstance(teil, dict) or not teil.get("id") or not isinstance(teil.get("stapel"), list):
+            fehler.append(f"index.json: Teil {i} braucht „id“ und eine Liste „stapel“.")
+            continue
+        tid = str(teil["id"])
+        if tid in teil_ids:
+            fehler.append(f"index.json: Teil-id „{tid}“ ist doppelt.")
+        teil_ids.add(tid)
+        for sid in map(str, teil["stapel"]):
+            if sid not in stapel_ids:
+                fehler.append(f"index.json: Teil „{tid}“ nennt den unbekannten Stapel „{sid}“.")
+            elif sid in vergeben:
+                fehler.append(f"index.json: Stapel „{sid}“ steht in „{vergeben[sid]}“ und „{tid}“.")
+            else:
+                vergeben[sid] = tid
+    for sid in stapel_ids:
+        if sid not in vergeben:
+            hinweise.append(f"index.json: Stapel „{sid}“ steht in keinem Teil (erscheint im ersten).")
 
 
 def main() -> int:

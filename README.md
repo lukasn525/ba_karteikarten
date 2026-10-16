@@ -1,7 +1,9 @@
 # Kolloquium · Karteikarten
 
 Karteikarten zur Vorbereitung auf das Kolloquium der Bachelorarbeit
-„Einsatzlast der Feuerwehr San Francisco“. 111 Karten in 5 Stapeln:
+„Einsatzlast der Feuerwehr San Francisco“. Zwei getrennte Teile, oben auf der Startseite umschaltbar:
+
+**Arbeit** – 5 Stapel:
 
 | Stapel | Thema |
 |---|---|
@@ -10,6 +12,16 @@ Karteikarten zur Vorbereitung auf das Kolloquium der Bachelorarbeit
 | 3 | Validierung & Statistik |
 | 4 | Ergebnisse & Interpretation |
 | 5 | Kritik, Limitationen & Prüfer-Angriffe |
+
+**Code** – 2 Stapel, eigene Runden und eigenes „Alle Karten“:
+
+| Stapel | Thema |
+|---|---|
+| C1 | Prüferfragen zum Code (wo steht es, wie funktioniert es, wie ist es abgesichert) |
+| C2 | Funktionen: Aufgabe vorne, Datei · Funktion und Zeilen hinten |
+
+Die Zeilenangaben der Code-Karten sind beim Erzeugen automatisch gegen den Abgabeordner
+geprüft (Stand 16.10.2026). Ändert sich der Code, stimmen sie nicht mehr.
 
 Reine statische Website (HTML, CSS, JavaScript), kein Build-Schritt, keine Abhängigkeiten.
 
@@ -44,8 +56,18 @@ data/
 ├── stapel-2.json    Stapel 2
 ├── stapel-5.json    Stapel 3 (die Reihenfolge legt index.json fest)
 ├── stapel-3.json    Stapel 4
-└── stapel-4.json    Stapel 5
+├── stapel-4.json    Stapel 5
+├── code-1.json      Stapel C1 (Teil Code)
+└── code-2.json      Stapel C2 (Teil Code)
 ```
+
+### Teile
+
+`teile` in `index.json` trennt die Stapel in Bereiche mit eigener Startseite (`#/` für den
+ersten Teil, `#/teil/<id>` für die übrigen). Jeder Stapel steht in genau einem Teil, Stapel ohne
+Teil landen im ersten. `praefix` setzt die Stapelnummer (`C1`, `C2`). Eine Unterlagen-Gruppe mit
+`"teile": [...]` erscheint in diesen Teilen, ohne das Feld nur im ersten. In Fragen und
+Stichpunkten wird `` `so` `` als Code dargestellt.
 
 ### Aufbau einer Karte
 
@@ -119,7 +141,7 @@ Häufigster Fehler: ein fehlendes oder überzähliges Komma.
   Ausgeblendete Karten werden in keiner Runde abgefragt, auch nicht in einer laufenden; in der Übersicht
   bleiben sie sichtbar, ausgegraut und mit „ausgeblendet“ gekennzeichnet (eigener Filter). Erneuter Klick
   aufs Auge blendet sie wieder ein. Ausblenden in der Lernansicht lässt sich mit Z zurücknehmen.
-- **Karten des Tages** (oben auf der Startseite): jeden Tag 15–20 zufällige Karten aus allen Stapeln,
+- **Karten des Tages** (oben auf der Startseite): jeden Tag 15–20 zufällige Karten aus den Stapeln des Teils Arbeit (Code-Karten nicht),
   überwiegend kritische, unsichere und neue, dazu etwa ein Fünftel sichere zur Auffrischung; lange nicht
   gesehene Karten kommen eher dran. Die Auswahl wird beim ersten Öffnen des Tages festgelegt und gilt auf
   allen Geräten. Einstellbar über `TAGES_MIN`, `TAGES_MAX` und `TAGES_ANTEIL_SICHER` in `assets/app.js`.

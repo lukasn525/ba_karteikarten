@@ -1,14 +1,23 @@
 {
   "titel": "Kolloquium · Bachelorarbeit",
   "untertitel": "Einsatzlast der Feuerwehr San Francisco – Karteikarten zur Vorbereitung",
-  "stand": "13.10.2026",
+  "stand": "16.10.2026",
   "hinweis": "Abschnittsnummern nach der Fassung der Arbeit vom 07.10.2026",
   "stapel": [
     "stapel-1.json",
     "stapel-2.json",
     "stapel-5.json",
     "stapel-3.json",
-    "stapel-4.json"
+    "stapel-4.json",
+    "code-1.json",
+    "code-2.json"
+  ],
+  "teile": [
+    { "id": "arbeit", "titel": "Arbeit", "kurz": "Arbeit",
+      "stapel": ["stapel-1", "stapel-2", "stapel-5", "stapel-3", "stapel-4"] },
+    { "id": "code", "titel": "Code", "kurz": "Code", "praefix": "C",
+      "untertitel": "Wo steht was im Abgabe-Code? Datei, Funktion und Zeilen sind automatisch gegen den Abgabeordner geprüft (Stand 16.10.2026).",
+      "stapel": ["code-1", "code-2"] }
   ],
   "unterlagen": [
     {
@@ -22,6 +31,7 @@
     },
     {
       "gruppe": "Der Code verständlich erklärt",
+      "teile": ["arbeit", "code"],
       "dateien": [
         { "titel": "Heft 1 · Wie aus Rohdaten zwei Tabellen werden (prep/, tests/)", "datei": "unterlagen/Code_fuer_Laien_Heft1_prep_tests.pdf", "info": "16 Seiten · Stand 11.10.2026" },
         { "titel": "Heft 2 · Die Messlatte, bevor das Rennen beginnt (vorpruefung/)", "datei": "unterlagen/Code_fuer_Laien_Heft2_vorpruefung.pdf", "info": "13 Seiten · Stand 11.10.2026" },

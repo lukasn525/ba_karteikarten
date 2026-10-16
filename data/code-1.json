@@ -1,0 +1,579 @@
+{
+  "id": "code-1",
+  "titel": "Prüferfragen zum Code",
+  "kurz": "Prüferfragen",
+  "karten": [
+    {
+      "id": "c1-01",
+      "frage": "Wo bereinigen Sie die Einsatzdaten, und was genau fliegt raus?",
+      "punkte": [
+        "**`prep/s1_daten.py` · `prepare_sffd()`, Z. 251–276**",
+        "Doppelte Einsatznummern (Z. 261).",
+        "Einsätze ohne Antwortzeit von 0 bis 60 Minuten (Z. 267), Grenzen in `prep/config.py` Z. 77.",
+        "Die drei Parkgebiete werden erst beim Aggregieren ausgeschlossen (`prep/s2_datensaetze.py` Z. 197)."
+      ],
+      "abschnitt": "4.3",
+      "nachfrage": "Warum wird die Antwortzeit gefiltert, wenn sie gar kein Merkmal ist?",
+      "nachfrage_antwort": "Einsätze ohne erfasste Ankunft oder mit unplausibler Dauer gelten als unvollständige Meldungen; sie gehen in keine Zählung ein."
+    },
+    {
+      "id": "c1-02",
+      "frage": "Wo sichern Sie ab, dass keine Wohnbevölkerung beim ACS-Join verloren geht?",
+      "punkte": [
+        "**`prep/s1_daten.py` · `acs_je_neighborhood()`, Z. 312–346**",
+        "Abbruch, wenn weniger als 95 % der Bevölkerung einem Stadtteil zugeordnet sind (Z. 331–333).",
+        "Die Zuordnung über alte Zensusgrenzen leistet `tract_zu_stadtteil()` (Z. 282–309) mit dem Basiscode als Rückfall.",
+        "Zusätzlich prüft `pruefe_zuschnitt()` in `prep/s2_datensaetze.py` die stadtweite Bevölkerung je Jahr gegen 750.000 bis 950.000."
+      ],
+      "abschnitt": "4.3 · Code 3",
+      "nachfrage": "Warum bevölkerungsgewichtete Mediane?",
+      "nachfrage_antwort": "Ein Median lässt sich nicht über Tracts addieren; gewichtet mit der Bevölkerung zählt jeder Tract nach seiner Größe."
+    },
+    {
+      "id": "c1-03",
+      "frage": "Ein Einsatz aus 2023: Welchen ACS-Jahrgang bekommt er, und wo steht das?",
+      "punkte": [
+        "**`prep/s1_daten.py` · `acs_snapshot()`, Z. 349–365**",
+        "Regel: ACS-Jahr ≤ Einsatzjahr − 1 (Z. 364), Versatz `ACS_PUBLIKATIONS_LAG = 1` in `prep/config.py` Z. 67.",
+        "Verfügbar sind 2009, 2014, 2019, 2021, 2023: Einsätze 2023 bekommen ACS 2021, erst 2024 und 2025 ACS 2023.",
+        "Angewandt je Einsatz in `join_acs()` (Z. 380)."
+      ],
+      "abschnitt": "4.3 · Code 4",
+      "nachfrage": "Warum nicht der zeitlich nächste Jahrgang?",
+      "nachfrage_antwort": "ACS 2023 ist erst Ende 2024 erschienen. Ein Einsatz aus 2023 hätte sonst Information, die es damals noch nicht gab."
+    },
+    {
+      "id": "c1-04",
+      "frage": "Wo verhindern Sie, dass der Kriminalitätsindex Information aus dem aktuellen Monat enthält?",
+      "punkte": [
+        "**`prep/s1_daten.py` · `kriminalitaetsindex()`, Z. 473–538**",
+        "`shift(1)` vor `rolling(12)`: das Fenster endet im Vormonat (Z. 508–510).",
+        "Fensterlänge 12 aus `prep/config.py` Z. 70; der Nenner nutzt denselben ACS-Versatz wie die Exposition (Z. 516).",
+        "Index = Rate des Stadtteils / Rate der Stadt; logarithmiert in `aggregiere()` von s2."
+      ],
+      "abschnitt": "4.4 · Code 7",
+      "nachfrage": "Warum relativ zur Stadt?",
+      "nachfrage_antwort": "Der SFPD-Systemwechsel 2018 ändert das stadtweite Niveau; ein solcher Sprung kürzt sich im Verhältnis heraus. Nicht heraus kürzt sich eine Verschiebung der Deliktzusammensetzung in einzelnen Stadtteilen."
+    },
+    {
+      "id": "c1-05",
+      "frage": "Wo prüfen Sie, dass ein Join keine Zeilen verdoppelt oder verliert?",
+      "punkte": [
+        "**`prep/s1_daten.py` · `run_join()`**: assert auf gleiche Zeilenzahl nach dem Crime-Join (Z. 689).",
+        "**`prep/s2_datensaetze.py` · `pruefe_zuschnitt()`**: genau 36 Stadtteile (Z. 431) und plausible Bevölkerung (Z. 438).",
+        "ACS: 95-%-Schwelle in `acs_je_neighborhood()`.",
+        "Die übrigen Merges (Land Use, ACS je Einsatz) haben kein eigenes Zeilen-assert."
+      ],
+      "abschnitt": "4.3 · Code 1",
+      "nachfrage": "Stimmt der Satz, alle Joins würden geprüft?",
+      "nachfrage_antwort": "So pauschal nicht: Die Zeilenzahl prüft nur der Crime-Join. Der Rest ist über Schwelle und Zuschnitt abgesichert; das solltest du so sagen."
+    },
+    {
+      "id": "c1-06",
+      "frage": "Was passiert mit Monaten, in denen ein Stadtteil keinen einzigen Einsatz hat?",
+      "punkte": [
+        "**`prep/s2_datensaetze.py` · `aggregiere()`, Z. 183–252**",
+        "Vollständiges Raster, fehlende Monate werden echte Nullen (Z. 222–228).",
+        "Merkmale nur vorwärts gefüllt, nie rückwärts (Z. 233–234): `bfill` brächte Zukunftswerte.",
+        "Im Strukturstrang fallen solche Monate raus, weil 0/0 keine Zusammensetzung ist (`baue_klassifikation()` Z. 374–376)."
+      ],
+      "abschnitt": "4.4 · Code 5",
+      "nachfrage": "Wie viele Zeilen kostet das im Strukturstrang?",
+      "nachfrage_antwort": "Eine: 4.751 statt 4.752 Stadtteilmonate."
+    },
+    {
+      "id": "c1-07",
+      "frage": "Wo entsteht die Einsatzrate je 1.000 Einwohner, und welche Einwohnerzahl steckt drin?",
+      "punkte": [
+        "**`prep/s2_datensaetze.py` · `baue_regression()`**, Z. 318: Anzahl / Wohnbevölkerung × 1.000.",
+        "Die Wohnbevölkerung ist `gesamtbevoelkerung` aus der ACS (`EXPOSURE_ROH`, `prep/config.py` Z. 120), mit Publikationsversatz.",
+        "Als Merkmal geht sie logarithmiert ein: `log_bevoelkerung = log1p(...)` in `aggregiere()` (Z. 239).",
+        "Im GLM steht sie zusätzlich als Offset; das sind zwei verschiedene Rollen."
+      ],
+      "abschnitt": "4.4",
+      "nachfrage": "Warum log1p und nicht log?",
+      "nachfrage_antwort": "log1p sichert gegen eine Bevölkerung von 0 ab; bei den tatsächlichen Werten (2.357 bis 82.682 Einwohner) ist der Unterschied vernachlässigbar."
+    },
+    {
+      "id": "c1-08",
+      "frage": "Wie stellen Sie sicher, dass alle Stadtteile über den ganzen Zeitraum dabei sind?",
+      "punkte": [
+        "**`prep/s2_datensaetze.py` · `baue_regression()`, Z. 255–328**",
+        "Stadtteile mit einer Lücke in den Prädiktoren fallen ganz raus, nicht zeilenweise (Z. 298–301).",
+        "Sonst entstünde ein unbalanciertes Panel, in dem ein Stadtteil mitten in der Zeitreihe hinzukommt.",
+        "Danach prüft `pruefe_zuschnitt()` auf genau 36 Stadtteile; `test_panel_rechteckig_und_vollstaendig()` in `tests/test_aufbereitung.py` prüft 36 × 132."
+      ],
+      "abschnitt": "4.3",
+      "nachfrage": "Welche Gebiete sind bewusst draußen?",
+      "nachfrage_antwort": "Fünf: die Parks Golden Gate Park, Lincoln Park, McLaren Park (`prep/config.py` Z. 93) und Lakeshore und Treasure Island, die genau über diese Lückenregel fallen, weil es dort kein Baujahr gibt; 41 − 5 = 36."
+    },
+    {
+      "id": "c1-09",
+      "frage": "Wo wird die überwiegende Einsatzart gebildet, und wie verhindern Sie Ergebnisvariablen im Datensatz?",
+      "punkte": [
+        "**`prep/s2_datensaetze.py` · `baue_klassifikation()`, Z. 334–409**",
+        "NFIRS-Gruppe über die führende Ziffer des Codes, Zielklasse per `idxmax` über die vier Anteile (Z. 385).",
+        "assert gegen Ergebnisvariablen (Z. 390–391), Liste in `prep/config.py` Z. 166.",
+        "Zweite Absicherung an der fertigen Datei: `test_keine_ergebnisvariablen()` (Z. 279–287)."
+      ],
+      "abschnitt": "4.4, 4.3 · Code 2",
+      "nachfrage": "Was passiert bei einem Gleichstand zweier Anteile?",
+      "nachfrage_antwort": "`idxmax` nimmt die erste Spalte in der Reihenfolge der Anteile; so ist es auch in Decke A über `argmax` gelöst."
+    },
+    {
+      "id": "c1-10",
+      "frage": "Wo wird festgelegt, welcher Stadtteil in welchen Fold und ins Hold-out fällt?",
+      "punkte": [
+        "**`prep/s2_datensaetze.py` · `ergaenze_aufteilung()`, Z. 62–94**",
+        "Sortierung: brand-dominierte Monate, dann Bevölkerung, absteigend (Z. 84–86).",
+        "Reihum auf 6 Gruppen (Z. 89), Gruppe 0 = Hold-out (Z. 93); kein Zufall, kein Seed nötig.",
+        "Der brandreichste Stadtteil (rund die Hälfte der 70 brand-dominierten Monate) steht vorn und landet im Hold-out; die sechs Hold-out-Stadtteile haben zusammen 37 der 70, Brandanteil 4,67 % gegen 0,83 %."
+      ],
+      "abschnitt": "4.5 · Code 10",
+      "nachfrage": "Wird die Zuteilung für beide Stränge getrennt gemacht?",
+      "nachfrage_antwort": "Nein, einmal in `run()` (Z. 463–464) und in beide Dateien geschrieben, damit Menge und Struktur dieselben Stadtteile testen."
+    },
+    {
+      "id": "c1-11",
+      "frage": "Wie entstehen die zehn Wiederholungen, und was bleibt dabei gleich?",
+      "punkte": [
+        "**`vorpruefung/v0_aufteilung.py` · `wiederholte_aufteilung()`, Z. 62–109**",
+        "Mischen innerhalb von Rangblöcken zu 5 Stadtteilen, Seed `RANDOM_STATE + wiederholung` (Z. 90–95), dann reihum auf 5 Folds (Z. 97).",
+        "Hold-out bleibt Fold 0, `ist_holdout` unverändert (Z. 101); jeder Block gibt einen Stadtteil je Fold ab, die Stratifizierung hält.",
+        "Wiederholung 0 muss die Datei exakt reproduzieren: assert Z. 103–108."
+      ],
+      "abschnitt": "4.5",
+      "nachfrage": "Wo wird das für alle zehn geprüft?",
+      "nachfrage_antwort": "Im Selbsttest derselben Datei (Z. 127–190): Foldgrößen, Brand je Fold, unverändertes Hold-out, zehn verschiedene Partitionen."
+    },
+    {
+      "id": "c1-12",
+      "frage": "Wie ist das Hold-out im Code gesperrt?",
+      "punkte": [
+        "Die Modellskripte filtern zuerst: `modelle/m02_menge.py` Z. 796, `modelle/m03_struktur.py` Z. 716, `modelle/m04_shap.py` Z. 492–493.",
+        "Ebenso `vorpruefung/v4_decke.py` Z. 346, `modelle/parametersensitivitaet.py` Z. 172 und die Suchdiagnose.",
+        "Geöffnet wird es nur mit dem Argument `holdout` (m02, m03, v4); m04 kennt kein solches Argument.",
+        "Baselines und Eignungsprüfung lesen die ganze Datei; dort hält `fold_masken()` in `prep/s2_datensaetze.py` das Hold-out aus jedem Training heraus (Z. 110), getestet wird nur auf Fold 1–5."
+      ],
+      "abschnitt": "4.5",
+      "nachfrage": "Welcher Parametersatz läuft in der Schlussbewertung?",
+      "nachfrage_antwort": "Der des Folds, der in Wiederholung 0 am besten war: m02 kleinster RMSE, m03 größter Macro-F1. Das ist deterministisch und nutzt nur Entwicklungsdaten."
+    },
+    {
+      "id": "c1-13",
+      "frage": "Wo läuft die innere Kreuzvalidierung, und warum gruppiert nach Stadtteil?",
+      "punkte": [
+        "**`modelle/m02_menge.py` · `tune()`** (Z. 155–184), Gegenstück in m03",
+        "`RandomizedSearchCV` mit `n_iter=TUNING_BUDGET` (100) und `GroupKFold(n_splits=4)` (Z. 176–177), Gruppen = Stadtteil (Z. 183).",
+        "Ohne Gruppen schnitte KFold nach Zeilen: dieselben Stadtteile stünden in innerem Training und innerer Validierung, die Werte wären nur zu gut.",
+        "Aufgerufen nur in Wiederholung 0 aus `phase_tuning()` (Z. 339)."
+      ],
+      "abschnitt": "5.2 · Code 18",
+      "nachfrage": "Wie viele Stadtteile sieht die innere Suche?",
+      "nachfrage_antwort": "Je äußerem Fold 24 Trainingsstadtteile, in vier Gruppen zu je sechs; je innerem Durchgang also 18 zum Lernen und 6 zum Bewerten."
+    },
+    {
+      "id": "c1-14",
+      "frage": "Schadet es, dass nur in Wiederholung 0 gesucht wird? Wo haben Sie das gemessen?",
+      "punkte": [
+        "**`modelle/m02_menge.py` · `leakage_diagnose()`** (Z. 613–647), Gegenstück in m03",
+        "Vergleicht den Vorsprung gegen die Baseline in W0 mit dem in W1–9.",
+        "Den Anteil von 80 % Teststadtteilen aus der Suchmenge zählt `vorpruefung/panelprofil.py` · `suchmenge()`.",
+        "Ein Leck müsste den Vorsprung in W1–9 vergrößern; er ist in allen acht Vergleichen kleiner, um das 0,098- bis 0,317-Fache der Fold-Streuung."
+      ],
+      "abschnitt": "6.3",
+      "nachfrage": "Warum ist das kein Beweis?",
+      "nachfrage_antwort": "W0 ist selbst eine andere Aufteilung, der Vergleich ist konfundiert. Ein deutlicher Vorteil wäre sichtbar, ein kleiner nicht von Fold-Schwankung zu trennen."
+    },
+    {
+      "id": "c1-15",
+      "frage": "Wo sorgen Sie dafür, dass alle Verfahren dieselben Merkmale, Zeilen und Folds sehen?",
+      "punkte": [
+        "Merkmale an einer Stelle: `PRAEDIKTOREN` und `SAISON` in `prep/config.py`; m02 setzt `MERKMALE = PRAEDIKTOREN + SAISON` (Z. 45).",
+        "Folds als Spalte in beiden Dateien; jedes Skript nutzt `wiederholte_aufteilung()` und `fold_masken()`.",
+        "`vergleiche()` paart über die Schlüssel und bricht ab, wenn ein Gegenstück fehlt (Z. 577–580).",
+        "Tests: `test_aufteilungsspalten_konsistent()` (Z. 174–191) und `test_struktur_gleiche_abgrenzung_wie_regression()` (Z. 290–305)."
+      ],
+      "abschnitt": "3.2",
+      "nachfrage": "Was fängt diese Prüfung nicht?",
+      "nachfrage_antwort": "Liefen alle Verfahren auf derselben, aber veralteten Aufteilung, bliebe der Vergleich fair und das Ergebnis trotzdem falsch. Dagegen baut der Test die Aufteilung aus den Dateien nach."
+    },
+    {
+      "id": "c1-16",
+      "frage": "Wo steht, dass alle Verfahren die Rate schätzen und erst danach auf die Anzahl zurückrechnen?",
+      "punkte": [
+        "**`modelle/m02_menge.py` · `ein_lauf()`**, Z. 219–231",
+        "Bei beiden Zielgrößen wird auf der Rate angepasst (Z. 220).",
+        "Erst die fertige Vorhersage wird mit Einwohner/1.000 multipliziert (Z. 231).",
+        "Das GLM macht dasselbe über den Offset; so misst der Vergleich das Verfahren, nicht die Modellierungsentscheidung."
+      ],
+      "abschnitt": "5.2 · Code 15",
+      "nachfrage": "Gewichten dann alle gleich?",
+      "nachfrage_antwort": "Nein: Der Offset gibt großen Stadtteilen mehr Gewicht, die drei Verfahren gewichten jede Zeile gleich. Deshalb werden beide Zielgrößen ausgewertet."
+    },
+    {
+      "id": "c1-17",
+      "frage": "Wo wird verhindert, dass der Scaler von Ridge Testdaten sieht?",
+      "punkte": [
+        "**`modelle/m02_menge.py` · `verfahren()`**, Z. 110",
+        "`StandardScaler` und `TransformedTargetRegressor` (log1p, zurück mit expm1) stehen in der Pipeline.",
+        "Die Pipeline wird je Fold nur auf dem Training gefittet, auch innerhalb der Suche; der Scaler lernt Mittel und Streuung nie aus dem Test.",
+        "Die Spezifikationsgegenprobe standardisiert genauso nur auf dem Training (`vorpruefung/v3_spezifikation.py` · `entwerfe()`)."
+      ],
+      "abschnitt": "5.2 · Code 16",
+      "nachfrage": "Warum braucht nur Ridge einen Scaler?",
+      "nachfrage_antwort": "Der L2-Strafterm behandelt alle Koeffizienten gleich und hängt damit an der Skala; Bäume teilen an Schwellen und sind skalenunempfindlich."
+    },
+    {
+      "id": "c1-18",
+      "frage": "Wo sind die Verlustfunktionen der Verfahren festgelegt, und warum nicht überall der quadratische Fehler?",
+      "punkte": [
+        "**`modelle/m02_menge.py` · `verfahren()`, Z. 81–116**",
+        "Random Forest `criterion=\"poisson\"` (Z. 112), XGBoost `objective=\"reg:tweedie\"` (Z. 115).",
+        "Tweedie-Exponent wird gesucht, 1,01 bis 1,9 (`modelle/config_modelle.py` Z. 57).",
+        "Grund: Dispersionsindex 79,5. Der quadratische Fehler würde von wenigen großen Stadtteilen bestimmt."
+      ],
+      "abschnitt": "5.2 · Code 16",
+      "nachfrage": "Warum nicht Tweedie auch für den Random Forest?",
+      "nachfrage_antwort": "scikit-learn bietet für Wälder keine Tweedie-Devianz an; Poisson ist die nächste zähldatengerechte Wahl."
+    },
+    {
+      "id": "c1-19",
+      "frage": "Wo bekommen die seltenen Klassen im Strukturstrang mehr Gewicht?",
+      "punkte": [
+        "Random Forest: `class_weight=\"balanced\"` in `modelle/m03_struktur.py` · `verfahren()` (Z. 89).",
+        "XGBoost: `sample_weight` aus `_gewichte()` (Z. 151–158), beim Fit in `ein_lauf()` (Z. 234) und in `tune()` (Z. 191).",
+        "Logit: `class_weight=\"balanced\"` in `vorpruefung/v1_baselines.py` · `logit_glm()`.",
+        "Kein Resampling: keine Zeile wird dupliziert oder gelöscht."
+      ],
+      "abschnitt": "5.2 · Code 17",
+      "nachfrage": "Kommen die RF-Gewichte aus `_gewichte()`?",
+      "nachfrage_antwort": "Nein, nur XGBoost nutzt `_gewichte()`. Der Random Forest bekommt die Gewichte über seinen Parameter `class_weight`."
+    },
+    {
+      "id": "c1-20",
+      "frage": "Wo wird die Rechenzeit gemessen, und warum einkernig?",
+      "punkte": [
+        "**`modelle/m02_menge.py` · `ein_lauf()`**: Zeit nur um fit (Z. 227) und predict (Z. 231).",
+        "`N_JOBS_MODELL = 1` (Z. 65): der Aufwand soll vom Verfahren abhängen, nicht von der Kernzahl.",
+        "Parallel wird zusätzlich gemessen (Z. 236–251) und die Abweichung festgehalten; berichtet wird einkernig.",
+        "Nicht reproduzierbar sind nur Laufzeiten und der Vergleich einkernig/parallel."
+      ],
+      "abschnitt": "5.2",
+      "nachfrage": "Welches Verfahren ändert sein Ergebnis mit der Kernzahl?",
+      "nachfrage_antwort": "XGBoost, wegen der parallelen Histogramm-Reduktion; Ridge und RF nicht. Die berichteten Werte stammen aus dem einkernigen Fit."
+    },
+    {
+      "id": "c1-21",
+      "frage": "Wo zeigen Sie die Überdispersion, und mit welchem Test?",
+      "punkte": [
+        "**`vorpruefung/v2_eignung.py` · `dispersion()`**: Index = Varianz / Mittelwert (Z. 72) = 79,5.",
+        "Formal: Cameron-Trivedi-Hilfsregression in `annahmen()` (Z. 413–415), t = 18,0, einseitig.",
+        "Gerechnet nur auf den 24 Trainingsstadtteilen von Fold 1 (`main()` Z. 625).",
+        "Folge: Poisson- und Tweedie-Verlust für die Bäume; das GLM bleibt Referenz."
+      ],
+      "abschnitt": "5.1 · Code 14",
+      "nachfrage": "Warum dann kein Negative-Binomial-Modell als Referenz?",
+      "nachfrage_antwort": "Überdispersion beschädigt die Standardfehler, nicht die Konsistenz des Mittelwerts. Die Referenz liefert nur Punktvorhersagen."
+    },
+    {
+      "id": "c1-22",
+      "frage": "Wo prüfen Sie die Linearität, und was zeigt der RESET-Test?",
+      "punkte": [
+        "**`vorpruefung/v2_eignung.py` · `spezifikation()`, Z. 185–234**",
+        "RESET auf OLS von log(1+y) mit Potenzen bis 2 und 3 (Z. 209–210): F = 360,4 bzw. 224,2, p < 0,001.",
+        "45 Paarprodukte heben das adjustierte R² von 0,859 auf 0,932 (Z. 216–220).",
+        "Pearson gegen Spearman steht in `linearitaet()` (Z. 106–181)."
+      ],
+      "abschnitt": "5.1",
+      "nachfrage": "Ist das nicht nur In-Sample?",
+      "nachfrage_antwort": "Ja. Ob mehr Flexibilität out-of-sample hilft, prüft die Spezifikationsgegenprobe in v3, und dort wird die Baseline mit Erweiterungen schlechter."
+    },
+    {
+      "id": "c1-23",
+      "frage": "Was ist die Spezifikationsgegenprobe, und wo läuft sie?",
+      "punkte": [
+        "**`vorpruefung/v3_spezifikation.py`**: vier Fassungen des Poisson-GLM, linear, quadrate, interaktionen, beides; 10 × 5 × 4 = 200 Anpassungen (`alle_laeufe()` Z. 135–151).",
+        "Merkmale nur auf dem Training standardisiert, Quadrate und Produkte danach (`entwerfe()` Z. 76–80).",
+        "Absicherung: `linear` muss die Stufe-2-Baseline reproduzieren, sonst Abbruch (`_selbsttest()` Z. 195).",
+        "RMSE: 32,99 → 74,58 → 256,96 → 4.203,26; die flexiblere Baseline wird schlechter."
+      ],
+      "abschnitt": "6.3",
+      "nachfrage": "Was heißt „Gegenprobe“ hier genau?",
+      "nachfrage_antwort": "Statt das Verfahren zu wechseln, wird die Referenz selbst flexibler gemacht. Wäre sie zu starr, müsste die Güte steigen; sie sinkt."
+    },
+    {
+      "id": "c1-24",
+      "frage": "Wo zeigen Sie, dass die Merkmale die Einsatzart überhaupt trennen?",
+      "punkte": [
+        "**`vorpruefung/v2_eignung.py` · `klassifikation()`, Z. 274–347**",
+        "Kruskal-Wallis je Prädiktor über die vier Klassen (Z. 303), auf Fold-1-Training.",
+        "10 von 10 Merkmalen trennen signifikant.",
+        "Trotzdem holt das Logit nur 0,301 gegen 0,221 der Mehrheitsklasse: die Klassengrenze ist keine Hyperebene."
+      ],
+      "abschnitt": "5.1",
+      "nachfrage": "Warum Kruskal-Wallis und keine ANOVA?",
+      "nachfrage_antwort": "Nichtparametrisch, keine Normalitätsannahme, und er verträgt sehr ungleich große Klassen."
+    },
+    {
+      "id": "c1-25",
+      "frage": "Wo prüfen Sie Varianzgleichheit und Normalität der Residuen?",
+      "punkte": [
+        "**`vorpruefung/v2_eignung.py` · `annahmen()`**, Z. 422–425",
+        "Breusch-Pagan und Jarque-Bera auf OLS von log(1+y), dem linearen Modell, für das Ridge steht.",
+        "Breusch-Pagan LM = 525,1 (verletzt), Jarque-Bera 150,0.",
+        "Normalität ist für Inferenz nötig, nicht für eine Punktprognose; Standardfehler werden nicht berichtet."
+      ],
+      "abschnitt": "5.1",
+      "nachfrage": "Wo steht die Gesamtübersicht der Annahmen?",
+      "nachfrage_antwort": "`results/eignungspruefung/annahmen.csv`: 15 Anforderungen, je mit Test, Status und Konsequenz."
+    },
+    {
+      "id": "c1-26",
+      "frage": "Wo kommen ICC, Designeffekt und die rund 39 effektiven Beobachtungen her?",
+      "punkte": [
+        "**`prep/deskriptiv.py` · `varianzzerlegung()`, Z. 104–154**",
+        "ICC(1) aus den mittleren Quadraten zwischen und innerhalb (Z. 142).",
+        "Designeffekt 1 + (m − 1) · ICC (Z. 143), n_eff = n / Designeffekt.",
+        "Anzahl: ICC 0,926, m = 132, Designeffekt ≈ 122, 4.752 / 122 ≈ 39."
+      ],
+      "abschnitt": "4.5",
+      "nachfrage": "Was folgt daraus?",
+      "nachfrage_antwort": "Der Stadtteil ist die Einheit, nicht die Zeile: Stadtteil-Split und Streuung über Wiederholungsmittel statt über 4.752 Zeilen."
+    },
+    {
+      "id": "c1-27",
+      "frage": "Warum testen Sie auf 10 statt 50 Paaren, und wo steht das?",
+      "punkte": [
+        "**`modelle/m02_menge.py` · `vergleiche()`**, Teststufen in Z. 552–553",
+        "Primär: je Wiederholung über die 5 Folds gemittelt, 10 Paare; die 50 Läufe nur als gekennzeichnete Sensitivität.",
+        "Die 50 Läufe sind dieselben 30 Stadtteile in neuer Gruppierung: Pseudoreplikation, zu kleine p-Werte.",
+        "Beispiel: XGBoost gegen GLM (Anzahl) p = 0,275 bei 10 Paaren, aber 0,035 bei 50."
+      ],
+      "abschnitt": "6.3",
+      "nachfrage": "Sind die zehn Wiederholungsmittel unabhängig?",
+      "nachfrage_antwort": "Auch nicht ganz, alle prüfen dieselben 30 Stadtteile. Deshalb stehen Differenz, Intervall und gewonnene Wiederholungen immer neben dem p-Wert."
+    },
+    {
+      "id": "c1-28",
+      "frage": "Was bedeutet das „±“ in Tabelle 9 und 11, und was die Klammern in Tabelle 10 und 12?",
+      "punkte": [
+        "„±“ = Standardabweichung der zehn Wiederholungsmittel, `std_wiederholungen` in `modelle/m02_menge.py` · `aggregiere()` (Z. 452–454).",
+        "Klammern = 95-%-Konfidenzintervall der gepaarten Differenz nach t, `_gepaart()` (Z. 518).",
+        "Das eine beschreibt die Streuung eines Verfahrens, das andere die Unsicherheit eines Abstands.",
+        "`std_folds` über alle 50 Läufe steht nur zum Vergleich in der Datei."
+      ],
+      "abschnitt": "4.5 · Code 11",
+      "nachfrage": "Ist das ± ein Konfidenzintervall?",
+      "nachfrage_antwort": "Nein. Es ist die Streuung der zehn Wiederholungsmittel; das Intervall steht nur in den Testtabellen."
+    },
+    {
+      "id": "c1-29",
+      "frage": "Auf welche Vergleiche wenden Sie Holm an, und wo?",
+      "punkte": [
+        "**`modelle/m02_menge.py` · `_holm()`** (Z. 484–501), angewandt in `vergleiche()` Z. 603–605",
+        "Nur die sekundäre Familie: Verfahren untereinander, 3 Paarungen × 2 Zielgrößen = 6 Tests.",
+        "Vergleiche mit der Referenz sind einzeln vorab formuliert und werden nicht korrigiert.",
+        "m03: ein sekundärer Test, Holm wäre die Identität, `p_holm` bleibt leer (Z. 541)."
+      ],
+      "abschnitt": "6.1",
+      "nachfrage": "Was passiert, wenn man beide Stränge zu einer Familie zusammenlegt?",
+      "nachfrage_antwort": "Keine der sieben Entscheidungen ändert sich; der Strukturvergleich hätte 0,039 statt 0,010. Diese Zahl ist von Hand gerechnet, kein Skript erzeugt sie."
+    },
+    {
+      "id": "c1-30",
+      "frage": "Wo berechnen Sie die Trennschärfe, und was sagt sie?",
+      "punkte": [
+        "**`modelle/trennschaerfe.py`**: `effektstaerke()` (Z. 44–53) und `trennschaerfe()` (Z. 56–63)",
+        "d aus der Intervallbreite zurückgerechnet; Simulation mit `ZIEHUNGEN = 4000` (Z. 39) Sätzen zu 10 Paaren.",
+        "Bei d = 0,18 bis 0,62 verwirft der Test nur in 8 bis 40 % der Fälle, bei d = 1,00 in 78 %.",
+        "Alle signifikanten Vergleiche liegen bei d ≥ 0,84."
+      ],
+      "abschnitt": "6.3",
+      "nachfrage": "Was folgt für den Mengenstrang?",
+      "nachfrage_antwort": "„Kein Verfahren schlägt die Referenz“ ist keine Gleichheitsaussage, sondern eine Aussage über die Auflösung von zehn Paaren."
+    },
+    {
+      "id": "c1-31",
+      "frage": "Wie wird Decke A im Code simuliert, und welcher Sonderfall wird abgefangen?",
+      "punkte": [
+        "**`vorpruefung/v4_decke.py` · `decke_a()`, Z. 67–95**",
+        "Beobachtete Anteile als Ersatz für die wahren (Z. 86), 200-mal multinomial neu ziehen, argmax (Z. 92), Seed Z. 89.",
+        "N = 0 wird ausgeschlossen (Z. 84–85): sonst Nullvektor, argmax = „brand“, und Division durch null.",
+        "0,641 (CV), 0,677 (Hold-out); pro Ziehung kippen 13,6 % der Labels."
+      ],
+      "abschnitt": "6.2",
+      "nachfrage": "Woher kennen Sie die wahren Wahrscheinlichkeiten?",
+      "nachfrage_antwort": "Gar nicht; die beobachteten Anteile sind der Ersatz. Und: Die 13,6 % sind der Anteil je Ziehung, nicht „mindestens einmal“, wie der Docstring sagt."
+    },
+    {
+      "id": "c1-32",
+      "frage": "Wie entsteht Decke B, und warum ist sie die bindende Grenze?",
+      "punkte": [
+        "**`vorpruefung/v4_decke.py` · `decke_b()`, Z. 98–112**",
+        "Modalklasse je Stadtteil (Z. 109) als Vorhersage für alle seine Monate (Z. 110).",
+        "Macro-F1 0,415 (CV), 0,423 (Hold-out), klar unter Decke A mit 0,641.",
+        "27 der 30 Entwicklungsstadtteile haben die Modalklasse Fehlalarm: Stadtteilwissen trennt die Klassen kaum."
+      ],
+      "abschnitt": "6.2",
+      "nachfrage": "Hängen die Decken von Modellergebnissen ab?",
+      "nachfrage_antwort": "Nein, sie werden nur aus dem Panel gerechnet. Modellwerte braucht erst die Ausschöpfung."
+    },
+    {
+      "id": "c1-33",
+      "frage": "Wie wird die Ausschöpfung von 50,2 % für den Random Forest berechnet?",
+      "punkte": [
+        "**`vorpruefung/v4_decke.py` · `ausschoepfung()`, Z. 168–191**",
+        "(Modell − Mehrheitsklasse) / (Decke − Mehrheitsklasse), gegen Decke B in Z. 189.",
+        "(0,3184 − 0,2215) / (0,4147 − 0,2215) = 0,0969 / 0,1932 = 50,2 %; ergibt in `decke.md` 0,5016.",
+        "Modellwerte aus derselben Bewertung wie die Decken (`_modellwerte()` Z. 137–165)."
+      ],
+      "abschnitt": "6.2",
+      "nachfrage": "Warum nicht einfach 0,318 / 0,415?",
+      "nachfrage_antwort": "Der Rohquotient (77 %) wäre geschönt: Den Sockel der Mehrheitsklasse erreicht man ohne jede Modellleistung."
+    },
+    {
+      "id": "c1-34",
+      "frage": "Wie stellen Sie sicher, dass die Wahrscheinlichkeitsspalten bei der Macro-AUROC den richtigen Klassen zugeordnet sind?",
+      "punkte": [
+        "**`modelle/m03_struktur.py` · `kodiere()`** (Z. 134–148): feste Codes 0–3 nach `KLASSEN`, unabhängig vom Fold.",
+        "`_macro_auroc()` bekommt `labels=list(modell.classes_)` (Z. 264–265).",
+        "Fehlt im Test eine Klasse: NaN (Z. 341), kein Ersatzwert 0,5.",
+        "NaN-Werte werden als `n_auroc_fehlend` gezählt (Z. 474–475)."
+      ],
+      "abschnitt": "5.2 · Code 17, 6.2",
+      "nachfrage": "Was würde ein LabelEncoder je Fold anrichten?",
+      "nachfrage_antwort": "In einem Fold ohne Brand verschöben sich die Nummern, und die Spalten zeigten ohne Fehlermeldung auf falsche Klassen."
+    },
+    {
+      "id": "c1-35",
+      "frage": "Welche Besonderheit hat die Macro-AUROC der Logit-Baseline in der Schlussbewertung?",
+      "punkte": [
+        "**`modelle/m03_struktur.py` · `hold_out()`**, Z. 620–623",
+        "Das Logit lernt auf den Klassennamen; seine Spalten sind alphabetisch, nicht in der Reihenfolge von `KLASSEN`.",
+        "Deshalb werden die Spalten erst umsortiert (Z. 622) und dann mit den Labels 0–3 bewertet.",
+        "Die Mehrheitsklasse bekommt keine AUROC; eine konstante Vorhersage hat keine Rangfolge."
+      ],
+      "abschnitt": "6.2",
+      "nachfrage": "Und in der Kreuzvalidierung?",
+      "nachfrage_antwort": "Dort arbeitet `vorpruefung/v1_baselines.py` durchgehend mit Strings und übergibt `labels=list(logreg.classes_)`; ein Umsortieren ist nicht nötig."
+    },
+    {
+      "id": "c1-36",
+      "frage": "Auf welchem Fold rechnen Sie SHAP, und wo wird er gewählt?",
+      "punkte": [
+        "**`modelle/m04_shap.py` · `ruhigster_fold()`** (Z. 91–99): kleinster Extrapolationsanteil in Wiederholung 0.",
+        "Ergebnis Fold 5, der einzige ohne Testwert außerhalb des gelernten Bereichs.",
+        "Erklärt wird nur, wer die Baseline schlägt (`schlagen_die_latte()` Z. 79): der Random Forest im Strukturstrang.",
+        "TreeSHAP in `_beitraege()` (Z. 102–136)."
+      ],
+      "abschnitt": "6.5",
+      "nachfrage": "Und im Mengenstrang?",
+      "nachfrage_antwort": "Dort schlägt niemand die Referenz; gezeigt werden die standardisierten Koeffizienten des Poisson-GLM aus `faktorgruppen_baseline()`."
+    },
+    {
+      "id": "c1-37",
+      "frage": "Wie entsteht die Zahl −8,04 RMSE in der Ablation?",
+      "punkte": [
+        "**`modelle/m04_shap.py` · `ablation_faktorgruppen()`** (Z. 240–333): Poisson-GLM je Lauf mit allen Merkmalen und ohne je eine Gruppe (Z. 284).",
+        "`_ablation_auswerten()`: jede Variante gepaart gegen „voll“ auf demselben Fold (Z. 349–354).",
+        "Vorzeichen so gedreht, dass positiv „schlechter ohne“ heißt (Z. 356); erst je Wiederholung, dann über zehn gemittelt.",
+        "Baulich: −8,04 bei Ausgangswert 32,99, in 0 von 10 Wiederholungen schlechter."
+      ],
+      "abschnitt": "6.5",
+      "nachfrage": "Wo liegt die Zahl als Datei?",
+      "nachfrage_antwort": "`results/shap/ablation_faktorgruppen_mittel.csv`, Zeile baulich: −8,0384."
+    },
+    {
+      "id": "c1-38",
+      "frage": "Was passiert in der Ablation mit dem Offset, und warum ist der GLM-Befund belastbarer als der der Bäume?",
+      "punkte": [
+        "Der Offset bleibt in jeder Variante: log(Bevölkerung) ist keine Merkmalsspalte (`vorpruefung/v1_baselines.py` · `poisson_glm()` Z. 102–107).",
+        "Bei „Größenkontrolle“ fällt nur der freie Prädiktor log_bevoelkerung weg; das Modell schätzt weiter eine Rate.",
+        "Das GLM hat keinen Hyperparameter: Es ändert sich nur die Merkmalsmenge.",
+        "Die Bäume laufen mit Parametern aus dem vollen Merkmalssatz (Z. 318); ihre Änderung enthält Fehlabstimmung."
+      ],
+      "abschnitt": "6.5",
+      "nachfrage": "Wird auf die Ablation getestet?",
+      "nachfrage_antwort": "Nein, die Testfamilien stehen vorab fest; die Ablation ist beschreibend. Eindeutig ist das Vorzeichen etwa bei baulich (0 von 10 schlechter) und kriminalitätsbezogen (10 von 10), nicht aber bei sozioökonomisch (1 von 10)."
+    },
+    {
+      "id": "c1-39",
+      "frage": "Wie ist der Extrapolationsanteil definiert, und wo wird er je Lauf gemessen?",
+      "punkte": [
+        "**`modelle/m02_menge.py` · `extrapolationsanteil()`** (Z. 292–304): Testzeile zählt, wenn mindestens ein Merkmal außerhalb Min/Max des Trainings liegt.",
+        "Gemessen in jedem Lauf in `ein_lauf()` (Z. 275); m03 hat eine bewusst gleiche Kopie.",
+        "36,6 % über alle 50 Läufe; 38,2 % in der Eignungsprüfung sind dasselbe Maß nur für Wiederholung 0.",
+        "Nur die Spanne je Merkmal, keine neuen Kombinationen: eher eine Untergrenze."
+      ],
+      "abschnitt": "5.1",
+      "nachfrage": "Wofür wird der Anteil noch gebraucht?",
+      "nachfrage_antwort": "Für die Wahl des SHAP-Folds: `ruhigster_fold()` nimmt Fold 5 mit 0 %."
+    },
+    {
+      "id": "c1-40",
+      "frage": "Wo zeigen Sie, dass der Extrapolationsanteil keine Unterschiede zwischen den Verfahren erklärt?",
+      "punkte": [
+        "**`modelle/m04_shap.py` · `extrapolation_aufschluesseln()`**, Spearman in Z. 182",
+        "Rangkorrelation zwischen Anteil und RMSE je Verfahren und Zielgröße über 50 Läufe.",
+        "Anzahl: Ridge +0,335, RF +0,249, XGBoost +0,353; Rate: +0,461 / +0,287 / +0,375.",
+        "Der Anteil ist je Lauf für alle Verfahren gleich; hingen die Bäume enger daran, müsste ihr ρ höher sein. Beim RF ist es am niedrigsten."
+      ],
+      "abschnitt": "5.1",
+      "nachfrage": "Warum nicht die Testmenge nach Extrapolation aufteilen und dort vergleichen?",
+      "nachfrage_antwort": "Das wäre eine nachträgliche Untergruppensuche nach Verfahrensunterschieden. Die Einheit bleibt der Fold, die Primäraussage unberührt."
+    },
+    {
+      "id": "c1-41",
+      "frage": "Wie entsteht „ein fremder Parametersatz ist beim RF in 17 von 20 Paarungen besser“?",
+      "punkte": [
+        "**`modelle/parametersensitivitaet.py` · `kreuzprobe()`** (Z. 147–195): jeder der 5 Testfolds mit jedem der 5 Sätze, nur Wiederholung 0.",
+        "20 Paarungen = 5 Testfolds × 4 fremde Sätze; die Diagonale ist der eigene Satz.",
+        "`zusammenfassung()` vergleicht je Testfold fremd gegen eigen (Z. 216–219); beim RMSE zählt kleiner.",
+        "RF im Mengenstrang: 17; der eigene Satz liegt im Mittel 1,85 RMSE hinter den fremden."
+      ],
+      "abschnitt": "5.3",
+      "nachfrage": "Ist das ein Test?",
+      "nachfrage_antwort": "Nein, es wird gezählt. Fünf Folds reichen für keinen Test; die Kreuzprobe ist beschreibend."
+    },
+    {
+      "id": "c1-42",
+      "frage": "Wie stellt die Kreuzprobe sicher, dass sie dieselben Läufe nachrechnet wie der Hauptlauf?",
+      "punkte": [
+        "Gleiches Panel: Hold-out-Sperre und `reset_index` wie in m02 (Z. 172); die Zeilenreihenfolge bestimmt den Bootstrap.",
+        "Gleiche Aufteilung (`wiederholte_aufteilung`, W0, `selten`) und die Sätze aus `tuning.csv` über `parameter_json` (`parametersaetze()` Z. 63–81).",
+        "Gerechnet mit der echten `ein_lauf()` aus m02/m03, gleicher Seed.",
+        "`_kontrolle()` (Z. 231–256): die Diagonale muss die Fold-Werte des Hauptlaufs auf 10⁻⁶ treffen."
+      ],
+      "abschnitt": "5.3",
+      "nachfrage": "Was passiert, wenn die Diagonale abweicht?",
+      "nachfrage_antwort": "Es gibt eine Warnung, keinen Abbruch; laut Docstring ist dann die Ursache zu suchen, nicht die Datei zu korrigieren."
+    },
+    {
+      "id": "c1-43",
+      "frage": "Wo zeigen Sie, dass das Suchbudget von 100 gereicht hat?",
+      "punkte": [
+        "**`modelle/suchdiagnose.py`**: `eine_suche()` (Z. 86–118) gibt jede Ziehung zurück, `kurve()` den besten Wert nach n Ziehungen.",
+        "`main()` vergleicht Ziehung 50 mit 100 (Z. 205–208).",
+        "Größter mittlerer Gewinn der zweiten Hälfte 0,019 (XGBoost, Menge), klein gegen die Streuung zwischen den Folds.",
+        "Das Budget ist in `modelle/config_modelle.py` hergeleitet (Z. 21): bei 5 % gutem Raum trifft man mit 100 Ziehungen zu 99,4 %."
+      ],
+      "abschnitt": "5.3",
+      "nachfrage": "Ist der innere Gütewert die Testleistung?",
+      "nachfrage_antwort": "Nein. Er bewertet nur die Suche auf den inneren Folds; deshalb wird zusätzlich die Kreuzprobe auf den äußeren Folds gerechnet."
+    },
+    {
+      "id": "c1-44",
+      "frage": "Wo laufen Ihre 20 Tests, und was prüfen sie?",
+      "punkte": [
+        "**`tests/test_aufbereitung.py`**, `main()` (Z. 398–415) führt alle `test_`-Funktionen aus; Aufruf auch über `python prep/build.py tests`.",
+        "Struktur: Panel rechteckig, Zeitraum fest, Datentypen, Lags rückwärts, Merkmale vollständig.",
+        "Aufteilung: Stadtteile getrennt und Hold-out unberührt (`test_folds_ordnung_und_holdout()` Z. 136–158), Brand in jedem Fold.",
+        "Inhalt: keine Ergebnisvariablen, Exposition plausibel, beide Dateien gleich abgegrenzt."
+      ],
+      "abschnitt": "4.5 · Code 9",
+      "nachfrage": "Prüfen die Tests auch die Plausibilität der Werte?",
+      "nachfrage_antwort": "Teilweise: `test_exposition_plausibel()` prüft die Bevölkerung (750.000 bis 950.000, kein Jahressprung über 60 %). Beim Bauen bricht zusätzlich `pruefe_zuschnitt()` in `prep/s2_datensaetze.py` ab."
+    }
+  ]
+}
