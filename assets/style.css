@@ -351,3 +351,46 @@ code {
   border-radius: 5px; padding: 0 4px; overflow-wrap: anywhere;
 }
 .frage, .antwort li, .nachfrage, .eintrag summary, .abschnitt { overflow-wrap: break-word; }
+
+/* ---------- Kalender der Karten des Tages ---------- */
+.tages-offen { margin: 0; font-size: 13.5px; color: var(--nochmal-text); }
+.kalender-kopf { margin-bottom: 12px; }
+.kalender-kopf .klein { margin: 8px 0 0; font-size: 13.5px; color: var(--text-2); }
+.kennzahlen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.kennzahl {
+  background: var(--flaeche); border-radius: var(--radius-s); box-shadow: var(--schatten);
+  padding: 10px 8px; display: grid; justify-items: center; gap: 2px;
+}
+.kennzahl b { font-size: 22px; line-height: 1.1; }
+.kennzahl span { font-size: 12.5px; color: var(--text-2); }
+.kalender {
+  background: var(--flaeche); border-radius: var(--radius); box-shadow: var(--schatten);
+  padding: 12px; margin-bottom: 16px;
+}
+.kal-raster { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.kal-wt { text-align: center; font-size: 12px; font-weight: 600; color: var(--text-2); padding-bottom: 2px; }
+.kal-tag {
+  position: relative; aspect-ratio: 1 / 1; min-height: 40px; border-radius: var(--radius-s);
+  border: 1px solid var(--linie); background: var(--bg); color: var(--text);
+  display: grid; place-items: center; align-content: center; gap: 0; padding: 2px;
+  font: inherit; cursor: pointer;
+}
+.kal-nr { font-size: 14px; font-weight: 600; line-height: 1.1; }
+.kal-zeichen { font-size: 12px; line-height: 1; min-height: 12px; }
+.kal-tag.erledigt { background: var(--gut-bg); color: var(--gut-text); border-color: transparent; }
+.kal-tag.offen { background: var(--nochmal-bg); color: var(--nochmal-text); border-color: transparent; }
+.kal-tag.uebersprungen { background: var(--linie); color: var(--text-2); border-color: transparent; }
+.kal-tag.uebersprungen .kal-nr { text-decoration: line-through; }
+.kal-tag.zukunft { opacity: .55; }
+.kal-tag.ist-heute { border: 2px solid var(--orange); }
+.kal-tag.gewaehlt { outline: 3px solid var(--akzent); outline-offset: 1px; }
+.kal-tag:focus-visible { outline: 3px solid var(--orange); outline-offset: 1px; }
+.kal-legende {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 10px 0 0; font-size: 12.5px; color: var(--text-2);
+}
+.kal-legende .erledigt { color: var(--gut-text); }
+.kal-legende .offen { color: var(--nochmal-text); }
+#tag-detail { scroll-margin-top: 72px; }
+.tag-ueber { font-size: 14.5px; }
+.tag-karten summary { cursor: pointer; font-size: 14px; color: var(--text-2); padding: 4px 0; }
+.tag-karten .liste { margin-top: 8px; }

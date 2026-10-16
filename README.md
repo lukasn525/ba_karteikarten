@@ -146,6 +146,12 @@ Häufigster Fehler: ein fehlendes oder überzähliges Komma.
   überwiegend kritische, unsichere und neue, dazu etwa ein Fünftel sichere zur Auffrischung; lange nicht
   gesehene Karten kommen eher dran. Die Auswahl wird beim ersten Öffnen des Tages festgelegt und gilt auf
   allen Geräten. Einstellbar über `TAGES_MIN`, `TAGES_MAX` und `TAGES_ANTEIL_SICHER` in `assets/app.js`.
+- **Kalender** (Knopf „Kalender“ im Kasten Karten des Tages, Adresse `#/kalender`): ein Feld je Tag im
+  Zeitraum `"karten_des_tages": { "von", "bis" }` aus `data/index.json` (zurzeit 16.10.–04.11.2026), mit
+  Status erledigt ✓, offen !, übersprungen – und heute •. Ein Tag zeigt seine Karten, ein vergangener lässt
+  sich nachholen oder als übersprungen ankreuzen (rücknehmbar). Künftige Tage bleiben leer: ihre Auswahl
+  entsteht erst an dem Tag, nach dem dann aktuellen Lernstand. Ein nachgeholter Tag wird beim ersten
+  Öffnen zusammengestellt. Gespeichert wird je Tag in `tagesplan`; `tageskarten` spiegelt den jüngsten Tag.
 - Nach der Runde: „Neue Runde“ oder „Nur die schwierigen“.
 
 **Bedienung:** Tippen/Klicken dreht die Karte um und wieder zurück. Auf dem Smartphone: nach rechts
@@ -154,7 +160,7 @@ wischen = gewusst, nach links = nochmal. Tastatur: Leertaste umdrehen und zurüc
 
 ### Lernstand – geräteübergreifend
 
-Status, Sterne, Einstellungen und die laufende Runde werden online in Supabase gespeichert und auf
+Status, Sterne, Einstellungen, die laufende Runde und der Kalender der Karten des Tages werden online in Supabase gespeichert und auf
 allen Geräten abgeglichen, auf denen die Seite geöffnet wird – ohne Anmeldung.
 
 - Jede Änderung wird nach etwa 1,5 Sekunden hochgeladen, spätestens beim Verlassen der Seite.

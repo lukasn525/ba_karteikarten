@@ -3,6 +3,7 @@
   "untertitel": "Einsatzlast der Feuerwehr San Francisco – Karteikarten zur Vorbereitung",
   "stand": "16.10.2026",
   "hinweis": "Abschnittsnummern nach der Fassung der Arbeit vom 07.10.2026",
+  "karten_des_tages": { "von": "2026-10-16", "bis": "2026-11-04" },
   "stapel": [
     "stapel-1.json",
     "stapel-2.json",

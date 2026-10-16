@@ -86,7 +86,8 @@
       rundeGeaendert: 0,
       einstellungen: { mischen: true, geaendert: 0 },
       zurueckgesetzt: 0,
-      tageskarten: null
+      tageskarten: null,   // jüngster Tag, für ältere Fassungen der App mitgeführt
+      tagesplan: {}        // Karten des Tages je Datum: { ids, erstellt, erledigt, uebersprungen, geaendert }
     };
   }
 
@@ -109,11 +110,20 @@
         rundeGeaendert: Number(z.rundeGeaendert) || (runde ? Number(runde.ende || runde.start) || 0 : 0),
         einstellungen: Object.assign(basis.einstellungen, (z && z.einstellungen) || {}),
         zurueckgesetzt: Number(z.zurueckgesetzt) || 0,
-        tageskarten: (z && z.tageskarten) || null
+        tageskarten: (z && z.tageskarten) || null,
+        tagesplan: ladePlan(z)
       };
     } catch (e) {
       return leererZustand();
     }
+  }
+
+  // Tagesplan aus dem gespeicherten Stand; eine Auswahl aus der Fassung ohne Plan wird übernommen
+  function ladePlan(z) {
+    const plan = (z && z.tagesplan && typeof z.tagesplan === 'object' && !Array.isArray(z.tagesplan)) ? z.tagesplan : {};
+    const t = z && z.tageskarten;
+    if (t && typeof t.datum === 'string' && Array.isArray(t.ids) && !plan[t.datum]) plan[t.datum] = t;
+    return plan;
   }
 
   // Speichert lokal und stößt den Abgleich an. `rundeAuch`: die Runde hat sich geändert.
@@ -173,7 +183,7 @@
   function ersterAbrufFertig() {
     if (sync.geholt) return;
     sync.geholt = true;
-    if (daten.reihenfolge.length && aktuelleSeite().seite === '') neuZeichnen();
+    if (daten.reihenfolge.length && ['', 'teil', 'kalender'].includes(aktuelleSeite().seite)) neuZeichnen();
   }
 
   async function rpc(name, body, keepalive) {
@@ -568,11 +578,12 @@
   function rundeBeenden(r) {
     r.fertig = true;
     r.ende = Date.now();
-    // Karten des Tages als erledigt vermerken
-    const t = zustand.tageskarten;
-    if (r.tag && t && t.datum === r.tag) {
+    // Karten des Tages als erledigt vermerken (auch ein nachgeholter Tag)
+    const t = r.tag && zustand.tagesplan[r.tag];
+    if (t) {
       t.erledigt = r.ende;
       t.geaendert = r.ende;
+      planGeaendert();
     }
   }
 
@@ -603,6 +614,7 @@
     if (seite === 'lernen') renderLernen();
     else if (seite === 'ergebnis') renderErgebnis();
     else if (seite === 'uebersicht') renderUebersicht(param || 'alle');
+    else if (seite === 'kalender') renderKalender(param);
     else renderStart();
   }
 
@@ -812,40 +824,42 @@
     return !!k && daten.stapelById.get(k.stapel).teil === ersterTeil().id;
   };
 
-  // Auswahl von heute (legt sie beim ersten Aufruf des Tages an). Eine gespeicherte
-  // Auswahl wird beim Lesen gefiltert, nicht umgeschrieben: der Abgleich behält die
-  // zuerst erstellte Auswahl, ein Umschreiben würde wieder überschrieben.
-  function tageskarten() {
-    const datum = heute();
-    const t = zustand.tageskarten;
-    if (t && t.datum === datum && Array.isArray(t.ids)) return Object.assign({}, t, { ids: t.ids.filter(imErstenTeil) });
-    if (!sync.geholt) return null;   // erst den Online-Stand abwarten
+  // „tageskarten“ spiegelt den jüngsten Tag des Plans (für ältere Fassungen der App)
+  function planGeaendert() {
+    const juengster = Object.keys(zustand.tagesplan).sort().pop();
+    zustand.tageskarten = juengster ? zustand.tagesplan[juengster] : null;
+  }
+
+  // Eintrag eines Tages. `anlegen`: fehlt er, wird er jetzt zusammengestellt – für heute
+  // und für vergangene Tage (Nachholen), nie für künftige: jeder Tag bekommt seine
+  // Auswahl erst, wenn er da ist, nach dem dann aktuellen Lernstand.
+  function tagEintrag(datum, anlegen) {
+    const e = zustand.tagesplan[datum];
+    if (e && Array.isArray(e.ids)) return e;
+    if (!anlegen || datum > heute() || !sync.geholt) return null;   // erst den Online-Stand abwarten
     const ids = stelleTageskartenZusammen(datum);
     if (!ids.length) return null;
     const jetzt = Date.now();
-    zustand.tageskarten = { datum, ids, erstellt: jetzt, erledigt: 0, geaendert: jetzt };
+    zustand.tagesplan[datum] = { datum, ids, erstellt: jetzt, erledigt: 0, uebersprungen: 0, geaendert: jetzt };
+    planGeaendert();
     speichere();
-    return zustand.tageskarten;
+    return zustand.tagesplan[datum];
+  }
+
+  // Gespeicherte Auswahl wird beim Lesen gefiltert, nicht umgeschrieben: der Abgleich
+  // behält die zuerst erstellte Auswahl, ein Umschreiben würde wieder überschrieben.
+  const tagAnsicht = e => (e ? Object.assign({}, e, { ids: e.ids.filter(imErstenTeil) }) : null);
+
+  // Auswahl von heute (legt sie beim ersten Aufruf des Tages an)
+  function tageskarten() {
+    return tagAnsicht(tagEintrag(heute(), true));
   }
 
   function tageskartenHtml(t) {
     const ids = lernbar(t.ids);
     const r = zustand.runde;
     const laeuft = r && r.tag === t.datum && !r.fertig && offenAnzahl(r);
-    let kritisch = 0, unsicher = 0, neu = 0, sicher = 0;
-    for (const id of ids) {
-      const k = kz(id);
-      if (k.kritisch) kritisch++;
-      else if (k.status === 'unsicher') unsicher++;
-      else if (k.status === 'sicher') sicher++;
-      else neu++;
-    }
-    const mix = [
-      kritisch ? `${kritisch} ★ kritisch` : '',
-      unsicher ? `${unsicher} unsicher` : '',
-      neu ? `${neu} neu` : '',
-      sicher ? `${sicher} sicher` : ''
-    ].filter(Boolean).join(' · ');
+    const mix = mischungText(ids);
     const aus = t.ids.filter(id => daten.karten.has(id) && istAusgeblendet(id)).length;
     let status = '';
     let knopf;
@@ -858,13 +872,137 @@
     } else {
       knopf = `<button class="btn btn-primaer" data-aktion="tageskarten" ${ids.length ? '' : 'disabled'}>Starten</button>`;
     }
+    const offen = kalenderTage().filter(d => tagStatus(d) === 'offen').length;
     return `<section class="tages">
       <div class="tages-kopf">
         <div><h2>Karten des Tages</h2><p>${datumKurz(t.datum)} · ${ids.length} Karten${aus ? ` (${aus} ausgeblendet)` : ''}</p></div>
         ${status}
       </div>
       ${mix ? `<p class="tages-mix">${mix}</p>` : ''}
+      ${offen ? `<p class="tages-offen">${offen === 1 ? 'Ein vergangener Tag ist' : `${offen} vergangene Tage sind`} noch offen – im Kalender nachholen oder überspringen.</p>` : ''}
+      <div class="knopfreihe">${knopf}<button class="btn" data-aktion="kalender">Kalender</button></div>
+    </section>`;
+  }
+
+  // ------------------------------------------------------------------ Kalender
+  // Ein Feld je Tag von „von“ bis „bis“ (data/index.json, „karten_des_tages“).
+  // Vergangene Tage lassen sich nachholen oder als übersprungen ankreuzen.
+
+  const datumAus = s => { const [j, m, t] = s.split('-').map(Number); return new Date(j, m - 1, t); };
+  const datumText = d => `${d.getFullYear()}-${zwei(d.getMonth() + 1)}-${zwei(d.getDate())}`;
+  const WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+  const WOCHENTAGE_LANG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+
+  function kalenderTage() {
+    const k = daten.meta.karten_des_tages || {};
+    const geplant = Object.keys(zustand.tagesplan).sort();
+    const von = /^\d{4}-\d{2}-\d{2}$/.test(k.von || '') ? k.von : (geplant[0] || heute());
+    const bis = /^\d{4}-\d{2}-\d{2}$/.test(k.bis || '') ? k.bis : heute();
+    const tage = [];
+    for (let d = datumAus(von); datumText(d) <= bis && tage.length < 400; d.setDate(d.getDate() + 1)) tage.push(datumText(d));
+    return tage;
+  }
+
+  function tagStatus(datum) {
+    const e = zustand.tagesplan[datum];
+    if (e && e.erledigt) return 'erledigt';
+    if (e && e.uebersprungen) return 'uebersprungen';
+    const h = heute();
+    if (datum < h) return 'offen';
+    return datum === h ? 'heute' : 'zukunft';
+  }
+
+  const STATUS_TEXT = { erledigt: 'erledigt', uebersprungen: 'übersprungen', offen: 'offen', heute: 'heute', zukunft: 'kommt noch' };
+  const STATUS_ZEICHEN = { erledigt: '✓', uebersprungen: '–', offen: '!', heute: '•', zukunft: '' };
+
+  function mischungText(ids) {
+    let kritisch = 0, unsicher = 0, neu = 0, sicher = 0;
+    for (const id of ids) {
+      const k = kz(id);
+      if (k.kritisch) kritisch++;
+      else if (k.status === 'unsicher') unsicher++;
+      else if (k.status === 'sicher') sicher++;
+      else neu++;
+    }
+    return [kritisch ? `${kritisch} ★ kritisch` : '', unsicher ? `${unsicher} unsicher` : '',
+      neu ? `${neu} neu` : '', sicher ? `${sicher} sicher` : ''].filter(Boolean).join(' · ');
+  }
+
+  function renderKalender(param) {
+    const tage = kalenderTage();
+    const h0 = heute();
+    const gewaehlt = tage.includes(param) ? param : (tage.includes(h0) ? h0 : tage[tage.length - 1]);
+    const zaehl = { erledigt: 0, uebersprungen: 0, offen: 0, heute: 0, zukunft: 0 };
+    for (const d of tage) zaehl[tagStatus(d)]++;
+    const bis = tage[tage.length - 1];
+    const rest = tage.filter(d => d >= h0).length;
+    setzeKopf('Karten des Tages', `${datumKurz(tage[0])}–${datumKurz(bis)} · ${zaehl.erledigt} von ${tage.length} Tagen erledigt`, true);
+
+    let h = `<section class="kalender-kopf">
+      <div class="kennzahlen">
+        <div class="kennzahl"><b>${zaehl.erledigt}</b><span>erledigt</span></div>
+        <div class="kennzahl"><b>${zaehl.offen}</b><span>offen</span></div>
+        <div class="kennzahl"><b>${zaehl.uebersprungen}</b><span>übersprungen</span></div>
+      </div>
+      <p class="klein">${rest ? `Noch ${rest} ${rest === 1 ? 'Tag' : 'Tage'} bis einschließlich ${datumKurz(bis)}` : `Der Zeitraum endete am ${datumKurz(bis)}`}</p>
+    </section>`;
+
+    // Raster Mo–So
+    const erster = datumAus(tage[0]);
+    const vorlauf = (erster.getDay() + 6) % 7;
+    let zellen = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map(w => `<div class="kal-wt">${w}</div>`).join('');
+    zellen += '<div class="kal-leer"></div>'.repeat(vorlauf);
+    for (const d of tage) {
+      const st = tagStatus(d);
+      const dd = datumAus(d);
+      zellen += `<button type="button" class="kal-tag ${st}${d === gewaehlt ? ' gewaehlt' : ''}${d === h0 ? ' ist-heute' : ''}"
+        data-aktion="tag-waehlen" data-datum="${d}" aria-pressed="${d === gewaehlt}"
+        aria-label="${WOCHENTAGE_LANG[dd.getDay()]}, ${datumKurz(d)}: ${STATUS_TEXT[st]}">
+        <span class="kal-nr">${dd.getDate() === 1 ? datumKurz(d) : `${dd.getDate()}.`}</span><span class="kal-zeichen" aria-hidden="true">${STATUS_ZEICHEN[st]}</span></button>`;
+    }
+    h += `<section class="kalender"><div class="kal-raster">${zellen}</div>
+      <p class="kal-legende"><span class="erledigt">✓ erledigt</span><span class="offen">! offen</span><span class="uebersprungen">– übersprungen</span><span class="ist-heute">• heute</span></p>
+    </section>`;
+
+    h += tagDetailHtml(gewaehlt);
+    app.innerHTML = h;
+    if (param && param === gewaehlt) {
+      const ziel = document.getElementById('tag-detail');
+      if (ziel) requestAnimationFrame(() => ziel.scrollIntoView({ block: 'nearest' }));
+    }
+  }
+
+  function tagDetailHtml(datum) {
+    const st = tagStatus(datum);
+    const dd = datumAus(datum);
+    const titel = `${WOCHENTAGE_LANG[dd.getDay()]}, ${datumKurz(datum)}`;
+    const kopf = `<div class="tages-kopf"><div><h2>${titel}</h2></div><span class="chip ${st === 'erledigt' ? 'gut' : st === 'offen' ? 'nochmal' : ''}">${STATUS_TEXT[st]}</span></div>`;
+    if (st === 'zukunft') {
+      return `<section class="tages" id="tag-detail">${kopf}
+        <p class="tages-mix">Die Karten für diesen Tag werden erst an dem Tag zusammengestellt, nach deinem dann aktuellen Lernstand.</p></section>`;
+    }
+    const e = tagAnsicht(tagEintrag(datum, true));
+    if (!e) {
+      return `<section class="tages" id="tag-detail">${kopf}
+        <p class="tages-mix">Die Karten werden zusammengestellt, sobald der Online-Stand geladen ist …</p></section>`;
+    }
+    const ids = lernbar(e.ids);
+    const r = zustand.runde;
+    const laeuft = r && r.tag === datum && !r.fertig && offenAnzahl(r);
+    let knopf;
+    if (laeuft) knopf = '<button class="btn btn-primaer" data-aktion="fortsetzen">Fortsetzen</button>';
+    else if (st === 'erledigt') knopf = `<button class="btn" data-aktion="tageskarten" data-datum="${datum}" ${ids.length ? '' : 'disabled'}>Nochmal üben</button>`;
+    else knopf = `<button class="btn btn-primaer" data-aktion="tageskarten" data-datum="${datum}" ${ids.length ? '' : 'disabled'}>${datum < heute() ? 'Nachholen' : 'Starten'}</button>`;
+    const ueber = st === 'erledigt' ? '' : `<label class="schalter tag-ueber"><input type="checkbox" data-aktion="tag-ueberspringen" data-datum="${datum}" ${e.uebersprungen ? 'checked' : ''}>
+        <span>Tag überspringen</span></label>`;
+    const mix = mischungText(ids);
+    return `<section class="tages" id="tag-detail">${kopf}
+      <p class="tages-mix">${e.ids.length} Karten${mix ? ` · ${mix}` : ''}${laeuft ? ` · noch ${offenAnzahl(r)} offen` : ''}</p>
       <div class="knopfreihe">${knopf}</div>
+      ${ueber}
+      <details class="tag-karten"><summary>Karten dieses Tages ansehen</summary>
+        <div class="liste">${e.ids.filter(id => daten.karten.has(id)).map(id => eintragHtml(id)).join('')}</div>
+      </details>
     </section>`;
   }
 
@@ -1030,10 +1168,11 @@
     zustand.runde.fertig = false;
     delete zustand.runde.ende;
     // Wurde damit die Runde der Karten des Tages wieder geöffnet, gilt sie nicht mehr als erledigt
-    const t = zustand.tageskarten;
-    if (warFertig && zustand.runde.tag && t && t.datum === zustand.runde.tag && t.erledigt) {
+    const t = zustand.runde.tag && zustand.tagesplan[zustand.runde.tag];
+    if (warFertig && t && t.erledigt) {
       t.erledigt = 0;
       t.geaendert = Date.now();
+      planGeaendert();
     }
     speichere(true);
     toast(istAusblenden ? 'Ausblenden zurückgenommen' : 'Letzte Antwort zurückgenommen');
@@ -1373,8 +1512,22 @@
         toggleAusgeblendet(btn.dataset.id);
         break;
       case 'tageskarten': {
-        const t = tageskarten();
-        if (t) starteRunde(t.ids, `Karten des Tages · ${datumKurz(t.datum)}`, t.datum);
+        const datum = btn.dataset.datum || heute();
+        const t = tagAnsicht(tagEintrag(datum, true));
+        if (t) starteRunde(t.ids, `Karten des Tages · ${datumKurz(datum)}`, datum);
+        break;
+      }
+      case 'kalender': navigiere('kalender'); break;
+      case 'tag-waehlen': navigiere(`kalender/${btn.dataset.datum}`, true); break;
+      case 'tag-ueberspringen': {
+        const e = tagEintrag(btn.dataset.datum, true);
+        if (!e) { btn.checked = !btn.checked; break; }
+        e.uebersprungen = btn.checked ? Date.now() : 0;
+        e.geaendert = Date.now();
+        planGeaendert();
+        speichere();
+        toast(btn.checked ? 'Tag übersprungen' : 'Tag wieder offen');
+        render();
         break;
       }
       case 'lernen': {

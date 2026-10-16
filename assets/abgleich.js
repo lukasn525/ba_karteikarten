@@ -7,8 +7,10 @@
  * - Die Runde gewinnt als Ganzes nach „rundeGeaendert“.
  * - Einstellungen gewinnen nach „einstellungen.geaendert“.
  * - „zurueckgesetzt“ verwirft alles, was davor geändert wurde (Zurücksetzen, Import).
- * - Karten des Tages: der neuere Tag gewinnt; am selben Tag bleibt die zuerst
- *   erstellte Auswahl, „erledigt“ gewinnt nach „geaendert“.
+ * - Karten des Tages (Tagesplan, ein Eintrag je Datum): je Tag bleibt die zuerst
+ *   erstellte Auswahl; „erledigt“ und „uebersprungen“ gewinnen nach „geaendert“.
+ *   „tageskarten“ (nur der jüngste Tag) wird für ältere Fassungen der App mitgeführt
+ *   und fließt ebenfalls in den Plan ein.
  */
 (function (wurzel, fabrik) {
   if (typeof module === 'object' && module.exports) module.exports = fabrik();
@@ -19,7 +21,7 @@
   const zeit = x => (typeof x === 'number' && isFinite(x) ? x : 0);
 
   function leer() {
-    return { version: 2, karten: {}, runde: null, rundeGeaendert: 0, einstellungen: { mischen: true, geaendert: 0 }, zurueckgesetzt: 0, tageskarten: null };
+    return { version: 2, karten: {}, runde: null, rundeGeaendert: 0, einstellungen: { mischen: true, geaendert: 0 }, zurueckgesetzt: 0, tageskarten: null, tagesplan: {} };
   }
 
   const istTageskarten = t => !!t && typeof t === 'object' && typeof t.datum === 'string' && Array.isArray(t.ids);
@@ -35,8 +37,23 @@
     const gx = zeit(x.geaendert);
     const gy = zeit(y.geaendert);
     const neuer = gx !== gy ? (gx > gy ? x : y) : (zeit(x.erledigt) >= zeit(y.erledigt) ? x : y);
-    if (zeit(neuer.erledigt) === zeit(basis.erledigt) && zeit(basis.geaendert) === Math.max(gx, gy)) return basis;
-    return Object.assign({}, basis, { erledigt: zeit(neuer.erledigt), geaendert: Math.max(gx, gy) });
+    if (zeit(neuer.erledigt) === zeit(basis.erledigt) && zeit(neuer.uebersprungen) === zeit(basis.uebersprungen)
+        && zeit(basis.geaendert) === Math.max(gx, gy)) return basis;
+    return Object.assign({}, basis, { erledigt: zeit(neuer.erledigt), uebersprungen: zeit(neuer.uebersprungen),
+      geaendert: Math.max(gx, gy) });
+  }
+
+  // Tagesplan als Abbildung Datum -> Eintrag; ein einzelnes „tageskarten“ zählt als Eintrag seines Tages
+  function planAus(s) {
+    const plan = {};
+    if (s.tagesplan && typeof s.tagesplan === 'object' && !Array.isArray(s.tagesplan)) {
+      for (const [datum, e] of Object.entries(s.tagesplan)) {
+        if (istTageskarten(e) && e.datum === datum) plan[datum] = e;
+      }
+    }
+    const t = s.tageskarten;
+    if (istTageskarten(t)) plan[t.datum] = plan[t.datum] ? tageskartenWahl(plan[t.datum], t) : t;
+    return plan;
   }
 
   // Grobe Formprüfung, damit kein Unsinn gespeichert wird
@@ -70,10 +87,18 @@
     const eb = b.einstellungen || {};
     const einstellungen = Object.assign({ mischen: true, geaendert: 0 }, zeit(eb.geaendert) > zeit(ea.geaendert) ? eb : ea);
 
-    let tageskarten = tageskartenWahl(a.tageskarten, b.tageskarten);
-    if (tageskarten && zeit(tageskarten.erstellt) < zurueck) tageskarten = null;   // vor dem Zurücksetzen erstellt
+    const pa = planAus(a);
+    const pb = planAus(b);
+    const tagesplan = {};
+    for (const datum of new Set([...Object.keys(pa), ...Object.keys(pb)])) {
+      const e = tageskartenWahl(pa[datum], pb[datum]);
+      if (e && zeit(e.erstellt) >= zurueck) tagesplan[datum] = e;   // vor dem Zurücksetzen erstellt: weg
+    }
+    const juengster = Object.keys(tagesplan).sort().pop();
+    const tageskarten = juengster ? tagesplan[juengster] : null;
 
-    return { version: 2, karten, runde: runde || null, rundeGeaendert, einstellungen, zurueckgesetzt: zurueck, tageskarten };
+    return { version: 2, karten, runde: runde || null, rundeGeaendert, einstellungen, zurueckgesetzt: zurueck,
+      tageskarten, tagesplan };
   }
 
   return { leer, istLernstand, zusammenfuehren };
