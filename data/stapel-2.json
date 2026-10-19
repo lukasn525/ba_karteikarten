@@ -244,11 +244,10 @@
       "id": "2-36",
       "frage": "Wie arbeitet ein Entscheidungsbaum, und worin könnte der Vorsprung der Baumverfahren vor dem GLM liegen?",
       "punkte": [
-        "Ein Baum teilt den Merkmalsraum schrittweise in Regionen und sagt in jedem Endknoten den Mittelwert seiner Trainingsbeobachtungen vorher (James et al. 2023, S. 333–334).",
-        "Dadurch erfasst er Wechselwirkungen, ohne dass man sie vorgeben muss: Ein Baum mit J Endknoten bildet sie bis zur Ordnung J − 1 ab (Hastie et al. 2009, S. 362).",
-        "Ein GLM ohne Produktterme kennt nur Summanden je einzelnem Merkmal – der mögliche Vorsprung von Random Forest und XGBoost liegt genau in den Wechselwirkungen darüber.",
-        "Ein einzelner Baum ist instabil; erst Bagging (Random Forest) und Boosting (XGBoost) machen daraus brauchbare Verfahren (James et al. 2023, S. 343–345).",
-        "Gegen streng monotone Umformungen der Merkmale sind Bäume unempfindlich, deshalb braucht nur Ridge standardisierte Merkmale (Hastie et al. 2009, S. 352)."
+        "Ein Baum stellt nacheinander einfache Ja/Nein-Fragen an die Merkmale, immer nach dem Muster „Wert größer als eine Schwelle?“. Wo eine Beobachtung am Ende landet, sagt er den Mittelwert der Trainingsbeobachtungen dort vorher (James et al. 2023, S. 333–334).",
+        "Welche Frage als Nächstes kommt, hängt von den vorigen Antworten ab. So findet der Baum Wechselwirkungen selbst (Hastie et al. 2009, S. 362) – ein GLM ohne Produktterme addiert nur die Einflüsse der einzelnen Merkmale. Darin läge der mögliche Vorsprung von Random Forest und XGBoost.",
+        "Ein einzelner Baum ist instabil; brauchbar wird er erst im Verbund vieler Bäume, beim Random Forest (Bagging) und bei XGBoost (Boosting) (James et al. 2023, S. 343–345).",
+        "Weil ein Baum nur mit Schwellen vergleicht, ändert Standardisieren oder Logarithmieren eines Merkmals an ihm nichts; standardisierte Merkmale braucht nur Ridge (Hastie et al. 2009, S. 352)."
       ],
       "abschnitt": "2.3, 2.4, 5.2",
       "nachfrage": "Haben die Bäume diesen Spielraum hier genutzt?",
