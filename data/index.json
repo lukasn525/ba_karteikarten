@@ -1,7 +1,7 @@
 {
   "titel": "Kolloquium · Bachelorarbeit",
   "untertitel": "Einsatzlast der Feuerwehr San Francisco – Karteikarten zur Vorbereitung",
-  "stand": "16.10.2026",
+  "stand": "20.10.2026",
   "hinweis": "Abschnittsnummern nach der Fassung der Arbeit vom 07.10.2026",
   "karten_des_tages": { "von": "2026-10-16", "bis": "2026-11-04" },
   "stapel": [
@@ -17,7 +17,7 @@
     { "id": "arbeit", "titel": "Arbeit", "kurz": "Arbeit",
       "stapel": ["stapel-1", "stapel-2", "stapel-5", "stapel-3", "stapel-4"] },
     { "id": "code", "titel": "Code", "kurz": "Code", "praefix": "C",
-      "untertitel": "Wo steht was im Abgabe-Code? Datei, Funktion und Zeilen sind automatisch gegen den Abgabeordner geprüft (Stand 16.10.2026).",
+      "untertitel": "Wo steht was im Abgabe-Code? Datei, Funktion und Zeilen sind automatisch gegen den Abgabeordner geprüft (Stand 16.10.2026, ergänzte Karten 20.10.2026).",
       "stapel": ["code-1", "code-2"] }
   ],
   "unterlagen": [

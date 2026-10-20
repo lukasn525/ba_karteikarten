@@ -4,6 +4,19 @@
   "kurz": "Prüferfragen",
   "karten": [
     {
+      "id": "cp-34",
+      "frage": "Welche Einsätze fehlen in Ihrer Zählung, und an welcher Stelle fallen sie heraus?",
+      "punkte": [
+        "Schon beim Download: Filter `neighborhood_district IS NOT NULL AND arrival_dttm IS NOT NULL` in `prep/s1_daten.py` Z. 87. Meldungen ohne Stadtteil oder ohne erfasste Ankunft stehen gar nicht in `data/raw`.",
+        "**`prep/s1_daten.py` · `prepare_sffd()`, Z. 251–276**: Dedup über die Einsatznummer (Z. 261) entfernt 269 Meldungen.",
+        "Antwortzeitfenster 0 bis 60 Minuten (Z. 265–267, `prep/config.py` Z. 77) entfernt im Abzug keine einzige Zeile: 720.258 − 269 = 719.989 Einsätze, keine negative und keine über 60 Minuten.",
+        "Wie viele Einsätze ohne Ankunft es gab, lässt sich aus der Abgabe nicht mehr zählen."
+      ],
+      "abschnitt": "3.3, 4.3",
+      "nachfrage": "Verzerrt das die Zielgrößen?",
+      "nachfrage_antwort": "Nicht auszuschließen: Gezählt wird nur, wo eine Ankunft erfasst ist. Welcher Art die fehlenden Einsätze waren, steht nicht in `data/raw`, also nicht schätzen, sondern so sagen."
+    },
+    {
       "id": "cp-01",
       "frage": "Ein Einsatz aus 2023: Welchen ACS-Jahrgang bekommt er, und wo steht das?",
       "punkte": [
@@ -15,6 +28,32 @@
       "abschnitt": "4.3 · Code 4",
       "nachfrage": "Warum nicht der zeitlich nächste Jahrgang?",
       "nachfrage_antwort": "ACS 2023 ist erst Ende 2024 erschienen. Ein Einsatz aus 2023 hätte sonst Information, die es damals noch nicht gab."
+    },
+    {
+      "id": "cp-32",
+      "frage": "ACS 2023 erscheint laut Ihrem eigenen Kommentar erst im Dezember 2024. Warum bekommen Einsätze aus dem Januar 2024 ihn trotzdem?",
+      "punkte": [
+        "Die Regel in `prep/s1_daten.py` · `acs_snapshot()` Z. 364 arbeitet auf Jahren, nicht auf Monaten: ACS-Jahr ≤ Einsatzjahr − 1.",
+        "`prep/config.py` Z. 66 sagt selbst: Jahrgang y erscheint um Dezember y+1. Von Januar bis November y+1 lag er also noch nicht vor.",
+        "Betroffen sind die Einsatzjahre 2015, 2020, 2022 und 2024 (ACS 2014, 2019, 2021, 2023), also bis zu elf Monate Vorgriff.",
+        "Strikt wäre ein Versatz von 2: Dann bekäme 2015 nur ACS 2009 ohne Bildungsangabe, und der Zeitraum müsste 2016 beginnen."
+      ],
+      "abschnitt": "4.3 · Code 4, 4.2",
+      "nachfrage": "Ist das Leakage?",
+      "nachfrage_antwort": "Ein Vorgriff auf ein Merkmal, keine Information über die Zielgröße. Wie bei den Baumerkmalen von 2020 bleibt die Abweichung begrenzt, weil die Übertragung auf unbekannte Stadtteile geprüft wird und nicht die Fortschreibung in der Zeit."
+    },
+    {
+      "id": "cp-33",
+      "frage": "Ein Census Tract weist kein Medianeinkommen aus. Was macht Ihre bevölkerungsgewichtete Mittelung damit?",
+      "punkte": [
+        "**`prep/s1_daten.py` · `acs_je_neighborhood()`, Z. 312–346**: Zähler = Summe aus Median × Einwohner (Z. 336), ein fehlender Median fällt dort weg.",
+        "Der Nenner ist aber die Bevölkerung **aller** Tracts des Stadtteils (Z. 339, 343). Ein Tract ohne Median zieht den Stadtteilwert deshalb nach unten.",
+        "Betroffen sind 13 Stadtteil-Jahrgänge in ACS 2019, 2021 und 2023, z. B. Western Addition 2023 Einkommen −23,8 %, Twin Peaks 2019 Miete −41,4 %, North Beach 2021 beide −15,3 %.",
+        "Das sind 312 der 4.752 Stadtteilmonate (6,6 %), ACS 2014 ist frei davon. Nachgerechnet aus den Rohdaten, in der Arbeit nicht erwähnt."
+      ],
+      "abschnitt": "4.3",
+      "nachfrage": "Ändert das Ihre Ergebnisse?",
+      "nachfrage_antwort": "Nicht nachgerechnet. Betroffen sind zwei von zehn Merkmalen in 6,6 % der Zeilen, für alle Verfahren gleich. Als Fehler benennen: Richtig wäre im Nenner nur die Bevölkerung der Tracts mit Median."
     },
     {
       "id": "cp-02",
@@ -134,6 +173,19 @@
       "nachfrage_antwort": "W0 ist selbst eine andere Aufteilung, der Vergleich ist konfundiert. Ein deutlicher Vorteil wäre sichtbar, ein kleiner nicht von Fold-Schwankung zu trennen."
     },
     {
+      "id": "cp-35",
+      "frage": "Welchen Parametersatz bekommt Fold 3 in Wiederholung 4, und auf welche Zielgröße wurde er gesucht?",
+      "punkte": [
+        "**`modelle/m02_menge.py` · `phase_tuning()`** (Z. 310–357): 15 Suchen je Verfahren und Fold der Wiederholung 0, alle auf der Rate (Z. 339).",
+        "Beide Zielgrößen erhalten denselben Satz (Z. 347–353, Spalte `getunt_auf` in `tuning.csv`): Die Anzahl läuft mit Parametern, die für die Rate gesucht sind.",
+        "`phase_bewertung()` holt den Satz über die Fold-Nummer, `param[(ziel, name, k)]` (Z. 410). Fold 3 in Wiederholung 4 bekommt also den Satz von Fold 3 aus Wiederholung 0, obwohl dort andere Stadtteile stehen; m03 genauso (Z. 422).",
+        "Die Zuordnung ist fest, aber inhaltlich beliebig. Laut Kreuzprobe macht das wenig aus: Beim RF ist ein fremder Satz in 17 von 20 Paarungen besser."
+      ],
+      "abschnitt": "5.3, 6.3",
+      "nachfrage": "Wäre eine Suche je Wiederholung nicht sauberer?",
+      "nachfrage_antwort": "Ja, aber zehnmal so teuer. Die Arbeit führt die einmalige Suche als Vereinfachung unter den Limitationen, ihren Effekt messen Leckage-Diagnose und Kreuzprobe."
+    },
+    {
       "id": "cp-11",
       "frage": "Wo sorgen Sie dafür, dass alle Verfahren dieselben Merkmale, Zeilen und Folds sehen?",
       "punkte": [
@@ -171,6 +223,19 @@
       "abschnitt": "5.2 · Code 16",
       "nachfrage": "Warum braucht nur Ridge einen Scaler, und warum kein Tweedie für den Wald?",
       "nachfrage_antwort": "Der L2-Strafterm hängt an der Skala, Bäume nicht. scikit-learn bietet für Wälder keine Tweedie-Devianz, Poisson ist die nächste zähldatengerechte Wahl."
+    },
+    {
+      "id": "cp-36",
+      "frage": "XGBoost sagt je nach Kernzahl bis zu 51 Einsätze anders vorher. Wie belastbar ist dann sein RMSE?",
+      "punkte": [
+        "**`modelle/m02_menge.py` · `ein_lauf()`**: Jeder Fit läuft ein zweites Mal mit `n_jobs=-1` (Z. 236–237), verglichen in Z. 248 und 251.",
+        "Ridge weicht gar nicht ab, der RF unter 10⁻¹², XGBoost bis 50,88 Einsätze in einer Zeile.",
+        "Über einen ganzen Lauf (`parallel_abweichung_rmse` in `menge_folds.csv`): im Mittel 3,83, höchstens 10,0 Einsätze bei einem mittleren RMSE von 37,39. Auf der Rate 0,17 bei 1,84.",
+        "Berichtet wird nur der einkernige Fit (`N_JOBS_MODELL = 1`, Z. 65). Der RMSE der parallelen Fassung wird nicht gespeichert."
+      ],
+      "abschnitt": "5.2 · Code 19, 3.3",
+      "nachfrage": "Ändert sich damit ein Testergebnis?",
+      "nachfrage_antwort": "Nicht geprüft. Sicher ist nur die Obergrenze: Der RMSE eines Laufs kann sich höchstens um den Abstand der beiden Vorhersagen ändern, im Mittel 3,83. Das liegt in der Größenordnung des Abstands zur Referenz (−4,40)."
     },
     {
       "id": "cp-14",

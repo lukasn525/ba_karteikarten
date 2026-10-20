@@ -4,6 +4,19 @@
   "kurz": "Funktionen",
   "karten": [
     {
+      "id": "cf-16",
+      "frage": "Welche Funktion ordnet Census Tracts auch über geänderte Zensusgrenzen hinweg einem Stadtteil zu?",
+      "punkte": [
+        "**`prep/s1_daten.py` · `tract_zu_stadtteil()`, Z. 282–309**",
+        "Erst direkt über die GEOID aus dem Crosswalk mit den Grenzen von 2020 (Z. 303).",
+        "Rückfall: vierstelliger Basiscode, nur wenn alle 2020er Tracts dieses Codes im selben Stadtteil liegen (`nunique() == 1`, Z. 306). Z. 309 füllt nur auf, eine direkte Zuordnung wird nie überschrieben.",
+        "2014 und 2019: 157 von 197 direkt, 39 über den Basiscode, ein Wasserflächen-Tract offen. Ohne Basiscode fehlte gut ein Viertel der Wohnbevölkerung (26,9 bzw. 27,9 %)."
+      ],
+      "abschnitt": "4.3 · Code 3",
+      "nachfrage": "Warum greift der Basiscode 2021 und 2023 nicht?",
+      "nachfrage_antwort": "Diese Jahrgänge folgen schon den Grenzen von 2020: 242 von 244 Tracts direkt, die zwei offenen sind unbewohnt (`results/deskriptiv/rohbefunde.md`)."
+    },
+    {
       "id": "cf-01",
       "frage": "Welche Funktion wählt für ein Einsatzjahr den ACS-Jahrgang, der damals schon veröffentlicht war?",
       "punkte": [
@@ -15,6 +28,19 @@
       "abschnitt": "4.3 · Code 4",
       "nachfrage": "Warum nicht einfach den zeitlich nächsten Jahrgang?",
       "nachfrage_antwort": "Dann stünde Information im Modell, die es zum Einsatzzeitpunkt noch nicht gab: ACS 2023 ist erst Ende 2024 erschienen."
+    },
+    {
+      "id": "cf-17",
+      "frage": "Welche Funktion zählt die Delikte je Stadtteil und Monat aus beiden SFPD-Quellen?",
+      "punkte": [
+        "**`prep/s1_daten.py` · `crime_monatlich()`, Z. 415–470**",
+        "Altquelle 2014–2017: Download nur bis `CRIME_HISTORISCH_BIS` = 2018-01-01 (`prep/config.py` Z. 61), Platzhalterkoordinaten raus (Z. 161–165), Spatial Join (Z. 437) mit Abbruch unter 90 % (Z. 441).",
+        "Neue Quelle ab 2018: voraggregiert mit Stadtteilspalte (Z. 451–464). Alle Kategorien werden summiert, eine Harmonisierung der Schemata entfällt.",
+        "Zusammengeführt mit `max` statt Summe (Z. 467–470), als Sicherheitsnetz: Im Abzug endet die Altquelle am 31.12.2017, die neue beginnt am 01.01.2018."
+      ],
+      "abschnitt": "4.3, 4.4",
+      "nachfrage": "Was bewirkte `max`, wenn sich doch ein Monat überlappte?",
+      "nachfrage_antwort": "Es gewönne die größere der beiden Zahlen statt ihrer Summe: kein Doppelzählen, aber auch keine Ergänzung einer unvollständigen Quelle. Im Abzug tritt der Fall nicht ein."
     },
     {
       "id": "cf-02",
@@ -30,6 +56,20 @@
       "nachfrage_antwort": "Der SFPD-Systemwechsel im Mai 2018 verschiebt das stadtweite Niveau. Ein solcher Sprung wirkt auf Zähler und Nenner gleich und kürzt sich heraus."
     },
     {
+      "id": "cf-18",
+      "frage": "Welche Funktion bildet die baulichen Merkmale aus dem Parzellenverzeichnis, und was ist dort nicht abgesichert?",
+      "punkte": [
+        "**`prep/s1_daten.py` · `land_use_je_neighborhood()`, Z. 544–595**: Flächenmittelpunkt (Z. 557) per `sjoin(..., predicate=\"within\")` ins Stadtteilpolygon (Z. 564).",
+        "Baujahre außerhalb 1800–2025 werden schon beim Laden fehlend (Z. 167). Altbauanteil = Parzellen vor 1940 / Parzellen mit Baujahr (Z. 573, 580).",
+        "Ein Snapshot 2020 für alle Jahre, für 2015–2019 also gegen die Verfügbarkeitsregel, bewusst in Kauf genommen.",
+        "Die Match-Rate (99,5 %) wird nur ausgegeben (Z. 566), es gibt **kein** assert. Die 90-%-Schwelle steht nur in `crime_monatlich()` (Z. 441).",
+        "Ergebnis gecacht (Z. 696–701). Nach einem neuen Download verworfen wird nur der Kriminalitäts-Cache (Z. 242–244), dieser nicht."
+      ],
+      "abschnitt": "4.3",
+      "nachfrage": "Die Arbeit sagt, die Aufbereitung breche ab, wenn der räumliche Verbund unter 90 % fällt. Gilt das hier?",
+      "nachfrage_antwort": "Nein, nur für die Kriminalitätsdaten. Beim Parzellenverbund würde eine schlechte Zuordnung erst an den Anteilen auffallen. Sagen, dass die Quote hier 99,5 % beträgt und nur ausgegeben wird."
+    },
+    {
       "id": "cf-03",
       "frage": "Welche Funktion verdichtet die Einsätze zu Stadtteil × Monat und füllt Monate ohne Einsatz mit null?",
       "punkte": [
@@ -41,6 +81,20 @@
       "abschnitt": "4.4 · Code 5",
       "nachfrage": "Warum ist das Raster nötig?",
       "nachfrage_antwort": "Ohne Raster fehlte ein ruhiger Monat stillschweigend, und die Lags würden verrutschen."
+    },
+    {
+      "id": "cf-19",
+      "frage": "Welche Funktion baut den Regressionsdatensatz, und wo fallen die fünf Stadtteile heraus?",
+      "punkte": [
+        "**`prep/s2_datensaetze.py` · `baue_regression()`, Z. 255–328**",
+        "Lags je Stadtteil strikt rückwärts (Z. 281–283), danach wird der Vorlauf abgeschnitten (Z. 290), erst dann folgt die Lückenprüfung.",
+        "Ein Stadtteil mit einer Lücke in irgendeinem Prädiktor fällt ganz heraus (Z. 298–301): Lakeshore und Treasure Island, kein Baujahr. Die drei Parks entfernt schon `aggregiere()` (Z. 197). 41 − 3 − 2 = 36, geprüft in `pruefe_zuschnitt()` Z. 431.",
+        "Rate in Z. 318, feste Sortierung als Reproduzierbarkeitsvertrag (Z. 325): RF und XGBoost ziehen über Zeilenpositionen.",
+        "Die Lags stehen in der Datei, gehen aber in kein Modell (`MERKMALE = PRAEDIKTOREN + SAISON`)."
+      ],
+      "abschnitt": "4.3, 4.4",
+      "nachfrage": "Warum ganze Stadtteile streichen statt einzelner Monate?",
+      "nachfrage_antwort": "Nur ein rechteckiges Panel mit allen 132 Monaten je Stadtteil macht die Folds vergleichbar. Zeilenweises Löschen ließe einen Stadtteil mitten in der Reihe einsteigen."
     },
     {
       "id": "cf-04",
@@ -67,6 +121,19 @@
       "abschnitt": "4.5",
       "nachfrage": "Welcher Test prüft das an der fertigen Datei?",
       "nachfrage_antwort": "`tests/test_aufbereitung.py` · `test_folds_ordnung_und_holdout()`: kein Stadtteil zugleich in Training und Test, kein Fold greift ins Hold-out, jeder genau einmal Testfall."
+    },
+    {
+      "id": "cf-20",
+      "frage": "Welche Funktion liefert das Stratifizierungsmaß der Fold-Zuteilung, und warum liest der Mengenstrang dafür die Klassifikationsdatei?",
+      "punkte": [
+        "**`vorpruefung/v0_aufteilung.py` · `selten_je_stadtteil()`, Z. 48–59**",
+        "Zählt je Stadtteil die Monate mit überwiegender Einsatzart „brand“ (Z. 58–59), über alle 132 Monate.",
+        "Steht in keiner Datei, deshalb liest auch `modelle/m02_menge.py` die Klassifikationsdatei (Z. 792). Dasselbe Maß bildet `run()` in `prep/s2_datensaetze.py` (Z. 461).",
+        "Ohne das Maß reproduziert Wiederholung 0 die Datei nicht, und das assert in `wiederholte_aufteilung()` bricht ab."
+      ],
+      "abschnitt": "4.5 · Code 10",
+      "nachfrage": "`prep/config.py` Z. 179 sagt „stratifiziert nach einem Prädiktor, nicht nach der Zielgröße“. Stimmt das?",
+      "nachfrage_antwort": "Wörtlich nicht: Die Brand-Monate sind aus der Zielgröße des Strukturstrangs gezählt. Leakage ist es trotzdem nicht, weil nur festgelegt wird, welche Stadtteile gemeinsam getestet werden."
     },
     {
       "id": "cf-06",
@@ -134,6 +201,19 @@
       "nachfrage_antwort": "Er schneidet nach Zeilen. Dieselben Stadtteile stünden dann in innerem Training und innerer Validierung, die inneren Werte wären nur zu gut."
     },
     {
+      "id": "cf-27",
+      "frage": "Welche Funktionen prüfen, ob ein größeres Suchbudget noch geholfen hätte?",
+      "punkte": [
+        "**`modelle/suchdiagnose.py` · `eine_suche()`** (Z. 86–118): dieselbe Suche wie im Hauptlauf (Z. 105–109), gibt aber jede der 100 Ziehungen mit innerem Gütewert zurück.",
+        "`kurve()` (Z. 134–146): bester Wert nach n Ziehungen als laufendes Maximum (Z. 144).",
+        "`main()` vergleicht Ziehung 50 mit 100 (Z. 205–208), das Hold-out filtert es vorher heraus (Z. 184).",
+        "Größter mittlerer Gewinn: 0,019 bei XGBoost (Menge), gegen eine Streuung von 0,247 zwischen den Folds."
+      ],
+      "abschnitt": "5.3",
+      "nachfrage": "In welcher Einheit ist die 0,019?",
+      "nachfrage_antwort": "Im inneren Gütewert: RMSE auf der Rate, also Einsätze je 1.000 Einwohner (Z. 94–96), im Strukturstrang Macro-F1. Mit dem RMSE der Anzahl ist sie nicht vergleichbar."
+    },
+    {
       "id": "cf-11",
       "frage": "Welche Funktionen führen einen einzelnen Lauf aus: Fit, Vorhersage, Zeitmessung?",
       "punkte": [
@@ -160,6 +240,19 @@
       "nachfrage_antwort": "m02 Z. 606–607: primär gegen den rohen p-Wert, sekundär gegen den Holm-Wert."
     },
     {
+      "id": "cf-26",
+      "frage": "Welche Funktionen berechnen Effektstärke d und Trennschärfe des Wilcoxon-Tests?",
+      "punkte": [
+        "**`modelle/trennschaerfe.py` · `effektstaerke()`** (Z. 44–53) und **`trennschaerfe()`** (Z. 56–63)",
+        "d = mittlere Differenz / SD der zehn Differenzen, die SD aus der Breite des t-Intervalls in `vergleich.csv` zurückgerechnet (Z. 51–53).",
+        "4.000 Ziehungen von 10 Paaren aus N(d, 1), Anteil mit p < 0,05 im selben Wilcoxon wie in m02/m03 (Z. 62–63), Startwert 42.",
+        "Raster (Z. 41): Bei d = 1,00 verwirft der Test in 78 %. Die Abstände zur Referenz im Mengenstrang (d = 0,18 bis 0,62) nur in 8 bis 40 %."
+      ],
+      "abschnitt": "3.2, 6.3",
+      "nachfrage": "Ist eine Trennschärfe beim beobachteten d nicht nur der p-Wert in anderer Form?",
+      "nachfrage_antwort": "Für den einzelnen Vergleich weitgehend ja: d legt die t-Statistik fest (t = d · √10). Aussagekräftig ist das Raster mit vorgegebenem d, es zeigt, welche Effekte zehn Paare überhaupt auflösen."
+    },
+    {
       "id": "cf-13",
       "frage": "Welche Funktionen machen die einmalige Schlussbewertung auf den sechs Hold-out-Stadtteilen?",
       "punkte": [
@@ -171,6 +264,19 @@
       "abschnitt": "4.5",
       "nachfrage": "Wie kommt man überhaupt an die Funktion?",
       "nachfrage_antwort": "Nur mit dem Argument `holdout` in `main()` (m02 Z. 830); ohne filtert `main()` das Hold-out vorher heraus (Z. 796)."
+    },
+    {
+      "id": "cf-21",
+      "frage": "Welche Funktion übernimmt Tuning und Bewertung aus `results/`, und wann bricht sie ab?",
+      "punkte": [
+        "**`modelle/m02_menge.py` · `uebernehmen()`** (Z. 715–769), Gegenstück in `modelle/m03_struktur.py` (Z. 645)",
+        "Nur mit dem Schalter `--weiter` (Z. 800–801): liest `tuning.csv` und `menge_folds.csv`, statt Phase 1 und 2 neu zu rechnen.",
+        "Abbruch bei fünf Bedingungen (Z. 746–765): `regression.parquet` oder `config_modelle.py` jünger als `tuning.csv`, nicht 300 Läufe, andere Panelgröße, andere Verfahren, andere Folds.",
+        "Grenze laut Docstring: geprüft wird die Form, nicht der Inhalt. Eine zurückkopierte ältere Datei mit gleicher Zeilenzahl fällt nicht auf."
+      ],
+      "abschnitt": "3.3",
+      "nachfrage": "Wozu gibt es den Schalter überhaupt?",
+      "nachfrage_antwort": "`holdout` rechnet sonst die Phasen 1 bis 4 mit, fast die ganze Rechenzeit für Ergebnisse, die schon auf der Platte liegen. Ohne `--weiter` rechnet das Skript alles neu."
     },
     {
       "id": "cf-14",
@@ -186,6 +292,19 @@
       "nachfrage_antwort": "Nein. Modellwerte braucht nur die Ausschöpfung; sie kommen aus `_modellwerte()` (Z. 137–165) und derselben Bewertung wie die Decken."
     },
     {
+      "id": "cf-22",
+      "frage": "Welche Funktion schlüsselt den Macro-F1 nach Klassen auf, und was zeigt sie für Brand?",
+      "punkte": [
+        "**`vorpruefung/v4_decke.py` · `klassen_f1()`, Z. 194–232**",
+        "F1 je Lauf und Klasse mit festen Codes 0–3 (Z. 216–217). Sagt ein Lauf eine Klasse nie vorher, zählt sie dort mit F1 = 0.",
+        "RF: „brand“ in 2 von 39.590 Testzeilen vorhergesagt, keinmal richtig, in 49 von 50 Läufen gar nicht. F1 = 0.",
+        "XGBoost: 2.178-mal vorhergesagt, 11-mal richtig, F1 = 0,005. Ergebnis in `results/klassifikation/klassen_f1.csv`."
+      ],
+      "abschnitt": "6.2",
+      "nachfrage": "Warum dann Macro-F1 als Hauptmaß?",
+      "nachfrage_antwort": "Weil es jede Klasse gleich zählt: Ein Viertel des Maßes ruht auf Brand, und genau das macht sichtbar, dass keines der Baumverfahren die Klasse erkennt."
+    },
+    {
       "id": "cf-15",
       "frage": "Welche Funktionen in `modelle/m04_shap.py` erklären die Modelle?",
       "punkte": [
@@ -197,6 +316,45 @@
       "abschnitt": "6.5",
       "nachfrage": "Wer wird mit SHAP erklärt?",
       "nachfrage_antwort": "Nur der Random Forest im Strukturstrang; im Mengenstrang schlägt kein Verfahren die Referenz."
+    },
+    {
+      "id": "cf-23",
+      "frage": "Welche Funktion misst, wie weit die Mengenvorhersagen im Mittel zu tief liegen?",
+      "punkte": [
+        "**`modelle/m04_shap.py` · `verschiebung()`, Z. 665–704**",
+        "Fehler je Testzeile y_hat − y (Z. 686), je Lauf Verschiebung, RMSE und Standardabweichung (Z. 687–693). Es gilt RMSE² = Verschiebung² + SD².",
+        "Anzahl: Ridge −7,07 (in 28 von 50 Läufen zu tief), XGBoost −5,83 (31), RF −2,77 (25).",
+        "Ohne Verschiebung sänke der RMSE um 2,41 (Ridge), 2,99 (XGBoost) und 3,20 (RF), also bei allen dreien vergleichbar."
+      ],
+      "abschnitt": "5.2",
+      "nachfrage": "Wenn expm1 systematisch zu tief führt, warum liegt Ridge nur in 28 von 50 Läufen zu tief?",
+      "nachfrage_antwort": "Das Mittel tragen wenige Läufe: Der Median je Lauf liegt bei −1,17, der tiefste bei −59,2. Der Rest ist Niveauunterschied zwischen Trainings- und Teststadtteilen, der höchste Lauf liegt bei +13,7."
+    },
+    {
+      "id": "cf-24",
+      "frage": "Welche Funktion lässt die Bäume ohne Exposition direkt auf der Anzahl anpassen, und was kommt heraus?",
+      "punkte": [
+        "**`modelle/m04_shap.py` · `ablation_exposition()`, Z. 190–237**: nur RF und XGBoost (Z. 214), Fit direkt auf `anzahl_einsaetze` (Z. 228–229).",
+        "Gleiche Folds und Parameter wie im Hauptlauf (Z. 226–227), Vergleichswerte aus `menge_folds.csv` (Z. 595–598).",
+        "RMSE Anzahl: RF 34,96 → 50,85, XGBoost 37,39 → 51,81.",
+        "In der Arbeit nicht berichtet, liegt aber im Abgabeordner: `results/shap/ablation_exposition.csv`."
+      ],
+      "abschnitt": "5.2",
+      "nachfrage": "Ist der Vergleich fair, wenn die Parameter auf der Rate gesucht wurden?",
+      "nachfrage_antwort": "Nicht ganz: Die Sätze passen zur Rate und zur Anzahl schlechter, ein Teil des Anstiegs kann Fehlabstimmung sein. Neu zu suchen hieße aber zwei Dinge auf einmal zu ändern."
+    },
+    {
+      "id": "cf-25",
+      "frage": "Welche Funktion berechnet den VIF der zehn Prädiktoren, und auf welcher Bezugsmenge?",
+      "punkte": [
+        "**`modelle/m04_shap.py` · `_vif()`, Z. 419–452**",
+        "Zwei Bezugsmengen (Z. 438–441): eine Zeile je Stadtteil und Jahr (330 Zeilen, maßgeblich) und alle 3.960 Entwicklungszeilen zum Vergleich.",
+        "Höchster Wert: Medianeinkommen 10,64 in beiden Mengen, danach Miete mit 6,97 (alle Zeilen 7,01). Problematisch gilt ab 5 bis 10.",
+        "Aufgerufen in `main()` Z. 645, Ergebnis in `results/shap/vif.csv`."
+      ],
+      "abschnitt": "5.1",
+      "nachfrage": "Warum nicht einfach `drop_duplicates()` über alle Prädiktoren?",
+      "nachfrage_antwort": "Der Kriminalitätsindex rollt monatlich, damit sind fast alle 3.960 Zeilen eindeutig und die Entdopplung liefe ins Leere (Docstring Z. 428–430)."
     }
   ]
 }

@@ -13,7 +13,7 @@ Karteikarten zur Vorbereitung auf das Kolloquium der Bachelorarbeit
 | 4 | Ergebnisse & Interpretation |
 | 5 | Kritik, Limitationen & Prüfer-Angriffe |
 
-**Code** – 2 Stapel (31 + 15 Karten), eigene Runden und eigenes „Alle Karten“:
+**Code** – 2 Stapel (36 + 27 Karten), eigene Runden und eigenes „Alle Karten“:
 
 | Stapel | Thema |
 |---|---|
@@ -21,7 +21,7 @@ Karteikarten zur Vorbereitung auf das Kolloquium der Bachelorarbeit
 | C2 | Funktionen: Aufgabe vorne, Datei · Funktion und Zeilen hinten |
 
 Die Zeilenangaben der Code-Karten sind beim Erzeugen automatisch gegen den Abgabeordner
-geprüft (Stand 16.10.2026). Ändert sich der Code, stimmen sie nicht mehr.
+geprüft (Stand 16.10.2026, ergänzte Karten 20.10.2026). Ändert sich der Code, stimmen sie nicht mehr.
 
 Reine statische Website (HTML, CSS, JavaScript), kein Build-Schritt, keine Abhängigkeiten.
 
