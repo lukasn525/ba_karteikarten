@@ -238,15 +238,16 @@
     },
     {
       "id": "2-41",
+      "fassung": "2026-10-20",
       "frage": "Warum ein Konfidenzintervall nach der t-Verteilung, wenn Sie wegen fehlender Normalverteilung den Wilcoxon-Test verwenden?",
       "punkte": [
-        "Die Testentscheidung trifft allein der Wilcoxon-Test; das Intervall beschreibt nur, wie groß der Abstand in RMSE bzw. Macro-F1 ist.",
-        "Verteilungsfrei ergänzt wird es durch die Zahl der gewonnenen Wiederholungen, die ohne Annahme über die Verteilung der Differenzen auskommt (Demšar 2006, S. 8–9).",
-        "In den Tabellen 10 und 12 schließt das Intervall die Null genau bei den signifikanten Vergleichen aus, etwa Ridge gegen XGBoost mit [+3,53; +9,40]: Intervall und Test widersprechen sich nirgends."
+        "**Wilcoxon:** entscheidet ohne Normalverteilung, ob ein Verfahren besser ist.",
+        "**t-Intervall:** zeigt, wie groß der Abstand ist, setzt streng genommen aber Normalverteilung voraus.",
+        "**Verteidigung:** Die Testentscheidung trifft allein der Wilcoxon-Test, das Intervall beschreibt nur die Größe des Abstands und widerspricht dem Test nirgends (Tabellen 10 und 12)."
       ],
       "abschnitt": "3.2, 6.1, 6.2",
-      "nachfrage": "Wie wird das Intervall berechnet?",
-      "nachfrage_antwort": "Mittlere Differenz ± 2,262 · s / √10, mit s als Standardabweichung der zehn Differenzen und 2,262 als t-Quantil bei 9 Freiheitsgraden. Für Ridge gegen das GLM ergibt 2,06 ± 2,82 das Intervall [−0,76; +4,88] aus Tabelle 10 (eigene Nachrechnung, nicht in der Arbeit)."
+      "nachfrage": "Was wäre konsequenter gewesen?",
+      "nachfrage_antwort": "Das zum Wilcoxon-Test gehörende Hodges-Lehmann-Intervall, das würde ich heute so machen."
     }
   ]
 }
