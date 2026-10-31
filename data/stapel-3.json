@@ -150,14 +150,16 @@
     },
     {
       "id": "3-12",
+      "fassung": "2026-10-31",
       "frage": "Was zeigt die Spezifikationsgegenprobe?",
       "punkte": [
         "Mehr Flexibilität schadet hier: Wird die Referenz selbst flexibler gemacht, steigt ihr Fehler auf neuen Stadtteilen drastisch.",
-        "Vorgehen: Statt das Verfahren zu wechseln, erhält das GLM schrittweise Quadrate und Interaktionen.",
+        "Vorgehen: Statt das Verfahren zu wechseln, bekommt das Poisson-GLM zusätzliche Terme. Ausgangspunkt sind 12 Terme: die zehn Strukturmerkmale plus die zwei Saisonterme.",
+        "Erweitert um (1) die Quadrate der zehn Strukturmerkmale für Krümmung → 22 Terme, (2) alle 45 Produkte aus je zwei davon für Wechselwirkungen, etwa Armutsquote × Kriminalitätsindex → 57 Terme, (3) beides → 67 Terme. Die Saisonterme bleiben außen vor (Code: v3_spezifikation.py).",
         "RMSE: linear 33,0 · mit Quadraten 74,6 · mit Interaktionen 257,0 · beides 4.203; alle 50 Läufe konvergiert, also kein Rechenartefakt.",
         "Die Spezifikation bewegt den Fehler um bis zu 4.170, die Verfahrenswahl nur um 6,5."
       ],
-      "abschnitt": "6.3",
+      "abschnitt": "6.3 · Code",
       "nachfrage": "Was beweist das für die Baumverfahren?",
       "nachfrage_antwort": "Direkt nichts, geprüft ist die Referenz. Sie zeigt aber unabhängig von den Bäumen, dass zusätzliche Flexibilität auf neuen Stadtteilen schadet – belegt für unpenalisierte Erweiterungen."
     },

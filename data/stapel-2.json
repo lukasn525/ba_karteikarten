@@ -111,16 +111,18 @@
     },
     {
       "id": "2-22",
+      "fassung": "2026-10-31",
       "frage": "Wie funktioniert die Poisson-Regression, und wie liest man ihre Koeffizienten?",
       "punkte": [
-        "Für nichtnegative ganze Zahlen ohne Obergrenze: Poisson-Verteilung mit dem Logarithmus als Link, log(μ) = x′β.",
-        "Negative Vorhersagen sind ausgeschlossen, die Koeffizienten wirken multiplikativ auf den Erwartungswert.",
-        "Kennzeichen: Erwartungswert gleich Varianz – je größer der erwartete Wert, desto größer seine Streuung.",
-        "Geschätzt per Maximum-Likelihood ohne Strafterm; mit dem Offset log(B) wird daraus ein Modell für die Rate je Einwohner."
+        "Kurz: Das Standardmodell für Zählwerte wie Einsätze, also ganze Zahlen ab null ohne Obergrenze. Ein Koeffizient sagt nicht „so viele Einsätze mehr“, sondern „so viel Prozent mehr“.",
+        "Das Modell rechnet mit dem Logarithmus der erwarteten Zahl: log(μ) = x′β. Zurückgerechnet kann deshalb nie eine negative Einsatzzahl herauskommen.",
+        "Koeffizient lesen: Steigt ein Merkmal um eins, wird die erwartete Zahl mit exp(β) malgenommen. β = 0,1 heißt rund 10,5 % mehr, β = 0 kein Einfluss, ein negatives β weniger Einsätze.",
+        "Annahme: Mittelwert und Streuung sind gleich groß. Wo im Schnitt viel los ist, schwankt es auch stärker.",
+        "Der Offset log(B) nimmt die Einwohnerzahl B heraus: Das Modell lernt die Rate je Einwohner und rechnet sie mit B wieder auf die Anzahl hoch. Geschätzt wird ohne Strafterm."
       ],
       "abschnitt": "2.3",
       "nachfrage": "Was heißt multiplikativ konkret?",
-      "nachfrage_antwort": "Steigt ein Merkmal um eine Einheit, ändert sich der Erwartungswert um den Faktor exp(β), unabhängig vom Ausgangsniveau. Bei β = 0,1 sind das rund 10,5 % mehr Einsätze."
+      "nachfrage_antwort": "Es kommt ein Prozentsatz dazu, keine feste Zahl. Bei β = 0,1 werden aus 100 erwarteten Einsätzen rund 110 und aus 10 rund 11: beide Male 10,5 % mehr, weil exp(0,1) ≈ 1,105. Das gilt unabhängig vom Ausgangsniveau."
     },
     {
       "id": "2-23",
