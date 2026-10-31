@@ -114,11 +114,10 @@
       "fassung": "2026-10-31",
       "frage": "Wie funktioniert die Poisson-Regression, und wie liest man ihre Koeffizienten?",
       "punkte": [
-        "Kurz: Das Standardmodell für Zählwerte wie Einsätze, also ganze Zahlen ab null ohne Obergrenze. Ein Koeffizient sagt nicht „so viele Einsätze mehr“, sondern „so viel Prozent mehr“.",
-        "Das Modell rechnet mit dem Logarithmus der erwarteten Zahl: log(μ) = x′β. Zurückgerechnet kann deshalb nie eine negative Einsatzzahl herauskommen.",
-        "Koeffizient lesen: Steigt ein Merkmal um eins, wird die erwartete Zahl mit exp(β) malgenommen. β = 0,1 heißt rund 10,5 % mehr, β = 0 kein Einfluss, ein negatives β weniger Einsätze.",
-        "Annahme: Mittelwert und Streuung sind gleich groß. Wo im Schnitt viel los ist, schwankt es auch stärker.",
-        "Der Offset log(B) nimmt die Einwohnerzahl B heraus: Das Modell lernt die Rate je Einwohner und rechnet sie mit B wieder auf die Anzahl hoch. Geschätzt wird ohne Strafterm."
+        "Kurz: Ein Modell für Zählwerte wie Einsätze, das mit dem Logarithmus rechnet. Deshalb wirkt ein Koeffizient als Prozentsatz, nicht als feste Zahl.",
+        "Für ganze Zahlen ab null ohne Obergrenze: log(μ) = x′β. Zurückgerechnet kommt nie eine negative Einsatzzahl heraus.",
+        "Koeffizient lesen: Steigt ein Merkmal um eins, wird die erwartete Zahl mit exp(β) malgenommen. β = 0,1 heißt rund 10,5 % mehr, ein negatives β weniger.",
+        "Annahme: Mittelwert gleich Streuung, wo viel los ist, schwankt es stärker. Mit dem Offset log(B) lernt das Modell die Rate je Einwohner, geschätzt ohne Strafterm."
       ],
       "abschnitt": "2.3",
       "nachfrage": "Was heißt multiplikativ konkret?",

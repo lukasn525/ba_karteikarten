@@ -178,11 +178,10 @@
       "fassung": "2026-10-31",
       "frage": "Ist das Modell zeitlich stabil – Stichwort Pandemie?",
       "punkte": [
-        "Kurz: Das ist nicht geprüft. Geprüft wird die Übertragung auf neue Stadtteile, nicht die Fortschreibung in die Zukunft.",
-        "Das Modell enthält kein Trendmerkmal, nur die Saison. Bauliche Merkmale stammen aus einem einzigen Jahrgang, ACS-Werte sind 5-Jahres-Schätzungen.",
-        "Die Pandemie wird in der Arbeit nicht gesondert behandelt, zeitliche Stabilität ist eine benannte Grenze.",
-        "Zahlen im Panel (eigene Nachrechnung, nicht in der Arbeit): 2019 31.831 Einsätze, 2020 28.667 (−10 %), Tiefpunkt April 2020 mit −17 % gegenüber 2017–2019. 2021 noch darunter, ab 2022 darüber. 2020 Rettung −25 %, Fehlalarm −16 %, Brand +28 %.",
-        "Den Vergleich verzerrt das nicht: Jeder Fold enthält alle 132 Monate, Training und Test durchlaufen denselben Einbruch, und alle Verfahren sehen dieselben Merkmale."
+        "Kurz: Das ist nicht geprüft. Getestet wird die Übertragung auf neue Stadtteile, nicht die Fortschreibung in die Zukunft, und die Pandemie behandelt die Arbeit nicht gesondert.",
+        "Das Modell kennt keinen Trend, nur die Saison. Bauliche Merkmale stammen aus einem Jahrgang, ACS-Werte sind 5-Jahres-Schätzungen. Zeitliche Stabilität ist deshalb als Grenze benannt.",
+        "Im Panel (eigene Nachrechnung, nicht in der Arbeit): 2020 rund 10 % weniger Einsätze als 2019, im April 2020 rund 17 % weniger, ab 2022 mehr als vorher. 2020 Rettung −25 %, Brand +28 %.",
+        "Den Vergleich verzerrt das nicht: Jeder Fold enthält alle 132 Monate, Training und Test durchlaufen denselben Einbruch."
       ],
       "abschnitt": "7.3 · eigene Nachrechnung",
       "nachfrage": "Wie würden Sie die zeitliche Stabilität prüfen?",
@@ -274,7 +273,7 @@
       "frage": "Die Rücktransformation von Ridge ist verzerrt – verfälscht das den Vergleich?",
       "punkte": [
         "Kurz: Nein. Die Verzerrung bleibt unkorrigiert, kostet Ridge etwas und bringt ihm nichts, und ohne sie bleibt die Rangfolge der drei Verfahren gleich.",
-        "Ridge wird auf log(1 + y) geschätzt und mit expm1 zurückgerechnet, also mit e^z − 1, der Umkehrung von log(1 + y). Der Mittelwert der Logarithmen liegt unter dem Logarithmus des Mittelwerts.",
+        "Ridge rechnet auf log(1 + y) und mit expm1, also e^z − 1, auf Einsätze zurück. Auf der Log-Skala ziehen große Monate den Mittelwert weniger nach oben.",
         "Die Vorhersagen fallen deshalb zu niedrig aus: Ridge unterschätzt im Mittel um 7,1 Einsätze, am stärksten der drei Verfahren.",
         "Ohne die Verschiebung sinkt der Fehler bei allen drei vergleichbar (Ordner, results/shap/verschiebung.csv: Ridge 30,93 → 28,52, Random Forest 34,96 → 31,76, XGBoost 37,39 → 34,40)."
       ],

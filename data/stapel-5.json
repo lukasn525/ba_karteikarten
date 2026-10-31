@@ -163,10 +163,9 @@
       "fassung": "2026-10-31",
       "frage": "Was ist die Effektstärke d, und wie groß ist die Trennschärfe Ihres Tests?",
       "punkte": [
-        "Kurz: Die Trennschärfe sagt, wie oft der Test einen Unterschied, den es wirklich gibt, auch als signifikant erkennt. Bei nur zehn Paaren ist sie klein: Mittlere Unterschiede übersieht er meistens.",
-        "d = Mittelwert der zehn gepaarten Differenzen geteilt durch ihre Standardabweichung (Lakens 2013, S. 4, 8).",
-        "Bei d = 1 ist der mittlere Abstand so groß wie seine Schwankung über die Wiederholungen.",
-        "Das ist die Trennschärfe, per Simulation mit 4.000 Ziehungen: Bei d = 0,18 bis 0,62 schlägt der Test nur in 8 bis 40 % der Fälle an, bei d = 1 in 78 %.",
+        "Kurz: d misst, wie groß ein Unterschied im Verhältnis zu seiner Schwankung ist. Die Trennschärfe sagt, wie oft der Test einen echten Unterschied auch erkennt, bei zehn Paaren selten.",
+        "d = Mittelwert der zehn gepaarten Differenzen geteilt durch ihre Standardabweichung (Lakens 2013, S. 4, 8). Bei d = 1 ist der Abstand so groß wie seine Schwankung.",
+        "Trennschärfe per Simulation mit 4.000 Ziehungen: Bei d = 0,18 bis 0,62 schlägt der Test nur in 8 bis 40 % der Fälle an, bei d = 1 in 78 %.",
         "Alle signifikanten Vergleiche haben d ≥ 0,84, alle Abstände zur Referenz im Mengenstrang d ≤ 0,62."
       ],
       "abschnitt": "3.2, 6.3",
