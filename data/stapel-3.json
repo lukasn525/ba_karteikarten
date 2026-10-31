@@ -123,6 +123,19 @@
       "nachfrage_antwort": "Decke A unterstellt, dass ein Modell die wahren Anteile jedes einzelnen Stadtteilmonats kennt – das können stadtteilgebundene Merkmale nicht liefern. Decke B liegt mit 0,41 tiefer und bindet deshalb enger."
     },
     {
+      "id": "3-29",
+      "frage": "Worauf beruhen die beiden Decken – gibt es dafür eine wissenschaftliche Grundlage?",
+      "punkte": [
+        "Kurz: Beide Decken sind eigene Messungen, in der Arbeit ohne Quelle. Die Idee dahinter ist der Bayes-Fehler, die kleinste Fehlerrate, die überhaupt möglich ist.",
+        "Bayes-Fehler: Wer immer die wahrscheinlichste Klasse wählt, macht die wenigsten Fehler, besser geht es nicht. In der Praxis ist er unerreichbar (James et al. 2023, S. 36), ein Rest Zufall bleibt immer (S. 17–18).",
+        "Decke A schätzt genau diese Grenze: Die beobachteten Anteile gelten als wahre Wahrscheinlichkeiten, 200 neue Ziehungen zeigen, wie viel allein der Zufall kostet (parametrischer Bootstrap).",
+        "Decke B wendet dieselbe Idee auf das verfügbare Wissen an: Verraten die Merkmale im Kern nur den Stadtteil, ist seine häufigste Klasse die beste Wahl."
+      ],
+      "abschnitt": "3.2, 6.2 · James 2023",
+      "nachfrage": "Warum steht in der Arbeit keine Quelle zu den Decken?",
+      "nachfrage_antwort": "Weil beide Werte aus den eigenen Daten gemessen sind (vorpruefung/v4_decke.py). Der Bayes-Fehler ist der Begriff dahinter, Decke B ist aber keine strenge Grenze, sondern eine Näherung von unten."
+    },
+    {
       "id": "3-10",
       "frage": "Wie viel des erreichbaren Spielraums schöpfen die Verfahren aus?",
       "punkte": [
