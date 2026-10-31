@@ -191,7 +191,7 @@
       "id": "4-17",
       "frage": "Ist die Wohnbevölkerung die richtige Bezugsgröße?",
       "punkte": [
-        "Nur näherungsweise: Sie bildet die tatsächliche Exposition nicht vollständig ab.",
+        "Kurz: Die Bezugsgröße ist das „je wovon“ der Rate. Die Einsätze werden durch die Einwohner geteilt, damit große und kleine Stadtteile vergleichbar sind, und das trifft die Wohnbevölkerung nur näherungsweise.",
         "Pendler und Besucher stehen nicht in der Einwohnerzahl, verursachen aber Einsätze.",
         "Deshalb haben Innenstadtlagen extrem hohe Raten: Financial District 10,4, South of Market 10,1, Tenderloin 9,4.",
         "In der Limitationstabelle benannt: Die Rate überzeichnet Innenstadtlagen – auch deshalb ist die Anzahl die Hauptzielgröße."
