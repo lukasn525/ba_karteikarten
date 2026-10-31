@@ -229,6 +229,18 @@
       "nachfrage_antwort": "Nein, sie lassen eine Klassenzuordnung zu, mehr nicht. Das Logit kommt nur von 0,221 auf 0,301 Macro-F1, und kein einzelnes Merkmal trägt die Aussage."
     },
     {
+      "id": "2-42",
+      "frage": "Wie funktioniert der Kruskal-Wallis-Test, einfach erklärt?",
+      "punkte": [
+        "Alle Werte eines Merkmals, etwa der Leerstandsquote, werden der Größe nach sortiert und bekommen Ränge: 1, 2, 3 und so weiter.",
+        "Je Einsatzart wird der mittlere Rang gebildet. Hat das Merkmal nichts mit der Einsatzart zu tun, liegen alle vier Gruppen etwa gleich.",
+        "H misst, wie weit die mittleren Ränge auseinanderliegen: Leerstand trennt am stärksten (H = 459,6), Wohngebäudeanteil am schwächsten (30,6)."
+      ],
+      "abschnitt": "5.1 · Ordner",
+      "nachfrage": "Warum Ränge statt Mittelwerte, und warum gelten die p-Werte nur nominell?",
+      "nachfrage_antwort": "Ränge brauchen keine Normalverteilung und vertragen Ausreißer und sehr ungleich große Gruppen. Nominell, weil der Test jede Zeile als unabhängig zählt, die Monate eines Stadtteils sich aber stark ähneln."
+    },
+    {
       "id": "2-35",
       "frage": "Was sind Hyperparameter, und welcher Zielkonflikt steckt hinter ihrer Wahl?",
       "punkte": [
